@@ -31,7 +31,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // perubahan 
+    // perubahan  baru nnn
 
     /**
      * Konversi otomatis tipe data
