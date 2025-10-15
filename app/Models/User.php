@@ -12,7 +12,8 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Kolom yang bisa diisi (fillable)
+     * Kolom yang bisa diisi (fillable) decece
+     * 
      */
     protected $fillable = [
         'mpk',
