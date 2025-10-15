@@ -36,7 +36,7 @@ class AuthController extends Controller
             'data' => $user
         ]);
 
-        //tes saja 
+        //tes saja satu lagi 
     
 
     }
