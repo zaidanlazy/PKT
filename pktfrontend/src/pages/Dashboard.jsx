@@ -19,7 +19,7 @@ export default function Dashboard() {
   const [activeMenu, setActiveMenu] = useState("");
   const [formData, setFormData] = useState({
     nama_rapat: "",
-    jenis: "online",
+    jenis: "offline ",
     tanggal: "",
     waktu_mulai: "",
     waktu_selesai: "",
@@ -250,8 +250,8 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold">Data Ruangan</p>
-                    <p className="text-sm opacity-70">Kelola ruangan meeting</p>
+                    <p className="font-semibold"> Ruangan</p>
+                    <p className="text-sm opacity-70">Tambah ruangan</p>
                   </div>
                 </button>
 
@@ -269,29 +269,12 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold">Data Peserta</p>
-                    <p className="text-sm opacity-70">Kelola data peserta</p>
+                    <p className="font-semibold">Data User</p>
+                    <p className="text-sm opacity-70">Kelola data User</p>
                   </div>
                 </button>
 
-                <button
-                  onClick={() => handleMenuClick("laporan")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "laporan" 
-                      ? "bg-orange-500/20 text-orange-300 border border-orange-400/30" 
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <div className="p-2 bg-orange-500/20 rounded-lg">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold">Laporan</p>
-                    <p className="text-sm opacity-70">Lihat laporan rapat</p>
-                  </div>
-                </button>
+                
 
                 <button
                   onClick={() => handleMenuClick("pengaturan")}
@@ -320,7 +303,7 @@ export default function Dashboard() {
           <div className="pt-6 border-t border-white/20">
             <div className="text-center">
               <p className="text-white/40 text-sm">
-                © 2024 Pupuk Kaltim
+                © 2025 Pupuk Kaltim
               </p>
               <p className="text-white/30 text-xs mt-1">
                 Sistem Reservasi Fasilitas

@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/login";
+import register from "./pages/register";
 import Dashboard from "./pages/Dashboard";
 import Rapat from "./pages/rapat";
 
@@ -9,6 +10,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/" element={<register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/rapat" element={<Rapat />} />
       </Routes>

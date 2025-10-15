@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axiosClient from "../api/axiosClient";
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,16 +11,38 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    if (mpk && password) {
-      setIsLoading(true);
-      // Simulasi proses login
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsLoading(false);
-      navigate("/dashboard");
-    } else {
-      alert("Isi MPK dan Password terlebih dahulu!");
-    }
+  e.preventDefault();
+
+  if (!mpk || !password) {
+    alert("Isi MPK dan Password terlebih dahulu!");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    // Kirim request POST ke Laravel API
+    const response = await axiosClient.post("/login", {
+      mpk,
+      password,
+    });
+
+    // Simpan token di localStorage
+    const token = response.data.token;
+    localStorage.setItem("token", token);
+
+    // Redirect ke dashboard
+    navigate("/dashboard");
+  } catch (error) {
+    console.error("Login gagal:", error.response?.data || error.message);
+    alert(error.response?.data?.message || "Login gagal! Periksa MPK dan Password.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleRegisterRedirect = () => {
+    navigate("/register");
   };
 
   return (
@@ -29,8 +53,6 @@ export default function Login() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-10 animate-pulse delay-500"></div>
       </div>
-
-      
 
       <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         {/* Left Side - Branding */}
@@ -97,7 +119,7 @@ export default function Login() {
                     <div className="relative">
                       <input
                         id="mpk"
-                        type="text"
+                        type="text and number "
                         placeholder="Masukkan MPK Anda"
                         value={mpk}
                         onChange={(e) => setMpk(e.target.value)}
@@ -176,10 +198,28 @@ export default function Login() {
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                 </button>
+
+                {/* Register Section - Below Form */}
+                <div className="pt-4 border-t border-white/20">
+                  <div className="text-center">
+                    <p className="text-white/60 text-sm mb-3">
+                      Belum memiliki akun?
+                    </p>
+                    <button
+                      onClick={handleRegisterRedirect}
+                      className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center space-x-2 group"
+                    >
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      </svg>
+                      <span>Daftar Akun Baru</span>
+                    </button>
+                  </div>
+                </div>
               </form>
 
-              <div className="mt-8 pt-6 border-t border-white/20">
-                <p className="text-center text-white/60 text-sm">
+              <div className="mt-6 text-center">
+                <p className="text-white/60 text-sm">
                   Butuh bantuan?{" "}
                   <a href="#" className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200">
                     Hubungi Admin

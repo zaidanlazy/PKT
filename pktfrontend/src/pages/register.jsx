@@ -35,11 +35,15 @@ export default function Register() {
       // Simulasi proses registrasi
       await new Promise(resolve => setTimeout(resolve, 1500));
       setIsLoading(false);
-      alert("Registrasi berhasil! Silakan login.");
-      navigate("/login");
+      alert("Registrasi berhasil! Selamat datang.");
+      navigate("/dashboard");
     } else {
       alert("Harap lengkapi semua data!");
     }
+  };
+
+  const handleLoginRedirect = () => {
+    navigate("/login");
   };
 
   return (
@@ -333,7 +337,7 @@ export default function Register() {
                 <p className="text-center text-white/60 text-sm">
                   Sudah punya akun?{" "}
                   <button 
-                    onClick={() => navigate("/login")}
+                    onClick={handleLoginRedirect}
                     className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
                   >
                     Masuk di sini
@@ -346,7 +350,7 @@ export default function Register() {
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-white/40 text-sm">
-              © 2024 Pupuk Kaltim. All rights reserved.
+              © 2025 Pupuk Kaltim. All rights reserved.
             </p>
           </div>
         </div>
