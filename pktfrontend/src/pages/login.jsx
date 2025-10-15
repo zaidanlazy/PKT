@@ -31,7 +31,7 @@ export default function Login() {
     const token = response.data.token;
     localStorage.setItem("token", token);
 
-    // Redirect ke dashboard
+    // Redirect ke dashboard 1 2
     navigate("/dashboard");
   } catch (error) {
     console.error("Login gagal:", error.response?.data || error.message);
