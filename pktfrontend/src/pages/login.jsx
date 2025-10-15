@@ -114,13 +114,13 @@ export default function Login() {
                 <div className="space-y-5">
                   <div>
                     <label htmlFor="mpk" className="block text-sm font-semibold text-white mb-3">
-                      MPK
+                      NPK
                     </label>
                     <div className="relative">
                       <input
                         id="mpk"
                         type="text and number "
-                        placeholder="Masukkan MPK Anda"
+                        placeholder="Masukkan NPK Anda"
                         value={mpk}
                         onChange={(e) => setMpk(e.target.value)}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
@@ -141,7 +141,7 @@ export default function Login() {
                       <input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Masukkan password Anda"
+                        placeholder="Masukkan password "
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm pr-12"
