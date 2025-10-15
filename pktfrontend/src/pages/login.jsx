@@ -14,7 +14,7 @@ export default function Login() {
   e.preventDefault();
 
   if (!mpk || !password) {
-    alert("Isi MPK dan Password terlebih dahulu!");
+    alert("Isi NPK dan Password terlebih dahulu!");
     return;
   }
 
@@ -119,7 +119,7 @@ export default function Login() {
                     <div className="relative">
                       <input
                         id="mpk"
-                        type="text and number "
+                        type="text"
                         placeholder="Masukkan NPK Anda"
                         value={mpk}
                         onChange={(e) => setMpk(e.target.value)}

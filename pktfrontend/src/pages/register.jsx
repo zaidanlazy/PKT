@@ -1,13 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axiosClient from "../api/axiosClient";
 
 export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     mpk: "",
     nama: "",
-    email: "",
     departemen: "",
+    unit_kerja: "",
+    no_telp: "",
+    email: "",
     password: "",
     confirmPassword: ""
   });
@@ -30,15 +33,42 @@ export default function Register() {
       return;
     }
 
-    if (formData.mpk && formData.nama && formData.email && formData.departemen && formData.password) {
-      setIsLoading(true);
-      // Simulasi proses registrasi
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsLoading(false);
-      alert("Registrasi berhasil! Selamat datang.");
+    if (!formData.mpk || !formData.nama || !formData.email || !formData.password) {
+      alert("Harap lengkapi data wajib: MPK, Nama, Email, Password!");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        mpk: formData.mpk,
+        nama: formData.nama,
+        unit_kerja: formData.departemen || formData.unit_kerja,
+        no_telp: formData.no_telp,
+        email: formData.email,
+        password: formData.password,
+      };
+
+      const response = await axiosClient.post("/register", payload);
+
+      const token = response.data?.data?.token || response.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      alert("Registrasi berhasil!");
       navigate("/dashboard");
-    } else {
-      alert("Harap lengkapi semua data!");
+    } catch (error) {
+      const apiMessage = error.response?.data?.message;
+      const apiErrors = error.response?.data?.errors;
+      if (apiErrors) {
+        const firstError = Object.values(apiErrors)[0]?.[0];
+        alert(firstError || apiMessage || "Registrasi gagal, periksa data Anda.");
+      } else {
+        alert(apiMessage || "Registrasi gagal, periksa koneksi atau data Anda.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -176,7 +206,7 @@ export default function Register() {
 
                 <div>
                   <label htmlFor="nama" className="block text-sm font-semibold text-white mb-3">
-                    Nama Lengkap *
+                      Nama Lengkap *
                   </label>
                   <div className="relative">
                     <input
