@@ -5,20 +5,22 @@ import { useAuth } from "../context/AuthContext";
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [data, setData] = useState({
-    total_ruangan: 2,
-    total_rapat: 1,
-    total_online: 1,
+    total_ruangan: 0,
+    total_rapat: 0,
+    total_online: 0,
     total_offline: 0,
   });
   
   const [rapatList, setRapatList] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState("add"); // add or edit
+  const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("");
   const [formData, setFormData] = useState({
     nama_rapat: "",
-    jenis: "online", // online or offline
-    tanggal: "", // YYYY-MM-DD
+    jenis: "online",
+    tanggal: "",
     waktu_mulai: "",
     waktu_selesai: "",
     ruangan_id: "",
@@ -125,6 +127,18 @@ export default function Dashboard() {
     }
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleMenuClick = (menu) => {
+    setActiveMenu(menu);
+    if (menu === "tambah-rapat") {
+      handleOpenModal("add");
+    }
+    // Untuk menu master data lainnya bisa ditambahkan fungsinya di sini
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6 relative overflow-hidden">
       {/* Background Elements */}
@@ -152,6 +166,16 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <button
+              onClick={toggleSidebar}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <span>Menu</span>
+            </button>
+            
             <div className="text-right">
               <p className="text-white font-semibold">{user?.nama || user?.mpk || "User"}</p>
               <p className="text-blue-200 text-sm">Selamat datang!</p>
@@ -168,6 +192,151 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Sidebar */}
+      <div className={`fixed top-0 right-0 h-full w-80 bg-slate-800/90 backdrop-blur-md border-l border-white/20 shadow-2xl transform transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="p-6 h-full flex flex-col">
+          {/* Sidebar Header */}
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-bold text-white">Menu Utama</h2>
+            <button
+              onClick={toggleSidebar}
+              className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Navigation Menu */}
+          <nav className="flex-1">
+            <div className="space-y-2">
+              {/* Tambah Rapat Menu */}
+              <button
+                onClick={() => handleMenuClick("tambah-rapat")}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  activeMenu === "tambah-rapat" 
+                    ? "bg-blue-500/20 text-blue-300 border border-blue-400/30" 
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold">Tambah Rapat</p>
+                  <p className="text-sm opacity-70">Buat jadwal rapat baru</p>
+                </div>
+              </button>
+
+              {/* Master Data Section */}
+              <div className="pt-4">
+                <h3 className="text-white/50 text-sm font-semibold uppercase tracking-wider px-4 mb-3">Master Data</h3>
+                
+                <button
+                  onClick={() => handleMenuClick("data-ruangan")}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "data-ruangan" 
+                      ? "bg-green-500/20 text-green-300 border border-green-400/30" 
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">Data Ruangan</p>
+                    <p className="text-sm opacity-70">Kelola ruangan meeting</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleMenuClick("data-peserta")}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "data-peserta" 
+                      ? "bg-purple-500/20 text-purple-300 border border-purple-400/30" 
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">Data Peserta</p>
+                    <p className="text-sm opacity-70">Kelola data peserta</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleMenuClick("laporan")}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "laporan" 
+                      ? "bg-orange-500/20 text-orange-300 border border-orange-400/30" 
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div className="p-2 bg-orange-500/20 rounded-lg">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">Laporan</p>
+                    <p className="text-sm opacity-70">Lihat laporan rapat</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleMenuClick("pengaturan")}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "pengaturan" 
+                      ? "bg-gray-500/20 text-gray-300 border border-gray-400/30" 
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div className="p-2 bg-gray-500/20 rounded-lg">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold">Pengaturan</p>
+                    <p className="text-sm opacity-70">Pengaturan sistem</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="pt-6 border-t border-white/20">
+            <div className="text-center">
+              <p className="text-white/40 text-sm">
+                © 2024 Pupuk Kaltim
+              </p>
+              <p className="text-white/30 text-xs mt-1">
+                Sistem Reservasi Fasilitas
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={toggleSidebar}
+        />
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative z-10">
@@ -203,18 +372,20 @@ export default function Dashboard() {
           <div className="p-8">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Daftar Rapat</h2>
-                <p className="text-blue-200">Kelola jadwal rapat Anda</p>
+                <h2 className="text-2xl font-bold text-white mb-2">Daftar Rapat Terkini</h2>
+                <p className="text-blue-200">Jadwal rapat hari ini dan mendatang</p>
               </div>
-              <button
-                onClick={() => handleOpenModal("add")}
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-6 py-3 rounded-2xl font-semibold shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2 group"
-              >
-                <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>Tambah Rapat</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={toggleSidebar}
+                  className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Tambah Rapat</span>
+                </button>
+              </div>
             </div>
 
             {/* Table */}
@@ -222,7 +393,7 @@ export default function Dashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="px-6 py-4 text-left text-white font-semibold">Agenda Rapat </th>
+                    <th className="px-6 py-4 text-left text-white font-semibold">Nama Rapat</th>
                     <th className="px-6 py-4 text-left text-white font-semibold">Jenis</th>
                     <th className="px-6 py-4 text-left text-white font-semibold">Tanggal</th>
                     <th className="px-6 py-4 text-left text-white font-semibold">Waktu</th>
@@ -239,10 +410,10 @@ export default function Dashboard() {
                           </svg>
                           <p>Belum ada data rapat</p>
                           <button
-                            onClick={() => handleOpenModal("add")}
+                            onClick={toggleSidebar}
                             className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
                           >
-                            Tambah rapat pertama Anda
+                            Klik menu untuk tambah rapat pertama
                           </button>
                         </div>
                       </td>
@@ -252,7 +423,6 @@ export default function Dashboard() {
                       <tr 
                         key={rapat.id} 
                         className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
-                        style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <td className="px-6 py-4 text-white font-medium">{rapat.nama_rapat}</td>
                         <td className="px-6 py-4">
@@ -307,7 +477,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal Tambah/Edit Rapat */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
@@ -407,14 +577,14 @@ export default function Dashboard() {
 
                 {formData.jenis === "offline" && (
                   <div>
-                    <label className="block text-white font-semibold mb-3">RUANG RAPAT</label>
+                    <label className="block text-white font-semibold mb-3">ID Ruangan</label>
                     <input
                       type="text"
                       name="ruangan_id"
                       value={formData.ruangan_id}
                       onChange={handleInputChange}
                       className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                      placeholder="Masukkan nama ruangan"
+                      placeholder="Masukkan ID ruangan"
                     />
                   </div>
                 )}
@@ -443,7 +613,7 @@ export default function Dashboard() {
   );
 }
 
-// StatCard Component
+// StatCard Component (tetap sama)
 const StatCard = ({ title, value, icon, gradient }) => {
   const renderIcon = () => {
     const iconClass = "w-8 h-8";
