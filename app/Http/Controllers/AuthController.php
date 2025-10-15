@@ -35,6 +35,10 @@ class AuthController extends Controller
             'message' => 'User berhasil terdaftar',
             'data' => $user
         ]);
+
+        //tes saja 
+    
+
     }
     public function login(Request $request)
     {
