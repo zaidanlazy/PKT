@@ -3,19 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// tesss
 
 class DashboardController extends Controller
 {
     public function index()
     {
         return response()->json([
-            'status' => 'success',
-            'message' => 'Data dashboard berhasil dimuat',
-            'data' => [
-                'total_user' => 120,
-                'total_rapat' => 15
-            ]
+            'total_ruangan' => 5,
+            'total_rapat' => 12,
+            'total_online' => 8,
+            'total_offline' => 4,
         ]);
     }
 }

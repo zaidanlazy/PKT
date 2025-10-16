@@ -1,45 +1,52 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axiosClient from "../api/axiosClient";
-
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [mpk, setMpk] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+
+  const showNotification = (message, type = "error") => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: "", type: "" });
+    }, 5000);
+  };
 
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!mpk || !password) {
-    alert("Isi NPK dan Password terlebih dahulu!");
-    return;
-  }
+    if (!mpk || !password) {
+      showNotification("Isi NPK dan Password terlebih dahulu!", "warning");
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    // Kirim request POST ke Laravel API
-    const response = await axiosClient.post("/login", {
-      mpk,
-      password,
-    });
-
-    // Simpan token di localStorage
-    const token = response.data.token;
-    localStorage.setItem("token", token);
-
-    // Redirect ke dashboard 1 2
-    navigate("/dashboard");
-  } catch (error) {
-    console.error("Login gagal:", error.response?.data || error.message);
-    alert(error.response?.data?.message || "Login gagal! Periksa MPK dan Password.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      const result = await login(mpk, password);
+      
+      if (result.success) {
+        showNotification("Login berhasil! Mengarahkan ke dashboard...", "success");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
+      } else {
+        const errorMessage = result.error?.response?.data?.message || "Login gagal! Periksa NPK dan Password.";
+        showNotification(errorMessage, "error");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      showNotification("Terjadi kesalahan saat login. Silakan coba lagi.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleRegisterRedirect = () => {
     navigate("/register");
@@ -47,6 +54,70 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Notification Container */}
+      <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full">
+        {notification.show && (
+          <div className={`p-4 rounded-2xl shadow-2xl border-l-4 backdrop-blur-md transform transition-all duration-500 ${
+            notification.type === "success" 
+              ? "bg-green-500/20 border-green-400 text-green-100" 
+              : notification.type === "warning"
+              ? "bg-yellow-500/20 border-yellow-400 text-yellow-100"
+              : "bg-red-500/20 border-red-400 text-red-100"
+          }`}>
+            <div className="flex items-start space-x-3">
+              <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                notification.type === "success" 
+                  ? "bg-green-500" 
+                  : notification.type === "warning"
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
+              }`}>
+                {notification.type === "success" ? (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : notification.type === "warning" ? (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{notification.message}</p>
+              </div>
+              <button
+                onClick={() => setNotification({ show: false, message: "", type: "" })}
+                className="flex-shrink-0 text-white/60 hover:text-white transition-colors duration-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {/* Progress Bar */}
+            <div className="mt-2 w-full bg-white/20 rounded-full h-1">
+              <div 
+                className={`h-1 rounded-full transition-all duration-5000 ${
+                  notification.type === "success" 
+                    ? "bg-green-400" 
+                    : notification.type === "warning"
+                    ? "bg-yellow-400"
+                    : "bg-red-400"
+                }`}
+                style={{ 
+                  width: notification.show ? '0%' : '100%',
+                  transition: 'width 5s linear'
+                }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
@@ -141,7 +212,7 @@ export default function Login() {
                       <input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Masukkan password "
+                        placeholder="Masukkan password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm pr-12"
@@ -206,6 +277,7 @@ export default function Login() {
                       Belum memiliki akun?
                     </p>
                     <button
+                      type="button"
                       onClick={handleRegisterRedirect}
                       className="w-full bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl font-semibold border border-white/20 hover:border-white/30 transition-all duration-300 flex items-center justify-center space-x-2 group"
                     >

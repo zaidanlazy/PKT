@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [data, setData] = useState({
     total_ruangan: 0,
@@ -43,9 +45,13 @@ export default function Dashboard() {
   const fetchRapatList = async () => {
     try {
       const res = await axios.get("/rapat");
-      setRapatList(res.data);
+      // Ensure we always have an array, even if API returns different structure
+      const data = res.data?.data || res.data || [];
+      setRapatList(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Gagal memuat data rapat");
+      console.error("Gagal memuat data rapat:", err);
+      // Set empty array on error to prevent map error
+      setRapatList([]);
     }
   };
 
@@ -139,6 +145,11 @@ export default function Dashboard() {
     // Untuk menu master data lainnya bisa ditambahkan fungsinya di sini
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6 relative overflow-hidden">
       {/* Background Elements */}
@@ -181,7 +192,7 @@ export default function Dashboard() {
               <p className="text-blue-200 text-sm">Selamat datang!</p>
             </div>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="bg-red-500/20 hover:bg-red-500/30 text-white px-4 py-2 rounded-xl border border-red-400/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,7 +395,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rapatList.length === 0 ? (
+                  {!rapatList || rapatList.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="text-center py-12">
                         <div className="text-white/60 flex flex-col items-center space-y-3">
@@ -402,7 +413,7 @@ export default function Dashboard() {
                       </td>
                     </tr>
                   ) : (
-                    rapatList.map((rapat, index) => (
+                    (rapatList || []).map((rapat, index) => (
                       <tr 
                         key={rapat.id} 
                         className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"

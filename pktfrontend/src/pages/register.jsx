@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axiosClient from "../api/axiosClient";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     mpk: "",
     nama: "",
-    departemen: "",
     unit_kerja: "",
     no_telp: "",
     email: "",
@@ -33,8 +33,8 @@ export default function Register() {
       return;
     }
 
-    if (!formData.mpk || !formData.nama || !formData.email || !formData.password) {
-      alert("Harap lengkapi data wajib: MPK, Nama, Email, Password!");
+    if (!formData.mpk || !formData.nama || !formData.unit_kerja || !formData.email || !formData.password) {
+      alert("Harap lengkapi data wajib: NPK, Nama, Unit Kerja, Email, Password!");
       return;
     }
 
@@ -43,30 +43,30 @@ export default function Register() {
       const payload = {
         mpk: formData.mpk,
         nama: formData.nama,
-        unit_kerja: formData.departemen || formData.unit_kerja,
+        unit_kerja: formData.unit_kerja,
         no_telp: formData.no_telp,
         email: formData.email,
         password: formData.password,
       };
 
-      const response = await axiosClient.post("/register", payload);
+      const result = await register(payload);
 
-      const token = response.data?.data?.token || response.data?.token;
-      if (token) {
-        localStorage.setItem("token", token);
-      }
-
-      alert("Registrasi berhasil!");
-      navigate("/dashboard");
-    } catch (error) {
-      const apiMessage = error.response?.data?.message;
-      const apiErrors = error.response?.data?.errors;
-      if (apiErrors) {
-        const firstError = Object.values(apiErrors)[0]?.[0];
-        alert(firstError || apiMessage || "Registrasi gagal, periksa data Anda.");
+      if (result.success) {
+        alert("Registrasi berhasil! Anda akan diarahkan ke dashboard.");
+        navigate("/dashboard");
       } else {
-        alert(apiMessage || "Registrasi gagal, periksa koneksi atau data Anda.");
+        const apiMessage = result.error?.response?.data?.message;
+        const apiErrors = result.error?.response?.data?.errors;
+        if (apiErrors) {
+          const firstError = Object.values(apiErrors)[0]?.[0];
+          alert(firstError || apiMessage || "Registrasi gagal, periksa data Anda.");
+        } else {
+          alert(apiMessage || "Registrasi gagal, periksa koneksi atau data Anda.");
+        }
       }
+    } catch (error) {
+      console.error("Register error:", error);
+      alert("Terjadi kesalahan saat registrasi. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -153,14 +153,14 @@ export default function Register() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
                     <label htmlFor="mpk" className="block text-sm font-semibold text-white mb-3">
-                      MPK *
+                      NPK *
                     </label>
                     <div className="relative">
                       <input
                         id="mpk"
                         name="mpk"
                         type="text"
-                        placeholder="Masukkan MPK"
+                        placeholder="Masukkan NPK"
                         value={formData.mpk}
                         onChange={handleChange}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
@@ -175,19 +175,19 @@ export default function Register() {
                   </div>
 
                   <div>
-                    <label htmlFor="departemen" className="block text-sm font-semibold text-white mb-3">
-                      Departemen *
+                    <label htmlFor="unit_kerja" className="block text-sm font-semibold text-white mb-3">
+                      Unit Kerja *
                     </label>
                     <div className="relative">
                       <select
-                        id="departemen"
-                        name="departemen"
-                        value={formData.departemen}
+                        id="unit_kerja"
+                        name="unit_kerja"
+                        value={formData.unit_kerja}
                         onChange={handleChange}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm appearance-none"
                         required
                       >
-                        <option value="" className="bg-slate-800">Pilih Departemen</option>
+                        <option value="" className="bg-slate-800">Pilih Unit kerja</option>
                         <option value="HRD" className="bg-slate-800">HRD</option>
                         <option value="Produksi" className="bg-slate-800">Produksi</option>
                         <option value="Pemasaran" className="bg-slate-800">Pemasaran</option>
@@ -227,25 +227,49 @@ export default function Register() {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-white mb-3">
-                    Email Perusahaan *
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="nama@ptpupukkaltim.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                      required
-                    />
-                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                      <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-semibold text-white mb-3">
+                      Email Perusahaan *
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="nama@ptpupukkaltim.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                        required
+                      />
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="no_telp" className="block text-sm font-semibold text-white mb-3">
+                      No. Telepon
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="no_telp"
+                        name="no_telp"
+                        type="tel"
+                        placeholder="08xxxxxxxxxx"
+                        value={formData.no_telp}
+                        onChange={handleChange}
+                        className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                      />
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
