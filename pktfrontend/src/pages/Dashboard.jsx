@@ -374,17 +374,17 @@ export default function Dashboard() {
       case "data-ruangan":
         return (
           <div className="relative z-10">
-            <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Data Ruangan</h2>
-                    <p className="text-blue-200">Kelola data ruangan meeting</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Data Ruangan</h2>
+                    <p className="text-gray-600">Kelola data ruangan meeting</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => handleOpenRuanganModal("add")}
-                      className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -398,27 +398,27 @@ export default function Dashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-white/20">
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama Ruangan</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Kapasitas</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Lokasi</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Fasilitas</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Status</th>
-                        <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Ruangan</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Kapasitas</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Lokasi</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Fasilitas</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Status</th>
+                        <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {!ruanganList || ruanganList.length === 0 ? (
                         <tr>
                           <td colSpan="6" className="text-center py-8">
-                            <div className="text-white/60 flex flex-col items-center space-y-2">
+                            <div className="text-gray-500 flex flex-col items-center space-y-2">
                               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                               </svg>
                               <p className="text-sm">Belum ada data ruangan</p>
                               <button
                                 onClick={() => handleOpenRuanganModal("add")}
-                                className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                                className="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
                               >
                                 Klik untuk tambah ruangan pertama
                               </button>
@@ -429,22 +429,22 @@ export default function Dashboard() {
                         ruanganList.map((ruangan) => (
                           <tr 
                             key={ruangan.id} 
-                            className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
-                            <td className="px-4 py-3 text-white font-medium text-sm">{ruangan.nama_ruangan}</td>
-                            <td className="px-4 py-3 text-white/90 text-sm">{ruangan.kapasitas} orang</td>
-                            <td className="px-4 py-3 text-white/90 text-sm">{ruangan.lokasi}</td>
-                            <td className="px-4 py-3 text-white/90 text-sm">
+                            <td className="px-4 py-3 text-gray-800 font-medium text-sm">{ruangan.nama_ruangan}</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{ruangan.kapasitas} orang</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{ruangan.lokasi}</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">
                               <div className="max-w-xs truncate" title={ruangan.fasilitas}>
                                 {ruangan.fasilitas}
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                   ruangan.status === "tersedia"
-                                    ? "bg-green-500/20 text-green-300 border-green-400/30"
-                                    : "bg-red-500/20 text-red-300 border-red-400/30"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : "bg-red-100 text-red-800 border-red-200"
                                 }`}
                               >
                                 {ruangan.status === "tersedia" ? "Tersedia" : "Tidak Tersedia"}
@@ -454,7 +454,7 @@ export default function Dashboard() {
                               <div className="flex justify-center space-x-2">
                                 <button
                                   onClick={() => handleOpenRuanganModal("edit", ruangan)}
-                                  className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                  className="text-blue-500 hover:text-blue-600 transition-colors duration-200 p-1.5 hover:bg-blue-50 rounded-lg"
                                   title="Edit"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -463,7 +463,7 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteRuangan(ruangan.id)}
-                                  className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                  className="text-red-500 hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-red-50 rounded-lg"
                                   title="Hapus"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -486,17 +486,17 @@ export default function Dashboard() {
       case "data-peserta":
         return (
           <div className="relative z-10">
-            <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Data User</h2>
-                    <p className="text-blue-200">Kelola data user sistem</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Data User</h2>
+                    <p className="text-gray-600">Kelola data user sistem</p>
                   </div>
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => handleOpenUserModal("add")}
-                      className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -510,27 +510,27 @@ export default function Dashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-white/20">
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Email</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Role</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Unit kerja </th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Status</th>
-                        <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Email</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Role</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Unit kerja </th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Status</th>
+                        <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {!userList || userList.length === 0 ? (
                         <tr>
                           <td colSpan="6" className="text-center py-8">
-                            <div className="text-white/60 flex flex-col items-center space-y-2">
+                            <div className="text-gray-500 flex flex-col items-center space-y-2">
                               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
                               <p className="text-sm">Belum ada data user</p>
                               <button
                                 onClick={() => handleOpenUserModal("add")}
-                                className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                                className="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
                               >
                                 Klik untuk tambah user pertama
                               </button>
@@ -541,28 +541,28 @@ export default function Dashboard() {
                         userList.map((userData) => (
                           <tr 
                             key={userData.id} 
-                            className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
-                            <td className="px-4 py-3 text-white font-medium text-sm">{userData.nama}</td>
-                            <td className="px-4 py-3 text-white/90 text-sm">{userData.email}</td>
+                            <td className="px-4 py-3 text-gray-800 font-medium text-sm">{userData.nama}</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{userData.email}</td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                   userData.role === "admin"
-                                    ? "bg-purple-500/20 text-purple-300 border-purple-400/30"
-                                    : "bg-blue-500/20 text-blue-300 border-blue-400/30"
+                                    ? "bg-purple-100 text-purple-800 border-purple-200"
+                                    : "bg-blue-100 text-blue-800 border-blue-200"
                                 }`}
                               >
                                 {userData.role === "admin" ? "Admin" : "User"}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-white/90 text-sm">{userData.departemen}</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{userData.departemen}</td>
                             <td className="px-4 py-3">
                               <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                   userData.status === "active"
-                                    ? "bg-green-500/20 text-green-300 border-green-400/30"
-                                    : "bg-red-500/20 text-red-300 border-red-400/30"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : "bg-red-100 text-red-800 border-red-200"
                                 }`}
                               >
                                 {userData.status === "active" ? "Active" : "Inactive"}
@@ -572,7 +572,7 @@ export default function Dashboard() {
                               <div className="flex justify-center space-x-2">
                                 <button
                                   onClick={() => handleOpenUserModal("edit", userData)}
-                                  className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                  className="text-blue-500 hover:text-blue-600 transition-colors duration-200 p-1.5 hover:bg-blue-50 rounded-lg"
                                   title="Edit"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -581,7 +581,7 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteUser(userData.id)}
-                                  className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                  className="text-red-500 hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-red-50 rounded-lg"
                                   title="Hapus"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -634,17 +634,17 @@ export default function Dashboard() {
 
             {/* Rapat List Section */}
             <div className="relative z-10">
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+              <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-white mb-2">Daftar Rapat Terkini</h2>
-                      <p className="text-blue-200">Jadwal rapat hari ini dan mendatang</p>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2">Daftar Rapat Terkini</h2>
+                      <p className="text-gray-600">Jadwal rapat hari ini dan mendatang</p>
                     </div>
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => handleOpenModal("add")}
-                        className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -658,26 +658,26 @@ export default function Dashboard() {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b border-white/20">
-                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama Rapat</th>
-                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Jenis</th>
-                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Tanggal</th>
-                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Waktu</th>
-                          <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                        <tr className="border-b border-gray-200">
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
+                          <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
                         {!rapatList || rapatList.length === 0 ? (
                           <tr>
                             <td colSpan="5" className="text-center py-8">
-                              <div className="text-white/60 flex flex-col items-center space-y-2">
+                              <div className="text-gray-500 flex flex-col items-center space-y-2">
                                 <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                                 <p className="text-sm">Belum ada data rapat</p>
                                 <button
                                   onClick={() => handleOpenModal("add")}
-                                  className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                                  className="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
                                 >
                                   Klik untuk tambah rapat pertama
                                 </button>
@@ -688,24 +688,24 @@ export default function Dashboard() {
                           rapatList.map((rapat) => (
                             <tr 
                               key={rapat.id} 
-                              className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                              className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                             >
-                              <td className="px-4 py-3 text-white font-medium text-sm">{rapat.nama_rapat}</td>
+                              <td className="px-4 py-3 text-gray-800 font-medium text-sm">{rapat.nama_rapat}</td>
                               <td className="px-4 py-3">
                                 <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                  className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                     rapat.jenis === "online"
-                                      ? "bg-blue-500/20 text-blue-300 border-blue-400/30"
-                                      : "bg-green-500/20 text-green-300 border-green-400/30"
+                                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                                      : "bg-green-100 text-green-800 border-green-200"
                                   }`}
                                 >
                                   {rapat.jenis === "online" ? "Online" : "Offline"}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-white/90 text-sm">{rapat.tanggal}</td>
-                              <td className="px-4 py-3 text-white/90 text-sm">
+                              <td className="px-4 py-3 text-gray-600 text-sm">{rapat.tanggal}</td>
+                              <td className="px-4 py-3 text-gray-600 text-sm">
                                 <div className="flex items-center space-x-1">
-                                  <svg className="w-3 h-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                   <span>{rapat.waktu_mulai} - {rapat.waktu_selesai}</span>
@@ -715,7 +715,7 @@ export default function Dashboard() {
                                 <div className="flex justify-center space-x-2">
                                   <button
                                     onClick={() => handleOpenModal("edit", rapat)}
-                                    className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200 p-1.5 hover:bg-blue-50 rounded-lg"
                                     title="Edit"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -724,7 +724,7 @@ export default function Dashboard() {
                                   </button>
                                   <button
                                     onClick={() => handleDelete(rapat.id)}
-                                    className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                    className="text-red-500 hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-red-50 rounded-lg"
                                     title="Hapus"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -748,18 +748,18 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6 relative overflow-hidden">
-      {/* Background Elements */}
+    <div className="min-h-screen bg-white p-6 relative overflow-hidden">
+      {/* Background Elements - Diubah menjadi lebih subtle */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full blur-3xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-10 animate-pulse delay-500"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-50 rounded-full blur-3xl opacity-30"></div>
       </div>
 
       <div className="flex gap-6">
         {/* Sidebar dengan auto-hover */}
         <div 
-          className={`bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
+          className={`bg-white backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
             sidebarOpen ? 'w-64' : 'w-20'
           }`}
           onMouseEnter={handleSidebarMouseEnter}
@@ -768,7 +768,7 @@ export default function Dashboard() {
           <div className="p-4 h-full flex flex-col">
             {/* Sidebar Header */}
             <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-white rounded-full p-2 shadow-2xl flex-shrink-0">
+              <div className="bg-white rounded-full p-2 shadow-lg flex-shrink-0">
                 <img 
                   src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
                   alt="Pupuk Kaltim Logo" 
@@ -777,14 +777,14 @@ export default function Dashboard() {
               </div>
               {sidebarOpen && (
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-white truncate">Menu Utama</h2>
-                  <p className="text-blue-200 text-xs truncate">Sistem Reservasi</p>
+                  <h2 className="text-lg font-bold text-gray-800 truncate">Menu Utama</h2>
+                  <p className="text-gray-600 text-xs truncate">Sistem Reservasi</p>
                 </div>
               )}
               {/* Tombol toggle untuk mobile */}
               <button
                 onClick={toggleSidebar}
-                className="text-white/60 hover:text-white transition-colors duration-200 p-1.5 hover:bg-white/10 rounded-lg flex-shrink-0 md:hidden"
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0 md:hidden"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
@@ -800,11 +800,11 @@ export default function Dashboard() {
                   onClick={() => handleMenuClick("tambah-rapat")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                     activeMenu === "tambah-rapat" 
-                      ? "bg-blue-500/20 text-blue-300 border border-blue-400/30" 
-                      : "text-white/70 hover:text-white hover:bg-white/10"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200" 
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 >
-                  <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
@@ -812,7 +812,7 @@ export default function Dashboard() {
                   {sidebarOpen && (
                     <div className="text-left flex-1 min-w-0">
                       <p className="font-semibold text-sm truncate">Tambah Rapat</p>
-                      <p className="text-xs opacity-70 truncate">Buat jadwal rapat baru</p>
+                      <p className="text-xs text-gray-500 truncate">Buat jadwal rapat baru</p>
                     </div>
                   )}
                 </button>
@@ -821,18 +821,18 @@ export default function Dashboard() {
                 {user?.role === 'admin' && (
                   <div className="pt-4">
                   {sidebarOpen && (
-                    <h3 className="text-white/50 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
+                    <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
                   )}
                   
                   <button
                     onClick={() => handleMenuClick("data-ruangan")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                       activeMenu === "data-ruangan" 
-                        ? "bg-green-500/20 text-green-300 border border-green-400/30" 
-                        : "text-white/70 hover:text-white hover:bg-white/10"
+                        ? "bg-green-50 text-green-600 border border-green-200" 
+                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="p-2 bg-green-500/20 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
@@ -840,7 +840,7 @@ export default function Dashboard() {
                     {sidebarOpen && (
                       <div className="text-left flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">Data Ruangan</p>
-                        <p className="text-xs opacity-70 truncate">Kelola data ruangan</p>
+                        <p className="text-xs text-gray-500 truncate">Kelola data ruangan</p>
                       </div>
                     )}
                   </button>
@@ -849,11 +849,11 @@ export default function Dashboard() {
                     onClick={() => handleMenuClick("data-peserta")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                       activeMenu === "data-peserta" 
-                        ? "bg-purple-500/20 text-purple-300 border border-purple-400/30" 
-                        : "text-white/70 hover:text-white hover:bg-white/10"
+                        ? "bg-purple-50 text-purple-600 border border-purple-200" 
+                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="p-2 bg-purple-500/20 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -861,7 +861,7 @@ export default function Dashboard() {
                     {sidebarOpen && (
                       <div className="text-left flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">Data User</p>
-                        <p className="text-xs opacity-70 truncate">Kelola data user</p>
+                        <p className="text-xs text-gray-500 truncate">Kelola data user</p>
                       </div>
                     )}
                   </button>
@@ -870,11 +870,11 @@ export default function Dashboard() {
                     onClick={() => handleMenuClick("pengaturan")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                       activeMenu === "pengaturan" 
-                        ? "bg-gray-500/20 text-gray-300 border border-gray-400/30" 
-                        : "text-white/70 hover:text-white hover:bg-white/10"
+                        ? "bg-gray-50 text-gray-600 border border-gray-200" 
+                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="p-2 bg-gray-500/20 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-gray-100 rounded-lg flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -883,7 +883,7 @@ export default function Dashboard() {
                     {sidebarOpen && (
                       <div className="text-left flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">Pengaturan</p>
-                        <p className="text-xs opacity-70 truncate">Pengaturan sistem</p>
+                        <p className="text-xs text-gray-500 truncate">Pengaturan sistem</p>
                       </div>
                     )}
                   </button>
@@ -893,21 +893,21 @@ export default function Dashboard() {
             </nav>
 
             {/* User Info & Logout */}
-            <div className="pt-6 border-t border-white/20">
+            <div className="pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 {sidebarOpen ? (
                   <>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">
+                      <p className="text-gray-800 font-semibold text-sm truncate">
                         {user?.nama || user?.mpk || user?.email || "User"}
                       </p>
-                      <p className="text-blue-200 text-xs truncate">
+                      <p className="text-gray-600 text-xs truncate">
                         {user?.role ? `Role: ${user.role}` : "Selamat datang!"}
                       </p>
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="text-red-300 hover:text-red-200 transition-colors duration-200 p-2 hover:bg-red-500/20 rounded-lg flex-shrink-0"
+                      className="text-red-500 hover:text-red-600 transition-colors duration-200 p-2 hover:bg-red-50 rounded-lg flex-shrink-0"
                       title="Logout"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -919,7 +919,7 @@ export default function Dashboard() {
                   <div className="w-full flex justify-center">
                     <button
                       onClick={handleLogout}
-                      className="text-red-300 hover:text-red-200 transition-colors duration-200 p-2 hover:bg-red-500/20 rounded-lg"
+                      className="text-red-500 hover:text-red-600 transition-colors duration-200 p-2 hover:bg-red-50 rounded-lg"
                       title="Logout"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -931,10 +931,10 @@ export default function Dashboard() {
               </div>
               {sidebarOpen && (
                 <div className="text-center">
-                  <p className="text-white/40 text-xs">
+                  <p className="text-gray-400 text-xs">
                     © 2025 Pupuk Kaltim
                   </p>
-                  <p className="text-white/30 text-xs mt-1">
+                  <p className="text-gray-400 text-xs mt-1">
                     Sistem Reservasi
                   </p>
                 </div>
@@ -949,13 +949,13 @@ export default function Dashboard() {
           <div className="relative z-10 mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white">Dashboard </h1>
-                <p className="text-blue-200">Sistem Manajemen Rapat Pupuk Kaltim</p>
+                <h1 className="text-3xl font-bold text-gray-800">Dashboard </h1>
+                <p className="text-gray-600">Sistem Manajemen Rapat Pupuk Kaltim</p>
               </div>
               {/* Tombol toggle sidebar untuk mobile */}
               <button
                 onClick={toggleSidebar}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2 md:hidden"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2 md:hidden"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -973,15 +973,15 @@ export default function Dashboard() {
       {/* Modal Tambah/Edit Rapat */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah Rapat" : "Edit Rapat"}
                 </h3>
                 <button 
                   onClick={handleCloseModal}
-                  className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -991,20 +991,20 @@ export default function Dashboard() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Masukan link</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Masukan link</label>
                   <input
                     type="text"
                     name="nama_rapat"
                     value={formData.nama_rapat}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan link rapat"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Jenis Rapat</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Jenis Rapat</label>
                   <div className="flex gap-4">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1013,9 +1013,9 @@ export default function Dashboard() {
                         value="online"
                         checked={formData.jenis === "online"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Online</span>
+                      <span className="text-gray-800 text-sm">Online</span>
                     </label>
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1024,45 +1024,45 @@ export default function Dashboard() {
                         value="offline"
                         checked={formData.jenis === "offline"}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Offline</span>
+                      <span className="text-gray-800 text-sm">Offline</span>
                     </label>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Tanggal</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Tanggal</label>
                   <input
                     type="date"
                     name="tanggal"
                     value={formData.tanggal}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-white font-semibold mb-2 text-sm">Waktu Mulai</label>
+                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Waktu Mulai</label>
                     <input
                       type="time"
                       name="waktu_mulai"
                       value={formData.waktu_mulai}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-white font-semibold mb-2 text-sm">Waktu Selesai</label>
+                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Waktu Selesai</label>
                     <input
                       type="time"
                       name="waktu_selesai"
                       value={formData.waktu_selesai}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                       required
                     />
                   </div>
@@ -1070,12 +1070,12 @@ export default function Dashboard() {
 
                 {formData.jenis === "offline" && (
                   <div>
-                    <label className="block text-white font-semibold mb-2 text-sm">Ruangan</label>
+                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Ruangan</label>
                     <select
                       name="ruangan_id"
                       value={formData.ruangan_id}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     >
                       <option value="">Pilih Ruangan</option>
                       {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
@@ -1091,7 +1091,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
                   >
                     Batal
                   </button>
@@ -1111,15 +1111,15 @@ export default function Dashboard() {
       {/* Modal Tambah/Edit Ruangan */}
       {showRuanganModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah Ruangan" : "Edit Ruangan"}
                 </h3>
                 <button 
                   onClick={handleCloseRuanganModal}
-                  className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1129,51 +1129,51 @@ export default function Dashboard() {
 
               <form onSubmit={handleRuanganSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Nama Ruangan</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama Ruangan</label>
                   <input
                     type="text"
                     name="nama_ruangan"
                     value={ruanganForm.nama_ruangan}
                     onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan nama ruangan"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Kapasitas</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Kapasitas</label>
                   <input
                     type="number"
                     name="kapasitas"
                     value={ruanganForm.kapasitas}
                     onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan kapasitas ruangan"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Lokasi</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Lokasi</label>
                   <input
                     type="text"
                     name="lokasi"
                     value={ruanganForm.lokasi}
                     onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan lokasi ruangan"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Fasilitas</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Fasilitas</label>
                   <textarea
                     name="fasilitas"
                     value={ruanganForm.fasilitas}
                     onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
                     placeholder="Masukkan fasilitas ruangan (AC, Proyektor, Whiteboard, dll)"
                     rows="3"
                     required
@@ -1181,7 +1181,7 @@ export default function Dashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Status</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Status</label>
                   <div className="flex gap-4">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1190,9 +1190,9 @@ export default function Dashboard() {
                         value="tersedia"
                         checked={ruanganForm.status === "tersedia"}
                         onChange={handleRuanganInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Tersedia</span>
+                      <span className="text-gray-800 text-sm">Tersedia</span>
                     </label>
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1201,9 +1201,9 @@ export default function Dashboard() {
                         value="tidak_tersedia"
                         checked={ruanganForm.status === "tidak_tersedia"}
                         onChange={handleRuanganInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Tidak Tersedia</span>
+                      <span className="text-gray-800 text-sm">Tidak Tersedia</span>
                     </label>
                   </div>
                 </div>
@@ -1212,7 +1212,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={handleCloseRuanganModal}
-                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
                   >
                     Batal
                   </button>
@@ -1232,15 +1232,15 @@ export default function Dashboard() {
       {/* Modal Tambah/Edit User */}
       {showUserModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-white">
+                <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah User" : "Edit User"}
                 </h3>
                 <button 
                   onClick={handleCloseUserModal}
-                  className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1250,38 +1250,38 @@ export default function Dashboard() {
 
               <form onSubmit={handleUserSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Nama</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama</label>
                   <input
                     type="text"
                     name="nama"
                     value={userForm.nama}
                     onChange={handleUserInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan nama user"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Email</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={userForm.email}
                     onChange={handleUserInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan email user"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Role</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Role</label>
                   <select
                     name="role"
                     value={userForm.role}
                     onChange={handleUserInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -1289,20 +1289,20 @@ export default function Dashboard() {
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Departemen</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Departemen</label>
                   <input
                     type="text"
                     name="departemen"
                     value={userForm.departemen}
                     onChange={handleUserInputChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan departemen"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Status</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Status</label>
                   <div className="flex gap-4">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1311,9 +1311,9 @@ export default function Dashboard() {
                         value="active"
                         checked={userForm.status === "active"}
                         onChange={handleUserInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Active</span>
+                      <span className="text-gray-800 text-sm">Active</span>
                     </label>
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -1322,9 +1322,9 @@ export default function Dashboard() {
                         value="inactive"
                         checked={userForm.status === "inactive"}
                         onChange={handleUserInputChange}
-                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
                       />
-                      <span className="text-white text-sm">Inactive</span>
+                      <span className="text-gray-800 text-sm">Inactive</span>
                     </label>
                   </div>
                 </div>
@@ -1333,7 +1333,7 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={handleCloseUserModal}
-                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
                   >
                     Batal
                   </button>
@@ -1353,7 +1353,7 @@ export default function Dashboard() {
   );
 }
 
-// StatCard Component (tetap sama)
+// StatCard Component (diperbarui untuk background putih)
 const StatCard = ({ title, value, icon, gradient }) => {
   const renderIcon = () => {
     const iconClass = "w-6 h-6";
@@ -1388,11 +1388,11 @@ const StatCard = ({ title, value, icon, gradient }) => {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 p-4 hover:transform hover:scale-105 transition-all duration-300 group">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 hover:transform hover:scale-105 transition-all duration-300 group shadow-lg">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-white/70 text-xs font-medium mb-1">{title}</p>
-          <h3 className="text-2xl font-bold text-white">{value}</h3>
+          <p className="text-gray-600 text-xs font-medium mb-1">{title}</p>
+          <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
         </div>
         <div className={`p-2 rounded-lg bg-gradient-to-r ${gradient} text-white group-hover:scale-110 transition-transform duration-300`}>
           {renderIcon()}
