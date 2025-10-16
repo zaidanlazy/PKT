@@ -14,23 +14,47 @@ export default function Dashboard() {
   });
   
   const [rapatList, setRapatList] = useState([]);
+  const [ruanganList, setRuanganList] = useState([]);
+  const [userList, setUserList] = useState([]); // Data user terpisah
   const [showModal, setShowModal] = useState(false);
+  const [showRuanganModal, setShowRuanganModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false); // Modal untuk user
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedRuangan, setSelectedRuangan] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null); // Selected user
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState("");
   const [formData, setFormData] = useState({
     nama_rapat: "",
-    jenis: "offline ",
+    jenis: "offline",
     tanggal: "",
     waktu_mulai: "",
     waktu_selesai: "",
     ruangan_id: "",
   });
+  const [ruanganForm, setRuanganForm] = useState({
+    nama_ruangan: "",
+    kapasitas: "",
+    lokasi: "",
+    fasilitas: "",
+    status: "tersedia"
+  });
+  
+  // Form data untuk user
+  const [userForm, setUserForm] = useState({
+    nama: "",
+    email: "",
+    role: "user",
+    departemen: "",
+    status: "active"
+  });
 
   useEffect(() => {
     fetchDashboardData();
     fetchRapatList();
+    fetchRuanganList();
+    fetchUserList(); // Fetch data user
   }, []);
 
   const fetchDashboardData = async () => {
@@ -45,13 +69,34 @@ export default function Dashboard() {
   const fetchRapatList = async () => {
     try {
       const res = await axios.get("/rapat");
-      // Ensure we always have an array, even if API returns different structure
       const data = res.data?.data || res.data || [];
       setRapatList(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Gagal memuat data rapat:", err);
-      // Set empty array on error to prevent map error
       setRapatList([]);
+    }
+  };
+
+  const fetchRuanganList = async () => {
+    try {
+      const res = await axios.get("/ruangan");
+      const data = res.data?.data || res.data || [];
+      setRuanganList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Gagal memuat data ruangan:", err);
+      setRuanganList([]);
+    }
+  };
+
+  // Fetch data user terpisah
+  const fetchUserList = async () => {
+    try {
+      const res = await axios.get("/users");
+      const data = res.data?.data || res.data || [];
+      setUserList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Gagal memuat data user:", err);
+      setUserList([]);
     }
   };
 
@@ -80,6 +125,53 @@ export default function Dashboard() {
     setShowModal(true);
   };
 
+  const handleOpenRuanganModal = (mode, ruangan = null) => {
+    setModalMode(mode);
+    if (mode === "edit" && ruangan) {
+      setSelectedRuangan(ruangan);
+      setRuanganForm({
+        nama_ruangan: ruangan.nama_ruangan,
+        kapasitas: ruangan.kapasitas,
+        lokasi: ruangan.lokasi,
+        fasilitas: ruangan.fasilitas,
+        status: ruangan.status
+      });
+    } else {
+      setRuanganForm({
+        nama_ruangan: "",
+        kapasitas: "",
+        lokasi: "",
+        fasilitas: "",
+        status: "tersedia"
+      });
+    }
+    setShowRuanganModal(true);
+  };
+
+  // Handler untuk modal user
+  const handleOpenUserModal = (mode, userData = null) => {
+    setModalMode(mode);
+    if (mode === "edit" && userData) {
+      setSelectedUser(userData);
+      setUserForm({
+        nama: userData.nama || "",
+        email: userData.email || "",
+        role: userData.role || "user",
+        departemen: userData.departemen || "",
+        status: userData.status || "active"
+      });
+    } else {
+      setUserForm({
+        nama: "",
+        email: "",
+        role: "user",
+        departemen: "",
+        status: "active"
+      });
+    }
+    setShowUserModal(true);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedRapat(null);
@@ -93,9 +185,49 @@ export default function Dashboard() {
     });
   };
 
+  const handleCloseRuanganModal = () => {
+    setShowRuanganModal(false);
+    setSelectedRuangan(null);
+    setRuanganForm({
+      nama_ruangan: "",
+      kapasitas: "",
+      lokasi: "",
+      fasilitas: "",
+      status: "tersedia"
+    });
+  };
+
+  // Handler untuk menutup modal user
+  const handleCloseUserModal = () => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+    setUserForm({
+      nama: "",
+      email: "",
+      role: "user",
+      departemen: "",
+      status: "active"
+    });
+  };
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleRuanganInputChange = (e) => {
+    setRuanganForm({
+      ...ruanganForm,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handler untuk input user
+  const handleUserInputChange = (e) => {
+    setUserForm({
+      ...userForm,
       [e.target.name]: e.target.value,
     });
   };
@@ -119,6 +251,44 @@ export default function Dashboard() {
     }
   };
 
+  const handleRuanganSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (modalMode === "add") {
+        await axios.post("/ruangan", ruanganForm);
+        alert("Ruangan berhasil ditambahkan");
+      } else {
+        await axios.put(`/ruangan/${selectedRuangan.id}`, ruanganForm);
+        alert("Ruangan berhasil diupdate");
+      }
+      handleCloseRuanganModal();
+      fetchDashboardData();
+      fetchRuanganList();
+    } catch (err) {
+      alert("Gagal menyimpan data ruangan");
+      console.error(err);
+    }
+  };
+
+  // Handler untuk submit user
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (modalMode === "add") {
+        await axios.post("/users", userForm);
+        alert("User berhasil ditambahkan");
+      } else {
+        await axios.put(`/users/${selectedUser.id}`, userForm);
+        alert("User berhasil diupdate");
+      }
+      handleCloseUserModal();
+      fetchUserList();
+    } catch (err) {
+      alert("Gagal menyimpan data user");
+      console.error(err);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (window.confirm("Yakin ingin menghapus rapat ini?")) {
       try {
@@ -133,8 +303,32 @@ export default function Dashboard() {
     }
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+  const handleDeleteRuangan = async (id) => {
+    if (window.confirm("Yakin ingin menghapus ruangan ini?")) {
+      try {
+        await axios.delete(`/ruangan/${id}`);
+        alert("Ruangan berhasil dihapus");
+        fetchDashboardData();
+        fetchRuanganList();
+      } catch (err) {
+        alert("Gagal menghapus ruangan");
+        console.error(err);
+      }
+    }
+  };
+
+  // Handler untuk delete user
+  const handleDeleteUser = async (id) => {
+    if (window.confirm("Yakin ingin menghapus user ini?")) {
+      try {
+        await axios.delete(`/users/${id}`);
+        alert("User berhasil dihapus");
+        fetchUserList();
+      } catch (err) {
+        alert("Gagal menghapus user");
+        console.error(err);
+      }
+    }
   };
 
   const handleMenuClick = (menu) => {
@@ -142,12 +336,395 @@ export default function Dashboard() {
     if (menu === "tambah-rapat") {
       handleOpenModal("add");
     }
-    // Untuk menu master data lainnya bisa ditambahkan fungsinya di sini
+    // Untuk menu lainnya, cukup set active menu saja
   };
 
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Render konten berdasarkan menu aktif
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "data-ruangan":
+        return (
+          <div className="relative z-10">
+            <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Data Ruangan</h2>
+                    <p className="text-blue-200">Kelola data ruangan meeting</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleOpenRuanganModal("add")}
+                      className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Tambah Ruangan</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table Ruangan */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/20">
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama Ruangan</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Kapasitas</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Lokasi</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Fasilitas</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Status</th>
+                        <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!ruanganList || ruanganList.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="text-center py-8">
+                            <div className="text-white/60 flex flex-col items-center space-y-2">
+                              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                              </svg>
+                              <p className="text-sm">Belum ada data ruangan</p>
+                              <button
+                                onClick={() => handleOpenRuanganModal("add")}
+                                className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                              >
+                                Klik untuk tambah ruangan pertama
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        ruanganList.map((ruangan) => (
+                          <tr 
+                            key={ruangan.id} 
+                            className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                          >
+                            <td className="px-4 py-3 text-white font-medium text-sm">{ruangan.nama_ruangan}</td>
+                            <td className="px-4 py-3 text-white/90 text-sm">{ruangan.kapasitas} orang</td>
+                            <td className="px-4 py-3 text-white/90 text-sm">{ruangan.lokasi}</td>
+                            <td className="px-4 py-3 text-white/90 text-sm">
+                              <div className="max-w-xs truncate" title={ruangan.fasilitas}>
+                                {ruangan.fasilitas}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                  ruangan.status === "tersedia"
+                                    ? "bg-green-500/20 text-green-300 border-green-400/30"
+                                    : "bg-red-500/20 text-red-300 border-red-400/30"
+                                }`}
+                              >
+                                {ruangan.status === "tersedia" ? "Tersedia" : "Tidak Tersedia"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-center space-x-2">
+                                <button
+                                  onClick={() => handleOpenRuanganModal("edit", ruangan)}
+                                  className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                  title="Edit"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteRuangan(ruangan.id)}
+                                  className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                  title="Hapus"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "data-peserta":
+        return (
+          <div className="relative z-10">
+            <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Data User</h2>
+                    <p className="text-blue-200">Kelola data user sistem</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleOpenUserModal("add")}
+                      className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Tambah User</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Table User */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/20">
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Email</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Role</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Departemen</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Status</th>
+                        <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!userList || userList.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="text-center py-8">
+                            <div className="text-white/60 flex flex-col items-center space-y-2">
+                              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <p className="text-sm">Belum ada data user</p>
+                              <button
+                                onClick={() => handleOpenUserModal("add")}
+                                className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                              >
+                                Klik untuk tambah user pertama
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        userList.map((userData) => (
+                          <tr 
+                            key={userData.id} 
+                            className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                          >
+                            <td className="px-4 py-3 text-white font-medium text-sm">{userData.nama}</td>
+                            <td className="px-4 py-3 text-white/90 text-sm">{userData.email}</td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                  userData.role === "admin"
+                                    ? "bg-purple-500/20 text-purple-300 border-purple-400/30"
+                                    : "bg-blue-500/20 text-blue-300 border-blue-400/30"
+                                }`}
+                              >
+                                {userData.role === "admin" ? "Admin" : "User"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-white/90 text-sm">{userData.departemen}</td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                  userData.status === "active"
+                                    ? "bg-green-500/20 text-green-300 border-green-400/30"
+                                    : "bg-red-500/20 text-red-300 border-red-400/30"
+                                }`}
+                              >
+                                {userData.status === "active" ? "Active" : "Inactive"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-center space-x-2">
+                                <button
+                                  onClick={() => handleOpenUserModal("edit", userData)}
+                                  className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                  title="Edit"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(userData.id)}
+                                  className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                  title="Hapus"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 relative z-10">
+              <StatCard 
+                title="Total Ruangan" 
+                value={data.total_ruangan} 
+                icon="building"
+                gradient="from-blue-500 to-cyan-500"
+              />
+              <StatCard 
+                title="Total Rapat" 
+                value={data.total_rapat} 
+                icon="calendar"
+                gradient="from-purple-500 to-pink-500"
+              />
+              <StatCard 
+                title="Rapat Online" 
+                value={data.total_online} 
+                icon="video"
+                gradient="from-green-500 to-emerald-500"
+              />
+              <StatCard 
+                title="Rapat Offline" 
+                value={data.total_offline} 
+                icon="users"
+                gradient="from-orange-500 to-red-500"
+              />
+            </div>
+
+            {/* Rapat List Section */}
+            <div className="relative z-10">
+              <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-2">Daftar Rapat Terkini</h2>
+                      <p className="text-blue-200">Jadwal rapat hari ini dan mendatang</p>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => handleOpenModal("add")}
+                        className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Tambah Rapat</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Table Rapat */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/20">
+                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Jenis</th>
+                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Tanggal</th>
+                          <th className="px-4 py-3 text-left text-white font-semibold text-sm">Waktu</th>
+                          <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!rapatList || rapatList.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-8">
+                              <div className="text-white/60 flex flex-col items-center space-y-2">
+                                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <p className="text-sm">Belum ada data rapat</p>
+                                <button
+                                  onClick={() => handleOpenModal("add")}
+                                  className="text-blue-300 hover:text-blue-200 font-medium text-sm transition-colors duration-200"
+                                >
+                                  Klik untuk tambah rapat pertama
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          rapatList.map((rapat) => (
+                            <tr 
+                              key={rapat.id} 
+                              className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
+                            >
+                              <td className="px-4 py-3 text-white font-medium text-sm">{rapat.nama_rapat}</td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm border ${
+                                    rapat.jenis === "online"
+                                      ? "bg-blue-500/20 text-blue-300 border-blue-400/30"
+                                      : "bg-green-500/20 text-green-300 border-green-400/30"
+                                  }`}
+                                >
+                                  {rapat.jenis === "online" ? "Online" : "Offline"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-white/90 text-sm">{rapat.tanggal}</td>
+                              <td className="px-4 py-3 text-white/90 text-sm">
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-3 h-3 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>{rapat.waktu_mulai} - {rapat.waktu_selesai}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center space-x-2">
+                                  <button
+                                    onClick={() => handleOpenModal("edit", rapat)}
+                                    className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-1.5 hover:bg-blue-500/20 rounded-lg"
+                                    title="Edit"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(rapat.id)}
+                                    className="text-red-300 hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-red-500/20 rounded-lg"
+                                    title="Hapus"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+    }
   };
 
   return (
@@ -159,315 +736,211 @@ export default function Dashboard() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full blur-3xl opacity-10 animate-pulse delay-500"></div>
       </div>
 
-      {/* Header */}
-      <div className="relative z-10 mb-8">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white rounded-full p-2 shadow-2xl">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
-                alt="Pupuk Kaltim Logo" 
-                className="h-10 w-10 object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Dashboard Reservasi</h1>
-              <p className="text-blue-200">Sistem Manajemen Rapat Pupuk Kaltim</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={toggleSidebar}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <span>Menu</span>
-            </button>
-            
-            <div className="text-right">
-              <p className="text-white font-semibold">{user?.nama || user?.mpk || "User"}</p>
-              <p className="text-blue-200 text-sm">Selamat datang!</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500/20 hover:bg-red-500/30 text-white px-4 py-2 rounded-xl border border-red-400/30 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-slate-800/90 backdrop-blur-md border-l border-white/20 shadow-2xl transform transition-transform duration-300 z-40 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-6 h-full flex flex-col">
-          {/* Sidebar Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-white">Menu Utama</h2>
-            <button
-              onClick={toggleSidebar}
-              className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="flex-1">
-            <div className="space-y-2">
-              {/* Tambah Rapat Menu */}
+      <div className="flex gap-6">
+        {/* Sidebar */}
+        <div className={`bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
+          sidebarOpen ? 'w-64' : 'w-20'
+        }`}>
+          <div className="p-4 h-full flex flex-col">
+            {/* Sidebar Header */}
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-white rounded-full p-2 shadow-2xl flex-shrink-0">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
+                  alt="Pupuk Kaltim Logo" 
+                  className="h-8 w-8 object-contain"
+                />
+              </div>
+              {sidebarOpen && (
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-bold text-white truncate">Menu Utama</h2>
+                  <p className="text-blue-200 text-xs truncate">Sistem Reservasi</p>
+                </div>
+              )}
               <button
-                onClick={() => handleMenuClick("tambah-rapat")}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                  activeMenu === "tambah-rapat" 
-                    ? "bg-blue-500/20 text-blue-300 border border-blue-400/30" 
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
+                onClick={toggleSidebar}
+                className="text-white/60 hover:text-white transition-colors duration-200 p-1.5 hover:bg-white/10 rounded-lg flex-shrink-0"
               >
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold">Tambah Rapat</p>
-                  <p className="text-sm opacity-70">Buat jadwal rapat baru</p>
-                </div>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
+                </svg>
               </button>
-
-              {/* Master Data Section */}
-              <div className="pt-4">
-                <h3 className="text-white/50 text-sm font-semibold uppercase tracking-wider px-4 mb-3">Master Data</h3>
-                
-                <button
-                  onClick={() => handleMenuClick("data-ruangan")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "data-ruangan" 
-                      ? "bg-green-500/20 text-green-300 border border-green-400/30" 
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold"> Ruangan</p>
-                    <p className="text-sm opacity-70">Tambah ruangan</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleMenuClick("data-peserta")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "data-peserta" 
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-400/30" 
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold">Data User</p>
-                    <p className="text-sm opacity-70">Kelola data User</p>
-                  </div>
-                </button>
-
-                
-
-                <button
-                  onClick={() => handleMenuClick("pengaturan")}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "pengaturan" 
-                      ? "bg-gray-500/20 text-gray-300 border border-gray-400/30" 
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
-                >
-                  <div className="p-2 bg-gray-500/20 rounded-lg">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold">Pengaturan</p>
-                    <p className="text-sm opacity-70">Pengaturan sistem</p>
-                  </div>
-                </button>
-              </div>
             </div>
-          </nav>
 
-          {/* Sidebar Footer */}
-          <div className="pt-6 border-t border-white/20">
-            <div className="text-center">
-              <p className="text-white/40 text-sm">
-                © 2025 Pupuk Kaltim
-              </p>
-              <p className="text-white/30 text-xs mt-1">
-                Sistem Reservasi Fasilitas
-              </p>
+            {/* Navigation Menu */}
+            <nav className="flex-1">
+              <div className="space-y-2">
+                {/* Tambah Rapat Menu */}
+                <button
+                  onClick={() => handleMenuClick("tambah-rapat")}
+                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "tambah-rapat" 
+                      ? "bg-blue-500/20 text-blue-300 border border-blue-400/30" 
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div className="p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  {sidebarOpen && (
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">Tambah Rapat</p>
+                      <p className="text-xs opacity-70 truncate">Buat jadwal rapat baru</p>
+                    </div>
+                  )}
+                </button>
+
+                {/* Master Data Section */}
+                <div className="pt-4">
+                  {sidebarOpen && (
+                    <h3 className="text-white/50 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
+                  )}
+                  
+                  <button
+                    onClick={() => handleMenuClick("data-ruangan")}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                      activeMenu === "data-ruangan" 
+                        ? "bg-green-500/20 text-green-300 border border-green-400/30" 
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="p-2 bg-green-500/20 rounded-lg flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    {sidebarOpen && (
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">Data Ruangan</p>
+                        <p className="text-xs opacity-70 truncate">Kelola data ruangan</p>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleMenuClick("data-peserta")}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                      activeMenu === "data-peserta" 
+                        ? "bg-purple-500/20 text-purple-300 border border-purple-400/30" 
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="p-2 bg-purple-500/20 rounded-lg flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    {sidebarOpen && (
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">Data User</p>
+                        <p className="text-xs opacity-70 truncate">Kelola data user</p>
+                      </div>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleMenuClick("pengaturan")}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                      activeMenu === "pengaturan" 
+                        ? "bg-gray-500/20 text-gray-300 border border-gray-400/30" 
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="p-2 bg-gray-500/20 rounded-lg flex-shrink-0">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    {sidebarOpen && (
+                      <div className="text-left flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">Pengaturan</p>
+                        <p className="text-xs opacity-70 truncate">Pengaturan sistem</p>
+                      </div>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </nav>
+
+            {/* User Info & Logout */}
+            <div className="pt-6 border-t border-white/20">
+              <div className="flex items-center justify-between mb-4">
+                {sidebarOpen ? (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm truncate">
+                        {user?.nama || user?.mpk || user?.email || "User"}
+                      </p>
+                      <p className="text-blue-200 text-xs truncate">
+                        {user?.role ? `Role: ${user.role}` : "Selamat datang!"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="text-red-300 hover:text-red-200 transition-colors duration-200 p-2 hover:bg-red-500/20 rounded-lg flex-shrink-0"
+                      title="Logout"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <div className="w-full flex justify-center">
+                    <button
+                      onClick={handleLogout}
+                      className="text-red-300 hover:text-red-200 transition-colors duration-200 p-2 hover:bg-red-500/20 rounded-lg"
+                      title="Logout"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+              {sidebarOpen && (
+                <div className="text-center">
+                  <p className="text-white/40 text-xs">
+                    © 2025 Pupuk Kaltim
+                  </p>
+                  <p className="text-white/30 text-xs mt-1">
+                    Sistem Reservasi
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
-          onClick={toggleSidebar}
-        />
-      )}
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative z-10">
-        <StatCard 
-          title="Total Ruangan" 
-          value={data.total_ruangan} 
-          icon="building"
-          gradient="from-blue-500 to-cyan-500"
-        />
-        <StatCard 
-          title="Total Rapat" 
-          value={data.total_rapat} 
-          icon="calendar"
-          gradient="from-purple-500 to-pink-500"
-        />
-        <StatCard 
-          title="Rapat Online" 
-          value={data.total_online} 
-          icon="video"
-          gradient="from-green-500 to-emerald-500"
-        />
-        <StatCard 
-          title="Rapat Offline" 
-          value={data.total_offline} 
-          icon="users"
-          gradient="from-orange-500 to-red-500"
-        />
-      </div>
-
-      {/* Rapat List Section */}
-      <div className="relative z-10">
-        <div className="bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
+        {/* Main Content */}
+        <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-0' : 'ml-0'}`}>
+          {/* Header */}
+          <div className="relative z-10 mb-8">
+            <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Daftar Rapat Terkini</h2>
-                <p className="text-blue-200">Jadwal rapat hari ini dan mendatang</p>
+                <h1 className="text-3xl font-bold text-white">Dashboard Reservasi</h1>
+                <p className="text-blue-200">Sistem Manajemen Rapat Pupuk Kaltim</p>
               </div>
-              <div className="flex items-center space-x-3">
+              {!sidebarOpen && (
                 <button
                   onClick={toggleSidebar}
                   className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
-                  <span>Tambah Rapat</span>
+                  <span>Menu</span>
                 </button>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="px-6 py-4 text-left text-white font-semibold">Nama Rapat</th>
-                    <th className="px-6 py-4 text-left text-white font-semibold">Jenis</th>
-                    <th className="px-6 py-4 text-left text-white font-semibold">Tanggal</th>
-                    <th className="px-6 py-4 text-left text-white font-semibold">Waktu</th>
-                    <th className="px-6 py-4 text-center text-white font-semibold">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {!rapatList || rapatList.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="text-center py-12">
-                        <div className="text-white/60 flex flex-col items-center space-y-3">
-                          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                          <p>Belum ada data rapat</p>
-                          <button
-                            onClick={toggleSidebar}
-                            className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
-                          >
-                            Klik menu untuk tambah rapat pertama
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    (rapatList || []).map((rapat, index) => (
-                      <tr 
-                        key={rapat.id} 
-                        className="border-b border-white/10 hover:bg-white/5 transition-colors duration-200"
-                      >
-                        <td className="px-6 py-4 text-white font-medium">{rapat.nama_rapat}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm border ${
-                              rapat.jenis === "online"
-                                ? "bg-blue-500/20 text-blue-300 border-blue-400/30"
-                                : "bg-green-500/20 text-green-300 border-green-400/30"
-                            }`}
-                          >
-                            {rapat.jenis === "online" ? "Online" : "Offline"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-white/90">{rapat.tanggal}</td>
-                        <td className="px-6 py-4 text-white/90">
-                          <div className="flex items-center space-x-2">
-                            <svg className="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{rapat.waktu_mulai} - {rapat.waktu_selesai}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center space-x-3">
-                            <button
-                              onClick={() => handleOpenModal("edit", rapat)}
-                              className="text-blue-300 hover:text-blue-200 transition-colors duration-200 p-2 hover:bg-blue-500/20 rounded-lg"
-                              title="Edit"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(rapat.id)}
-                              className="text-red-300 hover:text-red-200 transition-colors duration-200 p-2 hover:bg-red-500/20 rounded-lg"
-                              title="Hapus"
-                            >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+              )}
             </div>
           </div>
+
+          {/* Render Content Berdasarkan Menu Aktif */}
+          {renderContent()}
         </div>
       </div>
 
@@ -475,95 +948,95 @@ export default function Dashboard() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
-            <div className="p-8">
+            <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-white">
+                <h3 className="text-xl font-bold text-white">
                   {modalMode === "add" ? "Tambah Rapat" : "Edit Rapat"}
                 </h3>
                 <button 
                   onClick={handleCloseModal}
                   className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-white font-semibold mb-3">Nama Rapat</label>
+                  <label className="block text-white font-semibold mb-2 text-sm">Nama Rapat</label>
                   <input
                     type="text"
                     name="nama_rapat"
                     value={formData.nama_rapat}
                     onChange={handleInputChange}
-                    className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
                     placeholder="Masukkan nama rapat"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-3">Jenis Rapat</label>
-                  <div className="flex gap-6">
-                    <label className="flex items-center space-x-3 cursor-pointer">
+                  <label className="block text-white font-semibold mb-2 text-sm">Jenis Rapat</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="radio"
                         name="jenis"
                         value="online"
                         checked={formData.jenis === "online"}
                         onChange={handleInputChange}
-                        className="w-5 h-5 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
                       />
-                      <span className="text-white">Online</span>
+                      <span className="text-white text-sm">Online</span>
                     </label>
-                    <label className="flex items-center space-x-3 cursor-pointer">
+                    <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="radio"
                         name="jenis"
                         value="offline"
                         checked={formData.jenis === "offline"}
                         onChange={handleInputChange}
-                        className="w-5 h-5 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
                       />
-                      <span className="text-white">Offline</span>
+                      <span className="text-white text-sm">Offline</span>
                     </label>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-white font-semibold mb-3">Tanggal</label>
+                  <label className="block text-white font-semibold mb-2 text-sm">Tanggal</label>
                   <input
                     type="date"
                     name="tanggal"
                     value={formData.tanggal}
                     onChange={handleInputChange}
-                    className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-white font-semibold mb-3">Waktu Mulai</label>
+                    <label className="block text-white font-semibold mb-2 text-sm">Waktu Mulai</label>
                     <input
                       type="time"
                       name="waktu_mulai"
                       value={formData.waktu_mulai}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-white font-semibold mb-3">Waktu Selesai</label>
+                    <label className="block text-white font-semibold mb-2 text-sm">Waktu Selesai</label>
                     <input
                       type="time"
                       name="waktu_selesai"
                       value={formData.waktu_selesai}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
                       required
                     />
                   </div>
@@ -571,29 +1044,276 @@ export default function Dashboard() {
 
                 {formData.jenis === "offline" && (
                   <div>
-                    <label className="block text-white font-semibold mb-3">ID Ruangan</label>
-                    <input
-                      type="text"
+                    <label className="block text-white font-semibold mb-2 text-sm">Ruangan</label>
+                    <select
                       name="ruangan_id"
                       value={formData.ruangan_id}
                       onChange={handleInputChange}
-                      className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                      placeholder="Masukkan ID ruangan"
-                    />
+                      className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    >
+                      <option value="">Pilih Ruangan</option>
+                      {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
+                        <option key={ruangan.id} value={ruangan.id}>
+                          {ruangan.nama_ruangan} - {ruangan.lokasi}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-2 pt-3">
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 px-6 py-3 border border-white/20 text-white rounded-2xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm"
+                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                  >
+                    {modalMode === "add" ? "Tambah" : "Simpan"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah/Edit Ruangan */}
+      {showRuanganModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white">
+                  {modalMode === "add" ? "Tambah Ruangan" : "Edit Ruangan"}
+                </h3>
+                <button 
+                  onClick={handleCloseRuanganModal}
+                  className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleRuanganSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Nama Ruangan</label>
+                  <input
+                    type="text"
+                    name="nama_ruangan"
+                    value={ruanganForm.nama_ruangan}
+                    onChange={handleRuanganInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan nama ruangan"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Kapasitas</label>
+                  <input
+                    type="number"
+                    name="kapasitas"
+                    value={ruanganForm.kapasitas}
+                    onChange={handleRuanganInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan kapasitas ruangan"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Lokasi</label>
+                  <input
+                    type="text"
+                    name="lokasi"
+                    value={ruanganForm.lokasi}
+                    onChange={handleRuanganInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan lokasi ruangan"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Fasilitas</label>
+                  <textarea
+                    name="fasilitas"
+                    value={ruanganForm.fasilitas}
+                    onChange={handleRuanganInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm resize-none"
+                    placeholder="Masukkan fasilitas ruangan (AC, Proyektor, Whiteboard, dll)"
+                    rows="3"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Status</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="tersedia"
+                        checked={ruanganForm.status === "tersedia"}
+                        onChange={handleRuanganInputChange}
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                      />
+                      <span className="text-white text-sm">Tersedia</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="tidak_tersedia"
+                        checked={ruanganForm.status === "tidak_tersedia"}
+                        onChange={handleRuanganInputChange}
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                      />
+                      <span className="text-white text-sm">Tidak Tersedia</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-3">
+                  <button
+                    type="button"
+                    onClick={handleCloseRuanganModal}
+                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                  >
+                    {modalMode === "add" ? "Tambah" : "Simpan"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah/Edit User */}
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-white">
+                  {modalMode === "add" ? "Tambah User" : "Edit User"}
+                </h3>
+                <button 
+                  onClick={handleCloseUserModal}
+                  className="text-white/60 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-xl"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleUserSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Nama</label>
+                  <input
+                    type="text"
+                    name="nama"
+                    value={userForm.nama}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan nama user"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={userForm.email}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan email user"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Role</label>
+                  <select
+                    name="role"
+                    value={userForm.role}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Departemen</label>
+                  <input
+                    type="text"
+                    name="departemen"
+                    value={userForm.departemen}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
+                    placeholder="Masukkan departemen"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white font-semibold mb-2 text-sm">Status</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="active"
+                        checked={userForm.status === "active"}
+                        onChange={handleUserInputChange}
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                      />
+                      <span className="text-white text-sm">Active</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="inactive"
+                        checked={userForm.status === "inactive"}
+                        onChange={handleUserInputChange}
+                        className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 focus:ring-blue-400"
+                      />
+                      <span className="text-white text-sm">Inactive</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-3">
+                  <button
+                    type="button"
+                    onClick={handleCloseUserModal}
+                    className="flex-1 px-4 py-2.5 border border-white/20 text-white rounded-xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-sm"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
                   >
                     {modalMode === "add" ? "Tambah" : "Simpan"}
                   </button>
@@ -610,7 +1330,7 @@ export default function Dashboard() {
 // StatCard Component (tetap sama)
 const StatCard = ({ title, value, icon, gradient }) => {
   const renderIcon = () => {
-    const iconClass = "w-8 h-8";
+    const iconClass = "w-6 h-6";
     switch (icon) {
       case "building":
         return (
@@ -642,13 +1362,13 @@ const StatCard = ({ title, value, icon, gradient }) => {
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 hover:transform hover:scale-105 transition-all duration-300 group">
+    <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 p-4 hover:transform hover:scale-105 transition-all duration-300 group">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-white/70 text-sm font-medium mb-2">{title}</p>
-          <h3 className="text-3xl font-bold text-white">{value}</h3>
+          <p className="text-white/70 text-xs font-medium mb-1">{title}</p>
+          <h3 className="text-2xl font-bold text-white">{value}</h3>
         </div>
-        <div className={`p-3 rounded-xl bg-gradient-to-r ${gradient} text-white group-hover:scale-110 transition-transform duration-300`}>
+        <div className={`p-2 rounded-lg bg-gradient-to-r ${gradient} text-white group-hover:scale-110 transition-transform duration-300`}>
           {renderIcon()}
         </div>
       </div>
