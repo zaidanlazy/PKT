@@ -817,8 +817,9 @@ export default function Dashboard() {
                   )}
                 </button>
 
-                {/* Master Data Section */}
-                <div className="pt-4">
+                {/* Master Data Section - Only visible for admin */}
+                {user?.role === 'admin' && (
+                  <div className="pt-4">
                   {sidebarOpen && (
                     <h3 className="text-white/50 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
                   )}
@@ -887,6 +888,7 @@ export default function Dashboard() {
                     )}
                   </button>
                 </div>
+                )}
               </div>
             </nav>
 

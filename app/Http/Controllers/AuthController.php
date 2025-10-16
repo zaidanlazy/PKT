@@ -38,6 +38,7 @@ class AuthController extends Controller
                 'unit_kerja' => $request->unit_kerja,
                 'no_telp' => $request->no_telp,
                 'password' => Hash::make($request->password),
+                'role' => 'user', // Default role for new users
             ]);
 
             // Buat token untuk auto-login setelah register
