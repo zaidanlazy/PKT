@@ -15,16 +15,17 @@ export default function Dashboard() {
   
   const [rapatList, setRapatList] = useState([]);
   const [ruanganList, setRuanganList] = useState([]);
-  const [userList, setUserList] = useState([]); // Data user terpisah
+  const [userList, setUserList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showRuanganModal, setShowRuanganModal] = useState(false);
-  const [showUserModal, setShowUserModal] = useState(false); // Modal untuk user
+  const [showUserModal, setShowUserModal] = useState(false);
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [selectedRuangan, setSelectedRuangan] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null); // Selected user
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default tutup
   const [activeMenu, setActiveMenu] = useState("");
+  const [sidebarHover, setSidebarHover] = useState(false); // State untuk hover
   const [formData, setFormData] = useState({
     nama_rapat: "",
     jenis: "offline",
@@ -41,7 +42,6 @@ export default function Dashboard() {
     status: "tersedia"
   });
   
-  // Form data untuk user
   const [userForm, setUserForm] = useState({
     nama: "",
     email: "",
@@ -54,8 +54,39 @@ export default function Dashboard() {
     fetchDashboardData();
     fetchRapatList();
     fetchRuanganList();
-    fetchUserList(); // Fetch data user
+    fetchUserList();
   }, []);
+
+  // Auto open/close sidebar berdasarkan hover
+  useEffect(() => {
+    let hoverTimer;
+    
+    if (sidebarHover) {
+      setSidebarOpen(true);
+    } else {
+      // Delay sebelum menutup sidebar untuk mencegah flickering
+      hoverTimer = setTimeout(() => {
+        setSidebarOpen(false);
+      }, 300); // Delay 300ms
+    }
+
+    return () => {
+      clearTimeout(hoverTimer);
+    };
+  }, [sidebarHover]);
+
+  const handleSidebarMouseEnter = () => {
+    setSidebarHover(true);
+  };
+
+  const handleSidebarMouseLeave = () => {
+    setSidebarHover(false);
+  };
+
+  // Handler untuk mobile/tablet (toggle manual)
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -88,7 +119,6 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch data user terpisah
   const fetchUserList = async () => {
     try {
       const res = await axios.get("/users");
@@ -148,7 +178,6 @@ export default function Dashboard() {
     setShowRuanganModal(true);
   };
 
-  // Handler untuk modal user
   const handleOpenUserModal = (mode, userData = null) => {
     setModalMode(mode);
     if (mode === "edit" && userData) {
@@ -197,7 +226,6 @@ export default function Dashboard() {
     });
   };
 
-  // Handler untuk menutup modal user
   const handleCloseUserModal = () => {
     setShowUserModal(false);
     setSelectedUser(null);
@@ -224,7 +252,6 @@ export default function Dashboard() {
     });
   };
 
-  // Handler untuk input user
   const handleUserInputChange = (e) => {
     setUserForm({
       ...userForm,
@@ -270,7 +297,6 @@ export default function Dashboard() {
     }
   };
 
-  // Handler untuk submit user
   const handleUserSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -317,7 +343,6 @@ export default function Dashboard() {
     }
   };
 
-  // Handler untuk delete user
   const handleDeleteUser = async (id) => {
     if (window.confirm("Yakin ingin menghapus user ini?")) {
       try {
@@ -336,16 +361,11 @@ export default function Dashboard() {
     if (menu === "tambah-rapat") {
       handleOpenModal("add");
     }
-    // Untuk menu lainnya, cukup set active menu saja
   };
 
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
   };
 
   // Render konten berdasarkan menu aktif
@@ -494,7 +514,7 @@ export default function Dashboard() {
                         <th className="px-4 py-3 text-left text-white font-semibold text-sm">Nama</th>
                         <th className="px-4 py-3 text-left text-white font-semibold text-sm">Email</th>
                         <th className="px-4 py-3 text-left text-white font-semibold text-sm">Role</th>
-                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Departemen</th>
+                        <th className="px-4 py-3 text-left text-white font-semibold text-sm">Unit kerja </th>
                         <th className="px-4 py-3 text-left text-white font-semibold text-sm">Status</th>
                         <th className="px-4 py-3 text-center text-white font-semibold text-sm">Aksi</th>
                       </tr>
@@ -737,10 +757,14 @@ export default function Dashboard() {
       </div>
 
       <div className="flex gap-6">
-        {/* Sidebar */}
-        <div className={`bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
-          sidebarOpen ? 'w-64' : 'w-20'
-        }`}>
+        {/* Sidebar dengan auto-hover */}
+        <div 
+          className={`bg-slate-800/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
+            sidebarOpen ? 'w-64' : 'w-20'
+          }`}
+          onMouseEnter={handleSidebarMouseEnter}
+          onMouseLeave={handleSidebarMouseLeave}
+        >
           <div className="p-4 h-full flex flex-col">
             {/* Sidebar Header */}
             <div className="flex items-center space-x-3 mb-6">
@@ -757,9 +781,10 @@ export default function Dashboard() {
                   <p className="text-blue-200 text-xs truncate">Sistem Reservasi</p>
                 </div>
               )}
+              {/* Tombol toggle untuk mobile */}
               <button
                 onClick={toggleSidebar}
-                className="text-white/60 hover:text-white transition-colors duration-200 p-1.5 hover:bg-white/10 rounded-lg flex-shrink-0"
+                className="text-white/60 hover:text-white transition-colors duration-200 p-1.5 hover:bg-white/10 rounded-lg flex-shrink-0 md:hidden"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
@@ -922,20 +947,19 @@ export default function Dashboard() {
           <div className="relative z-10 mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-white">Dashboard Reservasi</h1>
+                <h1 className="text-3xl font-bold text-white">Dashboard </h1>
                 <p className="text-blue-200">Sistem Manajemen Rapat Pupuk Kaltim</p>
               </div>
-              {!sidebarOpen && (
-                <button
-                  onClick={toggleSidebar}
-                  className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  <span>Menu</span>
-                </button>
-              )}
+              {/* Tombol toggle sidebar untuk mobile */}
+              <button
+                onClick={toggleSidebar}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:scale-105 flex items-center space-x-2 md:hidden"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span>Menu</span>
+              </button>
             </div>
           </div>
 
@@ -965,14 +989,14 @@ export default function Dashboard() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-white font-semibold mb-2 text-sm">Nama Rapat</label>
+                  <label className="block text-white font-semibold mb-2 text-sm">Masukan link</label>
                   <input
                     type="text"
                     name="nama_rapat"
                     value={formData.nama_rapat}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm"
-                    placeholder="Masukkan nama rapat"
+                    placeholder="Masukkan link rapat"
                     required
                   />
                 </div>

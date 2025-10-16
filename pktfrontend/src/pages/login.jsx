@@ -32,7 +32,7 @@ export default function Login() {
       const result = await login(mpk, password);
       
       if (result.success) {
-        showNotification("Login berhasil! Mengarahkan ke dashboard...", "success");
+        showNotification("Login berhasil! ", "success");
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
