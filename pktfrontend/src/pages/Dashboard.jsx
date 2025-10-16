@@ -74,7 +74,6 @@ export default function Dashboard() {
       clearTimeout(hoverTimer);
     };
   }, [sidebarHover]);
-
   const handleSidebarMouseEnter = () => {
     setSidebarHover(true);
   };
@@ -642,15 +641,7 @@ export default function Dashboard() {
                       <p className="text-gray-600">Jadwal rapat hari ini</p>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleOpenModal("add")}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        <span>Tambah Rapat</span>
-                      </button>
+              
                     </div>
                   </div>
 
@@ -663,7 +654,7 @@ export default function Dashboard() {
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
-                          <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
+    
                         </tr>
                       </thead>
                       <tbody>
