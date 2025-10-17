@@ -23,9 +23,9 @@ export default function Dashboard() {
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [selectedRuangan, setSelectedRuangan] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default tutup
-  const [activeMenu, setActiveMenu] = useState("");
-  const [sidebarHover, setSidebarHover] = useState(false); // State untuk hover
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [sidebarHover, setSidebarHover] = useState(false);
   const [formData, setFormData] = useState({
     nama_rapat: "",
     jenis: "offline",
@@ -64,16 +64,16 @@ export default function Dashboard() {
     if (sidebarHover) {
       setSidebarOpen(true);
     } else {
-      // Delay sebelum menutup sidebar untuk mencegah flickering
       hoverTimer = setTimeout(() => {
         setSidebarOpen(false);
-      }, 300); // Delay 300ms
+      }, 300);
     }
 
     return () => {
       clearTimeout(hoverTimer);
     };
   }, [sidebarHover]);
+
   const handleSidebarMouseEnter = () => {
     setSidebarHover(true);
   };
@@ -82,7 +82,6 @@ export default function Dashboard() {
     setSidebarHover(false);
   };
 
-  // Handler untuk mobile/tablet (toggle manual)
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -357,9 +356,6 @@ export default function Dashboard() {
 
   const handleMenuClick = (menu) => {
     setActiveMenu(menu);
-    if (menu === "tambah-rapat") {
-      handleOpenModal("add");
-    }
   };
 
   const handleLogout = () => {
@@ -370,6 +366,155 @@ export default function Dashboard() {
   // Render konten berdasarkan menu aktif
   const renderContent = () => {
     switch (activeMenu) {
+      case "tambah-rapat":
+        return (
+          <div className="relative z-10">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Tambah Rapat Baru</h2>
+                    <p className="text-gray-600">Buat jadwal rapat baru untuk tim Anda</p>
+                  </div>
+                </div>
+
+                {/* Form Tambah Rapat */}
+                <div className="max-w-2xl">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                      <label className="block text-gray-800 font-semibold mb-3 text-sm">Nama Rapat</label>
+                      <input
+                        type="text"
+                        name="nama_rapat"
+                        value={formData.nama_rapat}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                        placeholder="Masukkan nama rapat"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-800 font-semibold mb-3 text-sm">Jenis Rapat</label>
+                      <div className="flex gap-6">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="jenis"
+                            value="online"
+                            checked={formData.jenis === "online"}
+                            onChange={handleInputChange}
+                            className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <span className="text-gray-800 text-sm font-medium">Online</span>
+                          </div>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="jenis"
+                            value="offline"
+                            checked={formData.jenis === "offline"}
+                            onChange={handleInputChange}
+                            className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
+                          />
+                          <div className="flex items-center space-x-2">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                            </div>
+                            <span className="text-gray-800 text-sm font-medium">Offline</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Tanggal</label>
+                        <input
+                          type="date"
+                          name="tanggal"
+                          value={formData.tanggal}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Mulai</label>
+                          <input
+                            type="time"
+                            name="waktu_mulai"
+                            value={formData.waktu_mulai}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Selesai</label>
+                          <input
+                            type="time"
+                            name="waktu_selesai"
+                            value={formData.waktu_selesai}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {formData.jenis === "offline" && (
+                      <div>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Ruangan</label>
+                        <select
+                          name="ruangan_id"
+                          value={formData.ruangan_id}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                        >
+                          <option value="">Pilih Ruangan</option>
+                          {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
+                            <option key={ruangan.id} value={ruangan.id}>
+                              {ruangan.nama_ruangan} - {ruangan.lokasi} (Kapasitas: {ruangan.kapasitas} orang)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setActiveMenu("dashboard")}
+                        className="flex-1 px-6 py-3 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm font-medium"
+                      >
+                        Kembali ke Dashboard
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                      >
+                        Simpan Rapat
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       case "data-ruangan":
         return (
           <div className="relative z-10">
@@ -601,6 +746,7 @@ export default function Dashboard() {
         );
 
       default:
+        // ... kode sebelumnya tetap sama ...
         return (
           <>
             {/* Stats Cards */}
@@ -631,17 +777,17 @@ export default function Dashboard() {
               />
             </div>
 
+            {/* Quick Actions - DIHAPUS */}
+            {/* Bagian ini dihapus: grid dengan Buat Rapat Baru dan Lihat Jadwal */}
+
             {/* Rapat List Section */}
-            <div className="relative z-10">
+            <div id="rapat-list" className="relative z-10">
               <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-800 mb-2">Daftar Rapat Terkini</h2>
                       <p className="text-gray-600">Jadwal rapat hari ini</p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-              
                     </div>
                   </div>
 
@@ -654,7 +800,7 @@ export default function Dashboard() {
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
-    
+                          <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -667,7 +813,7 @@ export default function Dashboard() {
                                 </svg>
                                 <p className="text-sm">Belum ada data rapat</p>
                                 <button
-                                  onClick={() => handleOpenModal("add")}
+                                  onClick={() => setActiveMenu("tambah-rapat")}
                                   className="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors duration-200"
                                 >
                                   Klik untuk tambah rapat pertama
@@ -735,12 +881,14 @@ export default function Dashboard() {
             </div>
           </>
         );
+
+// ... kode setelahnya tetap sama ...
     }
   };
 
   return (
     <div className="min-h-screen bg-white p-6 relative overflow-hidden">
-      {/* Background Elements - Diubah menjadi lebih subtle */}
+      {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
@@ -748,7 +896,7 @@ export default function Dashboard() {
       </div>
 
       <div className="flex gap-6">
-        {/* Sidebar dengan auto-hover */}
+        {/* Sidebar */}
         <div 
           className={`bg-white backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
             sidebarOpen ? 'w-64' : 'w-20'
@@ -772,7 +920,6 @@ export default function Dashboard() {
                   <p className="text-gray-600 text-xs truncate">Sistem Reservasi</p>
                 </div>
               )}
-              {/* Tombol toggle untuk mobile */}
               <button
                 onClick={toggleSidebar}
                 className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0 md:hidden"
@@ -786,16 +933,38 @@ export default function Dashboard() {
             {/* Navigation Menu */}
             <nav className="flex-1">
               <div className="space-y-2">
-                {/* Tambah Rapat Menu */}
+                {/* Dashboard Menu */}
                 <button
-                  onClick={() => handleMenuClick("tambah-rapat")}
+                  onClick={() => handleMenuClick("dashboard")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "tambah-rapat" 
+                    activeMenu === "dashboard" 
                       ? "bg-blue-50 text-blue-600 border border-blue-200" 
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 >
                   <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                  </div>
+                  {sidebarOpen && (
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">Dashboard</p>
+                      <p className="text-xs text-gray-500 truncate">Overview sistem</p>
+                    </div>
+                  )}
+                </button>
+
+                {/* Tambah Rapat Menu */}
+                <button
+                  onClick={() => handleMenuClick("tambah-rapat")}
+                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "tambah-rapat" 
+                      ? "bg-green-50 text-green-600 border border-green-200" 
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
@@ -819,11 +988,11 @@ export default function Dashboard() {
                     onClick={() => handleMenuClick("data-ruangan")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                       activeMenu === "data-ruangan" 
-                        ? "bg-green-50 text-green-600 border border-green-200" 
+                        ? "bg-purple-50 text-purple-600 border border-purple-200" 
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
@@ -840,11 +1009,11 @@ export default function Dashboard() {
                     onClick={() => handleMenuClick("data-peserta")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
                       activeMenu === "data-peserta" 
-                        ? "bg-purple-50 text-purple-600 border border-purple-200" 
+                        ? "bg-orange-50 text-orange-600 border border-orange-200" 
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
-                    <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
+                    <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -856,8 +1025,6 @@ export default function Dashboard() {
                       </div>
                     )}
                   </button>
-
-                  
                 </div>
                 )}
               </div>
@@ -920,10 +1087,14 @@ export default function Dashboard() {
           <div className="relative z-10 mb-8">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Dashboard </h1>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  {activeMenu === "dashboard" ? "Dashboard" : 
+                   activeMenu === "tambah-rapat" ? "Tambah Rapat" :
+                   activeMenu === "data-ruangan" ? "Data Ruangan" : 
+                   activeMenu === "data-peserta" ? "Data User" : "Dashboard"}
+                </h1>
                 <p className="text-gray-600">Sistem Manajemen Rapat Pupuk Kaltim</p>
               </div>
-              {/* Tombol toggle sidebar untuk mobile */}
               <button
                 onClick={toggleSidebar}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2 md:hidden"
@@ -941,7 +1112,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modal Tambah/Edit Rapat */}
+      {/* Modal untuk edit rapat (tetap dipertahankan untuk edit dari tabel) */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
@@ -962,14 +1133,14 @@ export default function Dashboard() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Masukan link</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama Rapat</label>
                   <input
                     type="text"
                     name="nama_rapat"
                     value={formData.nama_rapat}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan link rapat"
+                    placeholder="Masukkan nama rapat"
                     required
                   />
                 </div>
@@ -1324,7 +1495,7 @@ export default function Dashboard() {
   );
 }
 
-// StatCard Component (diperbarui untuk background putih)
+// StatCard Component
 const StatCard = ({ title, value, icon, gradient }) => {
   const renderIcon = () => {
     const iconClass = "w-6 h-6";
