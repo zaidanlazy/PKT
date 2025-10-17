@@ -32,7 +32,7 @@ export default function Login() {
       const result = await login(mpk, password);
       
       if (result.success) {
-        showNotification("Login berhasil! ", "success");
+        showNotification("Login berhasil! Mengarahkan ke dashboard...", "success");
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
@@ -54,65 +54,111 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Notification Container */}
-      <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full">
+      {/* Modern Notification Container */}
+      <div className="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full">
         {notification.show && (
-          <div className={`p-4 rounded-2xl shadow-2xl border-l-4 backdrop-blur-md transform transition-all duration-500 ${
+          <div className={`relative p-6 rounded-2xl shadow-2xl border backdrop-blur-lg transform transition-all duration-500 animate-in slide-in-from-right-full ${
             notification.type === "success" 
-              ? "bg-green-50 border-green-500 text-green-800" 
+              ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-green-800 shadow-green-200/50" 
               : notification.type === "warning"
-              ? "bg-yellow-50 border-yellow-500 text-yellow-800"
-              : "bg-red-50 border-red-500 text-red-800"
+              ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200 text-yellow-800 shadow-yellow-200/50"
+              : "bg-gradient-to-br from-red-50 to-rose-50 border-red-200 text-red-800 shadow-red-200/50"
           }`}>
-            <div className="flex items-start space-x-3">
-              <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+            {/* Header dengan Icon */}
+            <div className="flex items-start space-x-4">
+              <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
                 notification.type === "success" 
-                  ? "bg-green-500" 
+                  ? "bg-gradient-to-br from-green-500 to-emerald-500" 
                   : notification.type === "warning"
-                  ? "bg-yellow-500"
-                  : "bg-red-500"
+                  ? "bg-gradient-to-br from-yellow-500 to-amber-500"
+                  : "bg-gradient-to-br from-red-500 to-rose-500"
               }`}>
                 {notification.type === "success" ? (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 ) : notification.type === "warning" ? (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">{notification.message}</p>
+              
+              <div className="flex-1 min-w-0">
+                <h3 className={`font-bold text-lg mb-1 ${
+                  notification.type === "success" 
+                    ? "text-green-900" 
+                    : notification.type === "warning"
+                    ? "text-yellow-900"
+                    : "text-red-900"
+                }`}>
+                  {notification.type === "success" 
+                    ? "Berhasil!" 
+                    : notification.type === "warning"
+                    ? "Peringatan"
+                    : "Terjadi Kesalahan"}
+                </h3>
+                <p className="text-sm leading-relaxed">{notification.message}</p>
               </div>
+              
               <button
                 onClick={() => setNotification({ show: false, message: "", type: "" })}
-                className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${
+                  notification.type === "success" 
+                    ? "text-green-600 hover:bg-green-100" 
+                    : notification.type === "warning"
+                    ? "text-yellow-600 hover:bg-yellow-100"
+                    : "text-red-600 hover:bg-red-100"
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            {/* Progress Bar */}
-            <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
+            
+            {/* Progress Bar dengan animasi */}
+            <div className="mt-4 w-full bg-gray-200/50 rounded-full h-1.5 overflow-hidden">
               <div 
-                className={`h-1 rounded-full transition-all duration-5000 ${
+                className={`h-full rounded-full transition-all duration-5000 ease-linear ${
                   notification.type === "success" 
-                    ? "bg-green-500" 
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500" 
                     : notification.type === "warning"
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+                    ? "bg-gradient-to-r from-yellow-500 to-amber-500"
+                    : "bg-gradient-to-r from-red-500 to-rose-500"
                 }`}
                 style={{ 
-                  width: notification.show ? '0%' : '100%',
-                  transition: 'width 5s linear'
+                  width: '100%',
+                  animation: 'shrink 5s linear forwards'
                 }}
               ></div>
+            </div>
+
+            {/* Background Pattern */}
+            <div className={`absolute top-0 right-0 w-20 h-20 opacity-5 ${
+              notification.type === "success" 
+                ? "text-green-500" 
+                : notification.type === "warning"
+                ? "text-yellow-500"
+                : "text-red-500"
+            }`}>
+              {notification.type === "success" ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : notification.type === "warning" ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
             </div>
           </div>
         )}
@@ -281,6 +327,33 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes shrink {
+          from { width: 100%; }
+          to { width: 0%; }
+        }
+        
+        @keyframes slideInFromRight {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-in {
+          animation: slideInFromRight 0.5s ease-out;
+        }
+        
+        .slide-in-from-right-full {
+          animation: slideInFromRight 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
