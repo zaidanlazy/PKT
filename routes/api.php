@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RapatController;
+use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\UserController;
 
 // Public routes (no authentication required)
@@ -22,6 +23,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rapat', [RapatController::class, 'store']);
     Route::put('/rapat/{id}', [RapatController::class, 'update']);
     Route::delete('/rapat/{id}', [RapatController::class, 'destroy']);
+    
+    // Ruangan routes
+    Route::get('/ruangan', [RuanganController::class, 'index']);
+    Route::post('/ruangan', [RuanganController::class, 'store']);
+    Route::put('/ruangan/{id}', [RuanganController::class, 'update']);
+    Route::delete('/ruangan/{id}', [RuanganController::class, 'destroy']);
     
     // Admin only routes
     Route::middleware('admin')->group(function () {

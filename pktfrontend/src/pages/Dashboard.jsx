@@ -11,6 +11,8 @@ export default function Dashboard() {
     total_rapat: 0,
     total_online: 0,
     total_offline: 0,
+    ruangan_tersedia: 0,
+    ruangan_tidak_tersedia: 0,
   });
   
   const [rapatList, setRapatList] = useState([]);
@@ -19,6 +21,8 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [showRuanganModal, setShowRuanganModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false); // Modal detail rapat
+  const [selectedRapatDetail, setSelectedRapatDetail] = useState(null); // Data rapat untuk detail
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [selectedRuangan, setSelectedRuangan] = useState(null);
@@ -33,6 +37,7 @@ export default function Dashboard() {
     waktu_mulai: "",
     waktu_selesai: "",
     ruangan_id: "",
+    deskripsi: "",
   });
   const [ruanganForm, setRuanganForm] = useState({
     nama_ruangan: "",
@@ -43,11 +48,13 @@ export default function Dashboard() {
   });
   
   const [userForm, setUserForm] = useState({
+    mpk: "",
     nama: "",
     email: "",
-    role: "user",
-    departemen: "",
-    status: "active" // Default status active
+    unit_kerja: "",
+    no_telp: "",
+    password: "",
+    role: "user"
   });
 
   useEffect(() => {
@@ -128,6 +135,18 @@ export default function Dashboard() {
     }
   };
 
+  // Fungsi untuk membuka modal detail rapat
+  const handleOpenDetailModal = (rapat) => {
+    setSelectedRapatDetail(rapat);
+    setShowDetailModal(true);
+  };
+
+  // Fungsi untuk menutup modal detail rapat
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedRapatDetail(null);
+  };
+
   const handleOpenModal = (mode, rapat = null) => {
     setModalMode(mode);
     if (mode === "edit" && rapat) {
@@ -139,6 +158,7 @@ export default function Dashboard() {
         waktu_mulai: rapat.waktu_mulai,
         waktu_selesai: rapat.waktu_selesai,
         ruangan_id: rapat.ruangan_id || "",
+        deskripsi: rapat.deskripsi || "",
       });
     } else {
       setFormData({
@@ -148,6 +168,7 @@ export default function Dashboard() {
         waktu_mulai: "",
         waktu_selesai: "",
         ruangan_id: "",
+        deskripsi: "",
       });
     }
     setShowModal(true);
@@ -181,19 +202,23 @@ export default function Dashboard() {
     if (mode === "edit" && userData) {
       setSelectedUser(userData);
       setUserForm({
+        mpk: userData.mpk || "",
         nama: userData.nama || "",
         email: userData.email || "",
-        role: userData.role || "user",
-        departemen: userData.departemen || "",
-        status: userData.status || "active"
+        unit_kerja: userData.unit_kerja || "",
+        no_telp: userData.no_telp || "",
+        password: "",
+        role: userData.role || "user"
       });
     } else {
       setUserForm({
+        mpk: "",
         nama: "",
         email: "",
-        role: "user",
-        departemen: "",
-        status: "active" // Default status active untuk tambah user baru
+        unit_kerja: "",
+        no_telp: "",
+        password: "",
+        role: "user"
       });
     }
     setShowUserModal(true);
@@ -209,6 +234,7 @@ export default function Dashboard() {
       waktu_mulai: "",
       waktu_selesai: "",
       ruangan_id: "",
+      deskripsi: "",
     });
   };
 
@@ -228,11 +254,13 @@ export default function Dashboard() {
     setShowUserModal(false);
     setSelectedUser(null);
     setUserForm({
+      mpk: "",
       nama: "",
       email: "",
-      role: "user",
-      departemen: "",
-      status: "active"
+      unit_kerja: "",
+      no_telp: "",
+      password: "",
+      role: "user"
     });
   };
 
@@ -298,10 +326,11 @@ export default function Dashboard() {
   const handleUserSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Untuk tambah user baru, status otomatis "active"
-      const userDataToSubmit = modalMode === "add" 
-        ? { ...userForm, status: "active" } 
-        : userForm;
+      // For edit mode, don't include password if it's empty
+      const userDataToSubmit = { ...userForm };
+      if (modalMode === "edit" && !userDataToSubmit.password) {
+        delete userDataToSubmit.password;
+      }
 
       if (modalMode === "add") {
         await axios.post("/users", userDataToSubmit);
@@ -368,152 +397,286 @@ export default function Dashboard() {
     navigate("/login");
   };
 
+  // Fungsi untuk mendapatkan nama ruangan berdasarkan ID
+  const getNamaRuangan = (ruanganId) => {
+    const ruangan = ruanganList.find(r => r.id === ruanganId);
+    return ruangan ? ruangan.nama_ruangan : "Tidak tersedia";
+  };
+
+  // Fungsi untuk mendapatkan nama ruangan dari rapat data
+  const getRuanganName = (rapat) => {
+    if (rapat.ruangan) {
+      return rapat.ruangan.nama_ruangan;
+    }
+    return getNamaRuangan(rapat.ruangan_id);
+  };
+
   // Render konten berdasarkan menu aktif
   const renderContent = () => {
     switch (activeMenu) {
       case "tambah-rapat":
         return (
           <div className="relative z-10">
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Tambah Rapat Baru</h2>
-                    <p className="text-gray-600">Buat jadwal rapat baru untuk tim Anda</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Form Tambah Rapat */}
+              <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2">Tambah Rapat Baru</h2>
+                      <p className="text-gray-600">Buat jadwal rapat baru untuk tim Anda</p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Form Tambah Rapat */}
-                <div className="max-w-2xl">
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                      <label className="block text-gray-800 font-semibold mb-3 text-sm">Nama Rapat</label>
-                      <input
-                        type="text"
-                        name="nama_rapat"
-                        value={formData.nama_rapat}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                        placeholder="Masukkan nama rapat"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-800 font-semibold mb-3 text-sm">Jenis Rapat</label>
-                      <div className="flex gap-6">
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="jenis"
-                            value="online"
-                            checked={formData.jenis === "online"}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                          />
-                          <div className="flex items-center space-x-2">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-800 text-sm font-medium">Online</span>
-                          </div>
-                        </label>
-                        <label className="flex items-center space-x-3 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="jenis"
-                            value="offline"
-                            checked={formData.jenis === "offline"}
-                            onChange={handleInputChange}
-                            className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                          />
-                          <div className="flex items-center space-x-2">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                            </div>
-                            <span className="text-gray-800 text-sm font-medium">Offline</span>
-                          </div>
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="max-w-2xl">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div>
-                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Tanggal</label>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Nama Rapat</label>
                         <input
-                          type="date"
-                          name="tanggal"
-                          value={formData.tanggal}
+                          type="text"
+                          name="nama_rapat"
+                          value={formData.nama_rapat}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          placeholder="Masukkan nama rapat"
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Mulai</label>
-                          <input
-                            type="time"
-                            name="waktu_mulai"
-                            value={formData.waktu_mulai}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Selesai</label>
-                          <input
-                            type="time"
-                            name="waktu_selesai"
-                            value={formData.waktu_selesai}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
 
-                    {formData.jenis === "offline" && (
                       <div>
-                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Ruangan</label>
-                        <select
-                          name="ruangan_id"
-                          value={formData.ruangan_id}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                        >
-                          <option value="">Pilih Ruangan</option>
-                          {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
-                            <option key={ruangan.id} value={ruangan.id}>
-                              {ruangan.nama_ruangan} - {ruangan.lokasi} (Kapasitas: {ruangan.kapasitas} orang)
-                            </option>
-                          ))}
-                        </select>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Jenis Rapat</label>
+                        <div className="flex gap-6">
+                          <label className="flex items-center space-x-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="jenis"
+                              value="online"
+                              checked={formData.jenis === "online"}
+                              onChange={handleInputChange}
+                              className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <div className="p-2 bg-blue-100 rounded-lg">
+                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                              <span className="text-gray-800 text-sm font-medium">Online</span>
+                            </div>
+                          </label>
+                          <label className="flex items-center space-x-3 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="jenis"
+                              value="offline"
+                              checked={formData.jenis === "offline"}
+                              onChange={handleInputChange}
+                              className="w-5 h-5 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
+                            />
+                            <div className="flex items-center space-x-2">
+                              <div className="p-2 bg-green-100 rounded-lg">
+                                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                              </div>
+                              <span className="text-gray-800 text-sm font-medium">Offline</span>
+                            </div>
+                          </label>
+                        </div>
                       </div>
-                    )}
 
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        type="button"
-                        onClick={() => setActiveMenu("dashboard")}
-                        className="flex-1 px-6 py-3 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm font-medium"
-                      >
-                        Kembali ke Dashboard
-                      </button>
-                      <button
-                        type="submit"
-                        className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
-                      >
-                        Simpan Rapat
-                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Tanggal</label>
+                          <input
+                            type="date"
+                            name="tanggal"
+                            value={formData.tanggal}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                            required
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Mulai</label>
+                            <input
+                              type="time"
+                              name="waktu_mulai"
+                              value={formData.waktu_mulai}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-800 font-semibold mb-3 text-sm">Waktu Selesai</label>
+                            <input
+                              type="time"
+                              name="waktu_selesai"
+                              value={formData.waktu_selesai}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {formData.jenis === "offline" && (
+                        <div>
+                          <label className="block text-gray-800 font-semibold mb-3 text-sm">Ruangan</label>
+                          <select
+                            name="ruangan_id"
+                            value={formData.ruangan_id}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          >
+                            <option value="">Pilih Ruangan</option>
+                            {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
+                              <option key={ruangan.id} value={ruangan.id}>
+                                {ruangan.nama_ruangan} - {ruangan.lokasi} (Kapasitas: {ruangan.kapasitas} orang)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Deskripsi</label>
+                        <textarea
+                          name="deskripsi"
+                          value={formData.deskripsi}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
+                          placeholder="Masukkan deskripsi rapat (opsional)"
+                          rows="3"
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setActiveMenu("dashboard")}
+                          className="flex-1 px-6 py-3 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm font-medium"
+                        >
+                          Kembali ke Dashboard
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                        >
+                          Simpan Rapat
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {/* Daftar Rapat Terkini */}
+              <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2">Daftar Rapat Terkini</h2>
+                      <p className="text-gray-600">Jadwal rapat yang sudah dibuat</p>
                     </div>
-                  </form>
+                  </div>
+
+                  {/* Table Rapat */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
+                          <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!rapatList || rapatList.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-8">
+                              <div className="text-gray-500 flex flex-col items-center space-y-2">
+                                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <p className="text-sm">Belum ada data rapat</p>
+                                <p className="text-xs text-gray-400">Rapat yang dibuat akan muncul di sini</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          rapatList.map((rapat) => (
+                            <tr 
+                              key={rapat.id} 
+                              className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
+                            >
+                              <td className="px-4 py-3 text-gray-800 font-medium text-sm">{rapat.nama_rapat}</td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                                    rapat.jenis === "online"
+                                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                                      : "bg-green-100 text-green-800 border-green-200"
+                                  }`}
+                                >
+                                  {rapat.jenis === "online" ? "Online" : "Offline"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-gray-600 text-sm">{rapat.tanggal}</td>
+                              <td className="px-4 py-3 text-gray-600 text-sm">
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>{rapat.waktu_mulai} - {rapat.waktu_selesai}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center space-x-2">
+                                  {/* Tombol Detail - Icon Mata */}
+                                  <button
+                                    onClick={() => handleOpenDetailModal(rapat)}
+                                    className="text-green-500 hover:text-green-600 transition-colors duration-200 p-1.5 hover:bg-green-50 rounded-lg"
+                                    title="Lihat Detail"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+                                  {/* Tombol Edit */}
+                                  <button
+                                    onClick={() => handleOpenModal("edit", rapat)}
+                                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200 p-1.5 hover:bg-blue-50 rounded-lg"
+                                    title="Edit"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                  {/* Tombol Hapus */}
+                                  <button
+                                    onClick={() => handleDelete(rapat.id)}
+                                    className="text-red-500 hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-red-50 rounded-lg"
+                                    title="Hapus"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -660,11 +823,11 @@ export default function Dashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">MPK</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Email</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Unit Kerja</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Role</th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Unit kerja </th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Status</th>
                         <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                       </tr>
                     </thead>
@@ -692,8 +855,10 @@ export default function Dashboard() {
                             key={userData.id} 
                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
+                            <td className="px-4 py-3 text-gray-800 font-medium text-sm">{userData.mpk}</td>
                             <td className="px-4 py-3 text-gray-800 font-medium text-sm">{userData.nama}</td>
                             <td className="px-4 py-3 text-gray-600 text-sm">{userData.email}</td>
+                            <td className="px-4 py-3 text-gray-600 text-sm">{userData.unit_kerja}</td>
                             <td className="px-4 py-3">
                               <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium border ${
@@ -703,18 +868,6 @@ export default function Dashboard() {
                                 }`}
                               >
                                 {userData.role === "admin" ? "Admin" : "User"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-gray-600 text-sm">{userData.departemen}</td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                                  userData.status === "active"
-                                    ? "bg-green-100 text-green-800 border-green-200"
-                                    : "bg-red-100 text-red-800 border-red-200"
-                                }`}
-                              >
-                                {userData.status === "active" ? "Active" : "Inactive"}
                               </span>
                             </td>
                             <td className="px-4 py-3">
@@ -762,16 +915,16 @@ export default function Dashboard() {
                 gradient="from-blue-500 to-cyan-500"
               />
               <StatCard 
-                title="Total Rapat" 
-                value={data.total_rapat} 
-                icon="calendar"
-                gradient="from-purple-500 to-pink-500"
+                title="Ruangan Tersedia" 
+                value={data.ruangan_tersedia} 
+                icon="check"
+                gradient="from-green-500 to-emerald-500"
               />
               <StatCard 
                 title="Rapat Online" 
                 value={data.total_online} 
                 icon="video"
-                gradient="from-green-500 to-emerald-500"
+                gradient="from-purple-500 to-pink-500"
               />
               <StatCard 
                 title="Rapat Offline" 
@@ -851,22 +1004,15 @@ export default function Dashboard() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex justify-center space-x-2">
+                                  {/* Tombol Detail - Icon Mata */}
                                   <button
-                                    onClick={() => handleOpenModal("edit", rapat)}
-                                    className="text-blue-500 hover:text-blue-600 transition-colors duration-200 p-1.5 hover:bg-blue-50 rounded-lg"
-                                    title="Edit"
+                                    onClick={() => handleOpenDetailModal(rapat)}
+                                    className="text-green-500 hover:text-green-600 transition-colors duration-200 p-1.5 hover:bg-green-50 rounded-lg"
+                                    title="Lihat Detail"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(rapat.id)}
-                                    className="text-red-500 hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-red-50 rounded-lg"
-                                    title="Hapus"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                   </button>
                                 </div>
@@ -1127,7 +1273,122 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Modal untuk edit rapat (tetap dipertahankan untuk edit dari tabel) */}
+      {/* Modal Detail Rapat */}
+      {showDetailModal && selectedRapatDetail && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Detail Rapat</h3>
+                <button 
+                  onClick={handleCloseDetailModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Nama Rapat</p>
+                      <p className="font-semibold text-gray-800">{selectedRapatDetail.nama_rapat}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-600">Jenis Rapat</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                          selectedRapatDetail.jenis === "online"
+                            ? "bg-blue-100 text-blue-800 border-blue-200"
+                            : "bg-green-100 text-green-800 border-green-200"
+                        }`}
+                      >
+                        {selectedRapatDetail.jenis === "online" ? "Online" : "Offline"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <p className="text-sm text-gray-600">Tanggal</p>
+                    <p className="font-medium text-gray-800">{selectedRapatDetail.tanggal}</p>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <p className="text-sm text-gray-600 mb-2">Waktu</p>
+                  <div className="flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium text-gray-800">
+                      {selectedRapatDetail.waktu_mulai} - {selectedRapatDetail.waktu_selesai}
+                    </span>
+                  </div>
+                </div>
+
+                {selectedRapatDetail.jenis === "offline" && selectedRapatDetail.ruangan_id && (
+                  <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                    <p className="text-sm text-gray-600 mb-2">Ruangan</p>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span className="font-medium text-gray-800">
+                        {getRuanganName(selectedRapatDetail)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {selectedRapatDetail.jenis === "online" && (
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <p className="text-sm text-gray-600 mb-2">Platform</p>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span className="font-medium text-gray-800">Meeting Online</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-6">
+                <button
+                  onClick={handleCloseDetailModal}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseDetailModal();
+                    handleOpenModal("edit", selectedRapatDetail);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                >
+                  Edit Rapat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal untuk edit rapat */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
@@ -1243,6 +1504,18 @@ export default function Dashboard() {
                     </select>
                   </div>
                 )}
+
+                <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Deskripsi</label>
+                  <textarea
+                    name="deskripsi"
+                    value={formData.deskripsi}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
+                    placeholder="Masukkan deskripsi rapat (opsional)"
+                    rows="3"
+                  />
+                </div>
 
                 <div className="flex gap-2 pt-3">
                   <button
@@ -1386,7 +1659,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal Tambah/Edit User - DIHAPUS BAGIAN STATUS UNTUK TAMBAH USER */}
+      {/* Modal Tambah/Edit User */}
       {showUserModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
@@ -1406,6 +1679,19 @@ export default function Dashboard() {
               </div>
 
               <form onSubmit={handleUserSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">MPK</label>
+                  <input
+                    type="text"
+                    name="mpk"
+                    value={userForm.mpk}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                    placeholder="Masukkan MPK user"
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama</label>
                   <input
@@ -1433,6 +1719,44 @@ export default function Dashboard() {
                 </div>
 
                 <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Unit Kerja</label>
+                  <input
+                    type="text"
+                    name="unit_kerja"
+                    value={userForm.unit_kerja}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                    placeholder="Masukkan unit kerja"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">No. Telepon</label>
+                  <input
+                    type="text"
+                    name="no_telp"
+                    value={userForm.no_telp}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                    placeholder="Masukkan nomor telepon"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Password {modalMode === "edit" && "(kosongkan jika tidak ingin mengubah)"}</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={userForm.password}
+                    onChange={handleUserInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                    placeholder="Masukkan password"
+                    required={modalMode === "add"}
+                  />
+                </div>
+
+                <div>
                   <label className="block text-gray-800 font-semibold mb-2 text-sm">Role</label>
                   <select
                     name="role"
@@ -1444,50 +1768,6 @@ export default function Dashboard() {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Departemen</label>
-                  <input
-                    type="text"
-                    name="departemen"
-                    value={userForm.departemen}
-                    onChange={handleUserInputChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan departemen"
-                    required
-                  />
-                </div>
-
-                {/* Hanya tampilkan status untuk edit user, tidak untuk tambah user */}
-                {modalMode === "edit" && (
-                  <div>
-                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Status</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="active"
-                          checked={userForm.status === "active"}
-                          onChange={handleUserInputChange}
-                          className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                        />
-                        <span className="text-gray-800 text-sm">Active</span>
-                      </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="status"
-                          value="inactive"
-                          checked={userForm.status === "inactive"}
-                          onChange={handleUserInputChange}
-                          className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                        />
-                        <span className="text-gray-800 text-sm">Inactive</span>
-                      </label>
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex gap-2 pt-3">
                   <button
@@ -1540,6 +1820,18 @@ const StatCard = ({ title, value, icon, gradient }) => {
         return (
           <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        );
+      case "check":
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+          </svg>
+        );
+      case "x":
+        return (
+          <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         );
       default:
