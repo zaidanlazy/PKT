@@ -431,14 +431,14 @@ export default function Dashboard() {
                   <div className="max-w-2xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div>
-                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Nama Rapat</label>
+                        <label className="block text-gray-800 font-semibold mb-3 text-sm">Nama kegiatan</label>
                         <input
                           type="text"
                           name="nama_rapat"
                           value={formData.nama_rapat}
                           onChange={handleInputChange}
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                          placeholder="Masukkan nama rapat"
+                          placeholder="Nama kegiatan rapat"
                           required
                         />
                       </div>
@@ -589,7 +589,7 @@ export default function Dashboard() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-200">
-                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama kegiatan</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
@@ -950,7 +950,7 @@ export default function Dashboard() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-200">
-                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama kegiatan Rapat</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Jenis</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Tanggal</th>
                           <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Waktu</th>
@@ -1299,7 +1299,7 @@ export default function Dashboard() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Nama Rapat</p>
+                      <p className="text-sm text-gray-600">Nama kegiatan Rapat</p>
                       <p className="font-semibold text-gray-800">{selectedRapatDetail.nama_rapat}</p>
                     </div>
                   </div>
@@ -1416,7 +1416,7 @@ export default function Dashboard() {
                     value={formData.nama_rapat}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan nama rapat"
+                    placeholder="Masukkan nama kegiatan "
                     
                   />
                 </div>

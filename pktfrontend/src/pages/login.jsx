@@ -32,17 +32,20 @@ export default function Login() {
       const result = await login(mpk, password);
       
       if (result.success) {
-        showNotification("Login berhasil! Mengarahkan ke dashboard...", "success");
+        showNotification("Login berhasil!", "success");
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
       } else {
-        const errorMessage = result.error?.response?.data?.message || "Login gagal! Periksa NPK dan Password.";
-        showNotification(errorMessage, "error");
+        const npkRegex = /^\d{6,}$/;
+    if (!npkRegex.test(mpk)) {
+      showNotification("Format NPK dan password salah", "error");
+      return;
+    }
       }
     } catch (error) {
       console.error("Login error:", error);
-      showNotification("Terjadi kesalahan saat login. Silakan coba lagi.", "error");
+      showNotification("Terjadi kesalahan saat login", "error");
     } finally {
       setIsLoading(false);
     }
@@ -288,9 +291,7 @@ export default function Login() {
                     <input type="checkbox" className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500" />
                     <span className="text-gray-600 text-sm">Ingat saya</span>
                   </label>
-                  <a href="#" className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200">
-                    Lupa password?
-                  </a>
+                  
                 </div>
 
                 <button
