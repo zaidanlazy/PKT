@@ -3,6 +3,172 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
 
+// Komponen Toast Notification
+const Toast = ({ message, type, onClose }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(onClose, 300);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const getBackgroundColor = () => {
+    switch (type) {
+      case "success":
+        return "bg-green-500";
+      case "error":
+        return "bg-red-500";
+      case "warning":
+        return "bg-yellow-500";
+      case "info":
+        return "bg-blue-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        );
+      case "error":
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        );
+      case "warning":
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        );
+      default:
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+    }
+  };
+
+  return (
+    <div
+      className={`fixed top-4 right-4 z-[100] transform transition-all duration-300 ${
+        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+      }`}
+    >
+      <div
+        className={`${getBackgroundColor()} text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3 min-w-80 max-w-md`}
+      >
+        <div className="flex-shrink-0">
+          {getIcon()}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{message}</p>
+        </div>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }}
+          className="flex-shrink-0 text-white hover:text-gray-200 transition-colors duration-200"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Komponen Confirm Modal
+const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Hapus", cancelText = "Batal", type = "delete" }) => {
+  if (!isOpen) return null;
+
+  const getIcon = () => {
+    switch (type) {
+      case "delete":
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+            <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+        );
+      case "warning":
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+            <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+        );
+      default:
+        return (
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+            <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        );
+    }
+  };
+
+  const getButtonColor = () => {
+    switch (type) {
+      case "delete":
+        return "bg-red-600 hover:bg-red-700 focus:ring-red-500";
+      case "warning":
+        return "bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500";
+      default:
+        return "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500";
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md transform transition-all">
+        <div className="p-6">
+          <div className="flex flex-col items-center">
+            {getIcon()}
+            <h3 className="text-lg font-bold text-gray-900 mt-4 text-center">{title}</h3>
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 text-center">{message}</p>
+            </div>
+          </div>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              onClick={onClose}
+            >
+              {cancelText}
+            </button>
+            <button
+              type="button"
+              className={`flex-1 px-4 py-2.5 text-white rounded-xl font-medium transition-all duration-300 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${getButtonColor()}`}
+              onClick={onConfirm}
+            >
+              {confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -21,8 +187,8 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [showRuanganModal, setShowRuanganModal] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false); // Modal detail rapat
-  const [selectedRapatDetail, setSelectedRapatDetail] = useState(null); // Data rapat untuk detail
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedRapatDetail, setSelectedRapatDetail] = useState(null);
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [selectedRuangan, setSelectedRuangan] = useState(null);
@@ -30,6 +196,56 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [sidebarHover, setSidebarHover] = useState(false);
+  const [toasts, setToasts] = useState([]);
+  
+  // State untuk confirm modal
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    type: "delete",
+    confirmText: "Hapus",
+    cancelText: "Batal"
+  });
+
+  // Fungsi untuk menambah toast
+  const addToast = (message, type = "info") => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  // Fungsi untuk menghapus toast
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  // Fungsi untuk menampilkan confirm modal
+  const showConfirmModal = (options) => {
+    setConfirmModal({
+      isOpen: true,
+      title: options.title || "Konfirmasi",
+      message: options.message || "Apakah Anda yakin?",
+      onConfirm: options.onConfirm,
+      type: options.type || "delete",
+      confirmText: options.confirmText || "Hapus",
+      cancelText: options.cancelText || "Batal"
+    });
+  };
+
+  // Fungsi untuk menutup confirm modal
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      isOpen: false,
+      title: "",
+      message: "",
+      onConfirm: null,
+      type: "delete",
+      confirmText: "Hapus",
+      cancelText: "Batal"
+    });
+  };
+
   const [formData, setFormData] = useState({
     nama_rapat: "",
     jenis: "offline",
@@ -64,7 +280,6 @@ export default function Dashboard() {
     fetchUserList();
   }, []);
 
-  // Auto open/close sidebar berdasarkan hover
   useEffect(() => {
     let hoverTimer;
     
@@ -99,6 +314,7 @@ export default function Dashboard() {
       setData(res.data);
     } catch (err) {
       console.error("Gagal memuat data dashboard");
+      addToast("Gagal memuat data dashboard", "error");
     }
   };
 
@@ -110,6 +326,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Gagal memuat data rapat:", err);
       setRapatList([]);
+      addToast("Gagal memuat data rapat", "error");
     }
   };
 
@@ -121,6 +338,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Gagal memuat data ruangan:", err);
       setRuanganList([]);
+      addToast("Gagal memuat data ruangan", "error");
     }
   };
 
@@ -132,16 +350,15 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Gagal memuat data user:", err);
       setUserList([]);
+      addToast("Gagal memuat data user", "error");
     }
   };
 
-  // Fungsi untuk membuka modal detail rapat
   const handleOpenDetailModal = (rapat) => {
     setSelectedRapatDetail(rapat);
     setShowDetailModal(true);
   };
 
-  // Fungsi untuk menutup modal detail rapat
   const handleCloseDetailModal = () => {
     setShowDetailModal(false);
     setSelectedRapatDetail(null);
@@ -290,16 +507,16 @@ export default function Dashboard() {
     try {
       if (modalMode === "add") {
         await axios.post("/rapat", formData);
-        alert("Rapat berhasil ditambahkan");
+        addToast("Rapat berhasil ditambahkan", "success");
       } else {
         await axios.put(`/rapat/${selectedRapat.id}`, formData);
-        alert("Rapat berhasil diupdate");
+        addToast("Rapat berhasil diupdate", "success");
       }
       handleCloseModal();
       fetchDashboardData();
       fetchRapatList();
     } catch (err) {
-      alert("Gagal menyimpan data rapat");
+      addToast("Gagal menyimpan data rapat", "error");
       console.error(err);
     }
   };
@@ -309,16 +526,16 @@ export default function Dashboard() {
     try {
       if (modalMode === "add") {
         await axios.post("/ruangan", ruanganForm);
-        alert("Ruangan berhasil ditambahkan");
+        addToast("Ruangan berhasil ditambahkan", "success");
       } else {
         await axios.put(`/ruangan/${selectedRuangan.id}`, ruanganForm);
-        alert("Ruangan berhasil diupdate");
+        addToast("Ruangan berhasil diupdate", "success");
       }
       handleCloseRuanganModal();
       fetchDashboardData();
       fetchRuanganList();
     } catch (err) {
-      alert("Gagal menyimpan data ruangan");
+      addToast("Gagal menyimpan data ruangan", "error");
       console.error(err);
     }
   };
@@ -326,7 +543,6 @@ export default function Dashboard() {
   const handleUserSubmit = async (e) => {
     e.preventDefault();
     try {
-      // For edit mode, don't include password if it's empty
       const userDataToSubmit = { ...userForm };
       if (modalMode === "edit" && !userDataToSubmit.password) {
         delete userDataToSubmit.password;
@@ -334,58 +550,85 @@ export default function Dashboard() {
 
       if (modalMode === "add") {
         await axios.post("/users", userDataToSubmit);
-        alert("User berhasil ditambahkan");
+        addToast("User berhasil ditambahkan", "success");
       } else {
         await axios.put(`/users/${selectedUser.id}`, userDataToSubmit);
-        alert("User berhasil diupdate");
+        addToast("User berhasil diupdate", "success");
       }
       handleCloseUserModal();
       fetchUserList();
     } catch (err) {
-      alert("Gagal menyimpan data user");
+      addToast("Gagal menyimpan data user", "error");
       console.error(err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Yakin ingin menghapus rapat ini?")) {
-      try {
-        await axios.delete(`/rapat/${id}`);
-        alert("Rapat berhasil dihapus");
-        fetchDashboardData();
-        fetchRapatList();
-      } catch (err) {
-        alert("Gagal menghapus rapat");
-        console.error(err);
-      }
-    }
+    showConfirmModal({
+      title: "Hapus Rapat",
+      message: "Yakin ingin menghapus rapat ini? Tindakan ini tidak dapat dibatalkan.",
+      onConfirm: async () => {
+        try {
+          await axios.delete(`/rapat/${id}`);
+          addToast("Rapat berhasil dihapus", "success");
+          fetchDashboardData();
+          fetchRapatList();
+          closeConfirmModal();
+        } catch (err) {
+          addToast("Gagal menghapus rapat", "error");
+          console.error(err);
+          closeConfirmModal();
+        }
+      },
+      type: "delete",
+      confirmText: "Hapus",
+      cancelText: "Batal"
+    });
   };
 
   const handleDeleteRuangan = async (id) => {
-    if (window.confirm("Yakin ingin menghapus ruangan ini?")) {
-      try {
-        await axios.delete(`/ruangan/${id}`);
-        alert("Ruangan berhasil dihapus");
-        fetchDashboardData();
-        fetchRuanganList();
-      } catch (err) {
-        alert("Gagal menghapus ruangan");
-        console.error(err);
-      }
-    }
+    showConfirmModal({
+      title: "Hapus Ruangan",
+      message: "Yakin ingin menghapus ruangan ini? Tindakan ini tidak dapat dibatalkan.",
+      onConfirm: async () => {
+        try {
+          await axios.delete(`/ruangan/${id}`);
+          addToast("Ruangan berhasil dihapus", "success");
+          fetchDashboardData();
+          fetchRuanganList();
+          closeConfirmModal();
+        } catch (err) {
+          addToast("Gagal menghapus ruangan", "error");
+          console.error(err);
+          closeConfirmModal();
+        }
+      },
+      type: "delete",
+      confirmText: "Hapus",
+      cancelText: "Batal"
+    });
   };
 
   const handleDeleteUser = async (id) => {
-    if (window.confirm("Yakin ingin menghapus user ini?")) {
-      try {
-        await axios.delete(`/users/${id}`);
-        alert("User berhasil dihapus");
-        fetchUserList();
-      } catch (err) {
-        alert("Gagal menghapus user");
-        console.error(err);
-      }
-    }
+    showConfirmModal({
+      title: "Hapus User",
+      message: "Yakin ingin menghapus user ini? Tindakan ini tidak dapat dibatalkan.",
+      onConfirm: async () => {
+        try {
+          await axios.delete(`/users/${id}`);
+          addToast("User berhasil dihapus", "success");
+          fetchUserList();
+          closeConfirmModal();
+        } catch (err) {
+          addToast("Gagal menghapus user", "error");
+          console.error(err);
+          closeConfirmModal();
+        }
+      },
+      type: "delete",
+      confirmText: "Hapus",
+      cancelText: "Batal"
+    });
   };
 
   const handleMenuClick = (menu) => {
@@ -393,17 +636,25 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    showConfirmModal({
+      title: "Konfirmasi Logout",
+      message: "Apakah Anda yakin ingin keluar dari sistem?",
+      onConfirm: () => {
+        logout();
+        navigate("/login");
+        closeConfirmModal();
+      },
+      type: "warning",
+      confirmText: "Logout",
+      cancelText: "Batal"
+    });
   };
 
-  // Fungsi untuk mendapatkan nama ruangan berdasarkan ID
   const getNamaRuangan = (ruanganId) => {
     const ruangan = ruanganList.find(r => r.id === ruanganId);
     return ruangan ? ruangan.nama_ruangan : "Tidak tersedia";
   };
 
-  // Fungsi untuk mendapatkan nama ruangan dari rapat data
   const getRuanganName = (rapat) => {
     if (rapat.ruangan) {
       return rapat.ruangan.nama_ruangan;
@@ -411,214 +662,209 @@ export default function Dashboard() {
     return getNamaRuangan(rapat.ruangan_id);
   };
 
-  // Render konten berdasarkan menu aktif
   const renderContent = () => {
     switch (activeMenu) {
-     case "tambah-rapat":
-  return (
-    <div className="relative z-10">
-      {/* Data Rapat - TABEL MODERN */}
-      <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Data Rapat</h2>
-              <p className="text-gray-600">Kelola data rapat meeting</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => handleOpenModal("add")}
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 flex items-center space-x-2 shadow-lg"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="font-medium">Tambah Rapat</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Modern Table Design */}
-          <div className="overflow-hidden rounded-2xl border border-gray-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                    <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Nama Rapat</th>
-                    <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Jenis</th>
-                    <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Tanggal</th>
-                    <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Waktu</th>
-                    <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Ruangan</th>
-                    <th className="px-6 py-4 text-center text-gray-700 font-semibold text-sm">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {!rapatList || rapatList.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="text-center py-12">
-                        <div className="flex flex-col items-center space-y-4">
-                          <div className="p-4 bg-blue-50 rounded-2xl">
-                            <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-gray-600 font-medium text-lg mb-2">Belum ada data rapat</p>
-                            <p className="text-gray-500 text-sm mb-4">Mulai dengan membuat rapat pertama Anda</p>
-                            <button
-                              onClick={() => handleOpenModal("add")}
-                              className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-6 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 font-medium shadow-lg"
-                            >
-                              Buat Rapat Pertama
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    rapatList.map((rapat, index) => (
-                      <tr 
-                        key={rapat.id} 
-                        className={`transition-all duration-200 hover:bg-blue-50/50 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                        }`}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <p className="text-gray-800 font-semibold text-sm">{rapat.nama_rapat}</p>
-                              {rapat.deskripsi && (
-                                <p className="text-gray-500 text-xs mt-1 line-clamp-1">{rapat.deskripsi}</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <div className={`p-1.5 rounded-lg ${
-                              rapat.jenis === "online" ? "bg-blue-100" : "bg-green-100"
-                            }`}>
-                              <svg className={`w-3 h-3 ${
-                                rapat.jenis === "online" ? "text-blue-600" : "text-green-600"
-                              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {rapat.jenis === "online" ? (
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                ) : (
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                )}
-                              </svg>
-                            </div>
-                            <span className={`text-sm font-medium ${
-                              rapat.jenis === "online" ? "text-blue-700" : "text-green-700"
-                            }`}>
-                              {rapat.jenis === "online" ? "Online" : "Offline"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {/* <span className="text-gray-700 font-medium text-sm">{rapat.tanggal}</span> */}
-                            <span className="text-gray-700 font-medium text-sm">
-                              {new Date(rapat.tanggal).toLocaleDateString('id-ID', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                              })}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-gray-700 font-medium text-sm">
-                              {rapat.waktu_mulai} - {rapat.waktu_selesai}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {rapat.jenis === "offline" && rapat.ruangan_id ? (
-                            <div className="flex items-center space-x-2">
-                              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                              </svg>
-                              <span className="text-gray-700 font-medium text-sm">{getRuanganName(rapat)}</span>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400 text-sm">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center space-x-1">
-                            <button
-                              onClick={() => handleOpenDetailModal(rapat)}
-                              className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-xl transition-all duration-200 transform hover:scale-105"
-                              title="Lihat Detail"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleOpenModal("edit", rapat)}
-                              className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200 transform hover:scale-105"
-                              title="Edit"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(rapat.id)}
-                              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 transform hover:scale-105"
-                              title="Hapus"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Table Footer */}
-          {rapatList && rapatList.length > 0 && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <p className="text-gray-600 text-sm">
-                  Menampilkan <span className="font-semibold">{rapatList.length}</span> rapat
-                </p>
-                <div className="flex items-center space-x-2">
-                  <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    Previous
-                  </button>
-                  <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                    Next
-                  </button>
+      case "tambah-rapat":
+        return (
+          <div className="relative z-10">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Data Rapat</h2>
+                    <p className="text-gray-600">Kelola data rapat meeting</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleOpenModal("add")}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Tambah Rapat</span>
+                    </button>
+                  </div>
                 </div>
+
+                <div className="overflow-hidden rounded-2xl border border-gray-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                          <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Nama Rapat</th>
+                          <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Jenis</th>
+                          <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Tanggal</th>
+                          <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Waktu</th>
+                          <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Ruangan</th>
+                          <th className="px-6 py-4 text-center text-gray-700 font-semibold text-sm">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!rapatList || rapatList.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="text-center py-12">
+                              <div className="flex flex-col items-center space-y-4">
+                                <div className="p-4 bg-blue-50 rounded-2xl">
+                                  <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-gray-600 font-medium text-lg mb-2">Belum ada data rapat</p>
+                                  <p className="text-gray-500 text-sm mb-4">Mulai dengan membuat rapat pertama Anda</p>
+                                  <button
+                                    onClick={() => handleOpenModal("add")}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 font-medium"
+                                  >
+                                    Buat Rapat Pertama
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          rapatList.map((rapat, index) => (
+                            <tr 
+                              key={rapat.id} 
+                              className={`transition-all duration-200 hover:bg-blue-50/50 ${
+                                index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                              }`}
+                            >
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-3">
+                                  <div className="p-2 bg-blue-100 rounded-lg">
+                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-800 font-semibold text-sm">{rapat.nama_rapat}</p>
+                                    {rapat.deskripsi && (
+                                      <p className="text-gray-500 text-xs mt-1 line-clamp-1">{rapat.deskripsi}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className={`p-1.5 rounded-lg ${
+                                    rapat.jenis === "online" ? "bg-blue-100" : "bg-green-100"
+                                  }`}>
+                                    <svg className={`w-3 h-3 ${
+                                      rapat.jenis === "online" ? "text-blue-600" : "text-green-600"
+                                    }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      {rapat.jenis === "online" ? (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                      ) : (
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      )}
+                                    </svg>
+                                  </div>
+                                  <span className={`text-sm font-medium ${
+                                    rapat.jenis === "online" ? "text-blue-700" : "text-green-700"
+                                  }`}>
+                                    {rapat.jenis === "online" ? "Online" : "Offline"}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                  <span className="text-gray-700 font-medium text-sm">
+                                    {new Date(rapat.tanggal).toLocaleDateString('id-ID', {
+                                      day: 'numeric',
+                                      month: 'long',
+                                      year: 'numeric',
+                                    })}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span className="text-gray-700 font-medium text-sm">
+                                    {rapat.waktu_mulai} - {rapat.waktu_selesai}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                {rapat.jenis === "offline" && rapat.ruangan_id ? (
+                                  <div className="flex items-center space-x-2">
+                                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    <span className="text-gray-700 font-medium text-sm">{getRuanganName(rapat)}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">-</span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex justify-center space-x-1">
+                                  <button
+                                    onClick={() => handleOpenDetailModal(rapat)}
+                                    className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-xl transition-all duration-200 transform hover:scale-105"
+                                    title="Lihat Detail"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenModal("edit", rapat)}
+                                    className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200 transform hover:scale-105"
+                                    title="Edit"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(rapat.id)}
+                                    className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 transform hover:scale-105"
+                                    title="Hapus"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {rapatList && rapatList.length > 0 && (
+                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <p className="text-gray-600 text-sm">
+                        Menampilkan <span className="font-semibold">{rapatList.length}</span> rapat
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                          Previous
+                        </button>
+                        <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+          </div>
+        );
 
       case "data-ruangan":
         return (
@@ -643,7 +889,6 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Table Ruangan */}
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -755,7 +1000,6 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Table User */}
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -843,7 +1087,6 @@ export default function Dashboard() {
       default:
         return (
           <>
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 relative z-10">
               <StatCard 
                 title="Total Ruangan" 
@@ -871,7 +1114,6 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* Rapat List Section */}
             <div id="rapat-list" className="relative z-10">
               <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
                 <div className="p-6">
@@ -882,7 +1124,6 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Table Rapat */}
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -930,7 +1171,6 @@ export default function Dashboard() {
                                   {rapat.jenis === "online" ? "Online" : "Offline"}
                                 </span>
                               </td>
-                              {/* <td className="px-4 py-3 text-gray-600 text-sm">{rapat.tanggal}</td> */}
                               <td className="px-4 py-3 text-gray-600 text-sm">
                                 {new Date(rapat.tanggal).toLocaleDateString('id-ID', {
                                   day: 'numeric',
@@ -948,7 +1188,6 @@ export default function Dashboard() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex justify-center space-x-2">
-                                  {/* Tombol Detail - Icon Mata */}
                                   <button
                                     onClick={() => handleOpenDetailModal(rapat)}
                                     className="text-green-500 hover:text-green-600 transition-colors duration-200 p-1.5 hover:bg-green-50 rounded-lg"
@@ -977,7 +1216,28 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-white p-6 relative overflow-hidden">
-      {/* Background Elements */}
+      {/* Render semua toast notifications */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+      />
+
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
@@ -985,7 +1245,6 @@ export default function Dashboard() {
       </div>
 
       <div className="flex gap-6">
-        {/* Sidebar */}
         <div 
           className={`bg-white backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
             sidebarOpen ? 'w-64' : 'w-20'
@@ -994,7 +1253,6 @@ export default function Dashboard() {
           onMouseLeave={handleSidebarMouseLeave}
         >
           <div className="p-4 h-full flex flex-col">
-            {/* Sidebar Header */}
             <div className="flex items-center space-x-3 mb-6">
               <div className="bg-white rounded-full p-2 shadow-lg flex-shrink-0">
                 <img 
@@ -1019,10 +1277,8 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Navigation Menu */}
             <nav className="flex-1">
               <div className="space-y-2">
-                {/* Dashboard Menu */}
                 <button
                   onClick={() => handleMenuClick("dashboard")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
@@ -1044,7 +1300,6 @@ export default function Dashboard() {
                   )}
                 </button>
 
-                {/* Tambah Rapat Menu */}
                 <button
                   onClick={() => handleMenuClick("tambah-rapat")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
@@ -1066,7 +1321,6 @@ export default function Dashboard() {
                   )}
                 </button>
 
-                {/* Master Data Section - Only visible for admin */}
                 {user?.role === 'admin' && (
                   <div className="pt-4">
                   {sidebarOpen && (
@@ -1119,13 +1373,11 @@ export default function Dashboard() {
               </div>
             </nav>
 
-            {/* User Info & Logout */}
             <div className="pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 {sidebarOpen ? (
                   <>
                     <div className="flex items-center space-x-3">
-                      {/* Icon Profile */}
                       <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
                         <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1153,7 +1405,6 @@ export default function Dashboard() {
                 ) : (
                   <div className="w-full flex justify-center">
                     <div className="flex flex-col items-center space-y-2">
-                      {/* Icon Profile untuk sidebar tertutup */}
                       <div className="p-2 bg-blue-100 rounded-lg">
                         <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1186,9 +1437,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-0' : 'ml-0'}`}>
-          {/* Header */}
           <div className="relative z-10 mb-8">
             <div className="flex justify-between items-center">
               <div>
@@ -1212,7 +1461,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Render Content Berdasarkan Menu Aktif */}
           {renderContent()}
         </div>
       </div>
@@ -1322,7 +1570,7 @@ export default function Dashboard() {
                     handleCloseDetailModal();
                     handleOpenModal("edit", selectedRapatDetail);
                   }}
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                  className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
                 >
                   Edit Rapat
                 </button>
@@ -1332,7 +1580,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal untuk edit rapat */}
+      {/* Modal Rapat */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
@@ -1471,7 +1719,7 @@ export default function Dashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                    className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
                   >
                     {modalMode === "add" ? "Tambah" : "Simpan"}
                   </button>
@@ -1482,7 +1730,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal Tambah/Edit Ruangan */}
+      {/* Modal Ruangan */}
       {showRuanganModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
@@ -1548,38 +1796,22 @@ export default function Dashboard() {
                     value={ruanganForm.fasilitas}
                     onChange={handleRuanganInputChange}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
-                    placeholder="Masukkan fasilitas ruangan (AC, Proyektor, Whiteboard, dll)"
+                    placeholder="Masukkan fasilitas ruangan"
                     rows="3"
-                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-gray-800 font-semibold mb-2 text-sm">Status</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        value="tersedia"
-                        checked={ruanganForm.status === "tersedia"}
-                        onChange={handleRuanganInputChange}
-                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                      />
-                      <span className="text-gray-800 text-sm">Tersedia</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        value="tidak_tersedia"
-                        checked={ruanganForm.status === "tidak_tersedia"}
-                        onChange={handleRuanganInputChange}
-                        className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 focus:ring-blue-400"
-                      />
-                      <span className="text-gray-800 text-sm">Tidak Tersedia</span>
-                    </label>
-                  </div>
+                  <select
+                    name="status"
+                    value={ruanganForm.status}
+                    onChange={handleRuanganInputChange}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                  >
+                    <option value="tersedia">Tersedia</option>
+                    <option value="tidak_tersedia">Tidak Tersedia</option>
+                  </select>
                 </div>
 
                 <div className="flex gap-2 pt-3">
@@ -1592,7 +1824,7 @@ export default function Dashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                    className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
                   >
                     {modalMode === "add" ? "Tambah" : "Simpan"}
                   </button>
@@ -1603,10 +1835,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Modal Tambah/Edit User */}
+      {/* Modal User dengan Scroll */}
       {showUserModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
@@ -1723,7 +1955,7 @@ export default function Dashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                    className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
                   >
                     {modalMode === "add" ? "Tambah" : "Simpan"}
                   </button>
@@ -1763,7 +1995,7 @@ const StatCard = ({ title, value, icon, gradient }) => {
       case "users":
         return (
           <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         );
       case "check":
