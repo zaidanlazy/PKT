@@ -180,7 +180,7 @@ export default function Dashboard() {
     ruangan_tersedia: 0,
     ruangan_tidak_tersedia: 0,
   });
-  
+
   const [rapatList, setRapatList] = useState([]);
   const [ruanganList, setRuanganList] = useState([]);
   const [userList, setUserList] = useState([]);
@@ -197,7 +197,7 @@ export default function Dashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [sidebarHover, setSidebarHover] = useState(false);
   const [toasts, setToasts] = useState([]);
-  
+
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -262,7 +262,7 @@ export default function Dashboard() {
     fasilitas: "",
     status: "tersedia"
   });
-  
+
   const [userForm, setUserForm] = useState({
     mpk: "",
     nama: "",
@@ -282,7 +282,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     let hoverTimer;
-    
+
     if (sidebarHover) {
       setSidebarOpen(true);
     } else {
@@ -570,7 +570,7 @@ export default function Dashboard() {
       onConfirm: async () => {
         try {
           await axios.delete(`/rapat/${id}`);
-          addToast("Rapat berhasil dihapus", "success");
+          addToast("Rapat berhasil dihapus", "error");
           fetchDashboardData();
           fetchRapatList();
           closeConfirmModal();
@@ -593,7 +593,7 @@ export default function Dashboard() {
       onConfirm: async () => {
         try {
           await axios.delete(`/ruangan/${id}`);
-          addToast("Ruangan berhasil dihapus", "success");
+          addToast("Ruangan berhasil dihapus", "error");
           fetchDashboardData();
           fetchRuanganList();
           closeConfirmModal();
@@ -616,7 +616,7 @@ export default function Dashboard() {
       onConfirm: async () => {
         try {
           await axios.delete(`/users/${id}`);
-          addToast("User berhasil dihapus", "success");
+          addToast("User berhasil dihapus", "error");
           fetchUserList();
           closeConfirmModal();
         } catch (err) {
@@ -725,8 +725,8 @@ export default function Dashboard() {
                           </tr>
                         ) : (
                           rapatList.map((rapat, index) => (
-                            <tr 
-                              key={rapat.id} 
+                            <tr
+                              key={rapat.id}
                               className={`transition-all duration-200 hover:bg-blue-50/50 ${
                                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                               }`}
@@ -894,11 +894,6 @@ export default function Dashboard() {
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama Ruangan</th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Kapasitas</th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Lokasi</th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Fasilitas</th>
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Status</th>
-                        <th className="px-4 py-3 text-center text-gray-800 font-semibold text-sm">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -921,8 +916,8 @@ export default function Dashboard() {
                         </tr>
                       ) : (
                         ruanganList.map((ruangan) => (
-                          <tr 
-                            key={ruangan.id} 
+                          <tr
+                            key={ruangan.id}
                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
                             <td className="px-4 py-3 text-gray-800 font-medium text-sm">{ruangan.nama_ruangan}</td>
@@ -1004,7 +999,7 @@ export default function Dashboard() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">MPK</th>
+                        <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">NPK</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Nama</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Email</th>
                         <th className="px-4 py-3 text-left text-gray-800 font-semibold text-sm">Unit Kerja</th>
@@ -1032,8 +1027,8 @@ export default function Dashboard() {
                         </tr>
                       ) : (
                         userList.map((userData) => (
-                          <tr 
-                            key={userData.id} 
+                          <tr
+                            key={userData.id}
                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
                             <td className="px-4 py-3 text-gray-800 font-medium text-sm">{userData.mpk}</td>
@@ -1088,27 +1083,27 @@ export default function Dashboard() {
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 relative z-10">
-              <StatCard 
-                title="Total Ruangan" 
-                value={data.total_ruangan} 
+              <StatCard
+                title="Total Ruangan"
+                value={data.total_ruangan}
                 icon="building"
                 gradient="from-blue-500 to-cyan-500"
               />
-              <StatCard 
-                title="Ruangan Tersedia" 
-                value={data.ruangan_tersedia} 
+              <StatCard
+                title="Ruangan Tersedia"
+                value={data.ruangan_tersedia}
                 icon="check"
                 gradient="from-green-500 to-emerald-500"
               />
-              <StatCard 
-                title="Rapat Online" 
-                value={data.total_online} 
+              <StatCard
+                title="Rapat Online"
+                value={data.total_online}
                 icon="video"
                 gradient="from-purple-500 to-pink-500"
               />
-              <StatCard 
-                title="Rapat Offline" 
-                value={data.total_offline} 
+              <StatCard
+                title="Rapat Offline"
+                value={data.total_offline}
                 icon="users"
                 gradient="from-orange-500 to-red-500"
               />
@@ -1155,8 +1150,8 @@ export default function Dashboard() {
                           </tr>
                         ) : (
                           rapatList.map((rapat) => (
-                            <tr 
-                              key={rapat.id} 
+                            <tr
+                              key={rapat.id}
                               className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                             >
                               <td className="px-4 py-3 text-gray-800 font-medium text-sm">{rapat.nama_rapat}</td>
@@ -1245,7 +1240,7 @@ export default function Dashboard() {
       </div>
 
       <div className="flex gap-6">
-        <div 
+        <div
           className={`bg-white backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
             sidebarOpen ? 'w-64' : 'w-20'
           }`}
@@ -1255,9 +1250,9 @@ export default function Dashboard() {
           <div className="p-4 h-full flex flex-col">
             <div className="flex items-center space-x-3 mb-6">
               <div className="bg-white rounded-full p-2 shadow-lg flex-shrink-0">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
-                  alt="Pupuk Kaltim Logo" 
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png"
+                  alt="Pupuk Kaltim Logo"
                   className="h-8 w-8 object-contain"
                 />
               </div>
@@ -1282,8 +1277,8 @@ export default function Dashboard() {
                 <button
                   onClick={() => handleMenuClick("dashboard")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "dashboard" 
-                      ? "bg-blue-50 text-blue-600 border border-blue-200" 
+                    activeMenu === "dashboard"
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 >
@@ -1303,8 +1298,8 @@ export default function Dashboard() {
                 <button
                   onClick={() => handleMenuClick("tambah-rapat")}
                   className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "tambah-rapat" 
-                      ? "bg-green-50 text-green-600 border border-green-200" 
+                    activeMenu === "tambah-rapat"
+                      ? "bg-green-50 text-green-600 border border-green-200"
                       : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                   }`}
                 >
@@ -1326,12 +1321,12 @@ export default function Dashboard() {
                   {sidebarOpen && (
                     <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
                   )}
-                  
+
                   <button
                     onClick={() => handleMenuClick("data-ruangan")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      activeMenu === "data-ruangan" 
-                        ? "bg-purple-50 text-purple-600 border border-purple-200" 
+                      activeMenu === "data-ruangan"
+                        ? "bg-purple-50 text-purple-600 border border-purple-200"
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1351,8 +1346,8 @@ export default function Dashboard() {
                   <button
                     onClick={() => handleMenuClick("data-peserta")}
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      activeMenu === "data-peserta" 
-                        ? "bg-orange-50 text-orange-600 border border-orange-200" 
+                      activeMenu === "data-peserta"
+                        ? "bg-orange-50 text-orange-600 border border-orange-200"
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                     }`}
                   >
@@ -1442,9 +1437,9 @@ export default function Dashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">
-                  {activeMenu === "dashboard" ? "Dashboard" : 
+                  {activeMenu === "dashboard" ? "Dashboard" :
                    activeMenu === "tambah-rapat" ? "Tambah Rapat" :
-                   activeMenu === "data-ruangan" ? "Data Ruangan" : 
+                   activeMenu === "data-ruangan" ? "Data Ruangan" :
                    activeMenu === "data-peserta" ? "Data User" : "Dashboard"}
                 </h1>
                 <p className="text-gray-600">Sistem Manajemen Rapat Pupuk Kaltim</p>
@@ -1472,7 +1467,7 @@ export default function Dashboard() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-800">Detail Rapat</h3>
-                <button 
+                <button
                   onClick={handleCloseDetailModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
@@ -1589,7 +1584,7 @@ export default function Dashboard() {
                 <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah Rapat" : "Edit Rapat"}
                 </h3>
-                <button 
+                <button
                   onClick={handleCloseModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
@@ -1609,7 +1604,7 @@ export default function Dashboard() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
                     placeholder="Masukkan nama kegiatan "
-                    
+
                   />
                 </div>
 
@@ -1739,7 +1734,7 @@ export default function Dashboard() {
                 <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah Ruangan" : "Edit Ruangan"}
                 </h3>
-                <button 
+                <button
                   onClick={handleCloseRuanganModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
@@ -1763,56 +1758,7 @@ export default function Dashboard() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Kapasitas</label>
-                  <input
-                    type="number"
-                    name="kapasitas"
-                    value={ruanganForm.kapasitas}
-                    onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan kapasitas ruangan"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Lokasi</label>
-                  <input
-                    type="text"
-                    name="lokasi"
-                    value={ruanganForm.lokasi}
-                    onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan lokasi ruangan"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Fasilitas</label>
-                  <textarea
-                    name="fasilitas"
-                    value={ruanganForm.fasilitas}
-                    onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
-                    placeholder="Masukkan fasilitas ruangan"
-                    rows="3"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Status</label>
-                  <select
-                    name="status"
-                    value={ruanganForm.status}
-                    onChange={handleRuanganInputChange}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                  >
-                    <option value="tersedia">Tersedia</option>
-                    <option value="tidak_tersedia">Tidak Tersedia</option>
-                  </select>
-                </div>
+               
 
                 <div className="flex gap-2 pt-3">
                   <button
@@ -1844,7 +1790,7 @@ export default function Dashboard() {
                 <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah User" : "Edit User"}
                 </h3>
-                <button 
+                <button
                   onClick={handleCloseUserModal}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
                 >
@@ -1856,14 +1802,14 @@ export default function Dashboard() {
 
               <form onSubmit={handleUserSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-gray-800 font-semibold mb-2 text-sm">MPK</label>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">NPK</label>
                   <input
                     type="text"
                     name="mpk"
                     value={userForm.mpk}
                     onChange={handleUserInputChange}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                    placeholder="Masukkan MPK user"
+                    placeholder="Masukkan NPK user"
                     required
                   />
                 </div>
