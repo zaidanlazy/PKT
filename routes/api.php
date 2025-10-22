@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/rapat', [RapatController::class, 'index']);
+    Route::get('/rapat-ruang', [RapatController::class, 'indexrapat']);
     Route::post('/rapat', [RapatController::class, 'store']);
     Route::put('/rapat/{id}', [RapatController::class, 'update']);
     Route::delete('/rapat/{id}', [RapatController::class, 'destroy']);

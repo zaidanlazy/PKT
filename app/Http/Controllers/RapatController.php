@@ -12,10 +12,21 @@ class RapatController extends Controller
     public function index()
     {
         $rapat = Rapat::with('ruangan')
-                     ->orderBy('tanggal', 'desc')
-                     ->orderBy('waktu_mulai', 'desc')
-                     ->get();
-        
+                    ->orderBy('tanggal', 'desc')
+                    ->orderBy('waktu_mulai', 'desc')
+                    ->whereDate('created_at', today())
+                    ->get();
+                
+        return response()->json($rapat);
+    }
+
+    public function indexrapat()
+    {
+        $rapat = Rapat::with('ruangan')
+                    ->orderBy('tanggal', 'desc')
+                    ->orderBy('waktu_mulai', 'desc')
+                    ->get();
+                
         return response()->json($rapat);
     }
 

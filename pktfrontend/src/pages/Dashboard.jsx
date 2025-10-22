@@ -182,6 +182,7 @@ export default function Dashboard() {
   });
 
   const [rapatList, setRapatList] = useState([]);
+  const [ruangRapatList, setRuangRapatList] = useState([]);
   const [ruanganList, setRuanganList] = useState([]);
   const [userList, setUserList] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -278,6 +279,7 @@ export default function Dashboard() {
     fetchRapatList();
     fetchRuanganList();
     fetchUserList();
+    fetchRuangRapatList();
   }, []);
 
   useEffect(() => {
@@ -330,6 +332,18 @@ export default function Dashboard() {
     }
   };
 
+   const fetchRuangRapatList = async () => {
+    try {
+      const res = await axios.get("/rapat-ruang");
+      const data = res.data?.data || res.data || [];
+      setRuangRapatList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Gagal memuat data rapat:", err);
+      setRuangRapatList([]);
+      addToast("Gagal memuat data rapat", "error");
+    }
+  };
+
   const fetchRuanganList = async () => {
     try {
       const res = await axios.get("/ruangan");
@@ -367,11 +381,15 @@ export default function Dashboard() {
   const handleOpenModal = (mode, rapat = null) => {
     setModalMode(mode);
     if (mode === "edit" && rapat) {
+      const formattedDate = new Date(rapat.tanggal)
+      .toISOString()
+      .split("T")[0];
       setSelectedRapat(rapat);
       setFormData({
         nama_rapat: rapat.nama_rapat,
         jenis: rapat.jenis,
-        tanggal: rapat.tanggal,
+        // tanggal: rapat.tanggal,
+        tanggal: formattedDate,
         waktu_mulai: rapat.waktu_mulai,
         waktu_selesai: rapat.waktu_selesai,
         ruangan_id: rapat.ruangan_id || "",
@@ -515,6 +533,7 @@ export default function Dashboard() {
       handleCloseModal();
       fetchDashboardData();
       fetchRapatList();
+      fetchRuangRapatList();
     } catch (err) {
       addToast("Gagal menyimpan data rapat", "error");
       console.error(err);
@@ -573,6 +592,7 @@ export default function Dashboard() {
           addToast("Rapat berhasil dihapus", "error");
           fetchDashboardData();
           fetchRapatList();
+          fetchRuangRapatList();
           closeConfirmModal();
         } catch (err) {
           addToast("Gagal menghapus rapat", "error");
@@ -701,7 +721,7 @@ export default function Dashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {!rapatList || rapatList.length === 0 ? (
+                        {!ruangRapatList || ruangRapatList.length === 0 ? (
                           <tr>
                             <td colSpan="6" className="text-center py-12">
                               <div className="flex flex-col items-center space-y-4">
@@ -724,7 +744,7 @@ export default function Dashboard() {
                             </td>
                           </tr>
                         ) : (
-                          rapatList.map((rapat, index) => (
+                          ruangRapatList.map((rapat, index) => (
                             <tr
                               key={rapat.id}
                               className={`transition-all duration-200 hover:bg-blue-50/50 ${
@@ -844,11 +864,11 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {rapatList && rapatList.length > 0 && (
+                {ruangRapatList && ruangRapatList.length > 0 && (
                   <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
                     <div className="flex justify-between items-center">
                       <p className="text-gray-600 text-sm">
-                        Menampilkan <span className="font-semibold">{rapatList.length}</span> rapat
+                        Menampilkan <span className="font-semibold">{ruangRapatList.length}</span> rapat
                       </p>
                       <div className="flex items-center space-x-2">
                         <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
@@ -921,14 +941,14 @@ export default function Dashboard() {
                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
                           >
                             <td className="px-4 py-3 text-gray-800 font-medium text-sm">{ruangan.nama_ruangan}</td>
-                            <td className="px-4 py-3 text-gray-600 text-sm">{ruangan.kapasitas} orang</td>
+                            {/* <td className="px-4 py-3 text-gray-600 text-sm">{ruangan.kapasitas} orang</td>
                             <td className="px-4 py-3 text-gray-600 text-sm">{ruangan.lokasi}</td>
                             <td className="px-4 py-3 text-gray-600 text-sm">
                               <div className="max-w-xs truncate" title={ruangan.fasilitas}>
                                 {ruangan.fasilitas}
                               </div>
-                            </td>
-                            <td className="px-4 py-3">
+                            </td> */}
+                            {/* <td className="px-4 py-3">
                               <span
                                 className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                   ruangan.status === "tersedia"
@@ -938,7 +958,7 @@ export default function Dashboard() {
                               >
                                 {ruangan.status === "tersedia" ? "Tersedia" : "Tidak Tersedia"}
                               </span>
-                            </td>
+                            </td> */}
                             <td className="px-4 py-3">
                               <div className="flex justify-center space-x-2">
                                 <button
@@ -1510,7 +1530,13 @@ export default function Dashboard() {
 
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                     <p className="text-sm text-gray-600">Tanggal</p>
-                    <p className="font-medium text-gray-800">{selectedRapatDetail.tanggal}</p>
+                    <p className="font-medium text-gray-800">
+                                    {new Date(selectedRapatDetail.tanggal).toLocaleDateString('id-ID', {
+                                      day: 'numeric',
+                                      month: 'long',
+                                      year: 'numeric',
+                                    })}
+                                  </p>
                   </div>
                 </div>
 
