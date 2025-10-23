@@ -11,7 +11,7 @@ class RuanganController extends Controller
     public function index()
     {
         $ruangan = Ruangan::orderBy('created_at', 'desc')->get();
-        
+
         return response()->json($ruangan);
     }
 
@@ -19,10 +19,6 @@ class RuanganController extends Controller
     {
         $validated = Validator::make($request->all(), [
             'nama_ruangan' => 'required|string|max:255',
-            'kapasitas' => 'required|integer|min:1',
-            'lokasi' => 'required|string|max:255',
-            'fasilitas' => 'nullable|string',
-            'status' => 'required|in:tersedia,tidak_tersedia',
         ]);
 
         if ($validated->fails()) {
@@ -34,7 +30,12 @@ class RuanganController extends Controller
         }
 
         try {
-            $ruangan = Ruangan::create($request->all());
+            $payload = [
+                'nama_ruangan' => $request->input('nama_ruangan'),
+                'status' => 'tersedia',
+            ];
+
+            $ruangan = Ruangan::create($payload);
 
             return response()->json([
                 'status' => 'success',
@@ -54,7 +55,7 @@ class RuanganController extends Controller
     public function update(Request $request, $id)
     {
         $ruangan = Ruangan::find($id);
-        
+
         if (!$ruangan) {
             return response()->json([
                 'status' => 'error',
@@ -64,10 +65,6 @@ class RuanganController extends Controller
 
         $validated = Validator::make($request->all(), [
             'nama_ruangan' => 'required|string|max:255',
-            'kapasitas' => 'required|integer|min:1',
-            'lokasi' => 'required|string|max:255',
-            'fasilitas' => 'nullable|string',
-            'status' => 'required|in:tersedia,tidak_tersedia',
         ]);
 
         if ($validated->fails()) {
@@ -79,7 +76,10 @@ class RuanganController extends Controller
         }
 
         try {
-            $ruangan->update($request->all());
+            $payload = [
+                'nama_ruangan' => $request->input('nama_ruangan'),
+            ];
+            $ruangan->update($payload);
 
             return response()->json([
                 'status' => 'success',
@@ -99,7 +99,7 @@ class RuanganController extends Controller
     public function destroy($id)
     {
         $ruangan = Ruangan::find($id);
-        
+
         if (!$ruangan) {
             return response()->json([
                 'status' => 'error',
