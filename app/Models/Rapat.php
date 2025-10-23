@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rapat extends Model
 {
@@ -32,5 +33,21 @@ class Rapat extends Model
     public function ruangan(): BelongsTo
     {
         return $this->belongsTo(Ruangan::class);
+    }
+
+    /**
+     * Get the undangan for the rapat.
+     */
+    public function undangan(): HasMany
+    {
+        return $this->hasMany(UndanganRapat::class);
+    }
+
+    /**
+     * Get the invited users for the rapat.
+     */
+    public function invitedUsers(): HasMany
+    {
+        return $this->hasMany(UndanganRapat::class)->with('user');
     }
 }

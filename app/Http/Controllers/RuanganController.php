@@ -12,7 +12,9 @@ class RuanganController extends Controller
     {
         $ruangan = Ruangan::orderBy('created_at', 'desc')->get();
 
-        return response()->json($ruangan);
+        return response()->json([
+            'data' => $ruangan
+        ]);
     }
 
     public function store(Request $request)

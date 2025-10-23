@@ -8,6 +8,7 @@ import StatCard from "../components/StatCard";
 import Rapat from "./rapat";
 import Ruangan from "./ruangan";
 import User from "./User";
+import Undangan from "./Undangan";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -158,6 +159,8 @@ export default function Dashboard() {
         return <Ruangan onChanged={fetchDashboardData} />;
       case "data-peserta":
         return <User />;
+      case "undangan":
+        return <Undangan />;
       default:
         return (
           <>
@@ -395,6 +398,27 @@ export default function Dashboard() {
                   )}
                 </button>
 
+                <button
+                  onClick={() => handleMenuClick("undangan")}
+                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                    activeMenu === "undangan"
+                      ? "bg-indigo-50 text-indigo-600 border border-indigo-200"
+                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="p-2 bg-indigo-100 rounded-lg flex-shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 00-15 0v5h5l-5 5-5-5h5v-5a7.5 7.5 0 0115 0v5z" />
+                    </svg>
+                  </div>
+                  {sidebarOpen && (
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-semibold text-sm truncate">Undangan Rapat</p>
+                      <p className="text-xs text-gray-500 truncate">Kelola undangan rapat</p>
+                    </div>
+                  )}
+                </button>
+
                 {user?.role === 'admin' && (
                   <div className="pt-4">
                     {sidebarOpen && (
@@ -518,6 +542,7 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold text-gray-800">
                   {activeMenu === "dashboard" ? "Dashboard" :
                    activeMenu === "tambah-rapat" ? "Tambah Rapat" :
+                   activeMenu === "undangan" ? "Undangan Rapat" :
                    activeMenu === "data-ruangan" ? "Data Ruangan" :
                    activeMenu === "data-peserta" ? "Data User" : "Dashboard"}
                 </h1>

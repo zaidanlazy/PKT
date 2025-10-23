@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Rapat;
 use App\Models\Ruangan;
+use App\Models\UndanganRapat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,7 +18,9 @@ class RapatController extends Controller
                     ->whereDate('created_at', today())
                     ->get();
                 
-        return response()->json($rapat);
+        return response()->json([
+            'data' => $rapat
+        ]);
     }
 
     public function indexrapat()
@@ -27,7 +30,9 @@ class RapatController extends Controller
                     ->orderBy('waktu_mulai', 'desc')
                     ->get();
                 
-        return response()->json($rapat);
+        return response()->json([
+            'data' => $rapat
+        ]);
     }
 
     public function store(Request $request)
@@ -40,6 +45,9 @@ class RapatController extends Controller
             'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
             'ruangan_id' => 'nullable|exists:ruangan,id',
             'deskripsi' => 'nullable|string',
+            'invited_users' => 'nullable|array',
+            'invited_users.*' => 'exists:users,id',
+            'pesan_undangan' => 'nullable|string|max:500'
         ]);
 
         if ($validated->fails()) {
@@ -85,10 +93,22 @@ class RapatController extends Controller
         try {
             $rapat = Rapat::create($request->all());
 
+            // Create invitations if users are invited
+            if ($request->has('invited_users') && is_array($request->invited_users)) {
+                foreach ($request->invited_users as $userId) {
+                    UndanganRapat::create([
+                        'rapat_id' => $rapat->id,
+                        'user_id' => $userId,
+                        'pesan_undangan' => $request->pesan_undangan,
+                        'status' => 'pending'
+                    ]);
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Rapat berhasil ditambahkan',
-                'data' => $rapat->load('ruangan')
+                'data' => $rapat->load(['ruangan', 'undangan.user'])
             ], 201);
 
         } catch (\Exception $e) {

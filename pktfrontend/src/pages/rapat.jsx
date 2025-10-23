@@ -6,6 +6,7 @@ import ConfirmModal from "../components/ConfirmModal";
 export default function Rapat({ onChanged }) {
   const [rapatList, setRapatList] = useState([]);
   const [ruanganList, setRuanganList] = useState([]);
+  const [userList, setUserList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedRapatDetail, setSelectedRapatDetail] = useState(null);
@@ -32,6 +33,8 @@ export default function Rapat({ onChanged }) {
     waktu_selesai: "",
     ruangan_id: "",
     deskripsi: "",
+    invited_users: [],
+    pesan_undangan: "",
   });
 
   // Fungsi untuk menambah toast
@@ -74,6 +77,7 @@ export default function Rapat({ onChanged }) {
   useEffect(() => {
     fetchRapatList();
     fetchRuanganList();
+    fetchUserList();
   }, []);
 
   const fetchRapatList = async () => {
@@ -97,6 +101,18 @@ export default function Rapat({ onChanged }) {
       console.error("Gagal memuat data ruangan:", err);
       setRuanganList([]);
       addToast("Gagal memuat data ruangan", "error");
+    }
+  };
+
+  const fetchUserList = async () => {
+    try {
+      const res = await axios.get("/users");
+      const data = res.data?.data || res.data || [];
+      setUserList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Gagal memuat data user:", err);
+      setUserList([]);
+      addToast("Gagal memuat data user", "error");
     }
   };
 
@@ -125,6 +141,8 @@ export default function Rapat({ onChanged }) {
         waktu_selesai: rapat.waktu_selesai,
         ruangan_id: rapat.ruangan_id || "",
         deskripsi: rapat.deskripsi || "",
+        invited_users: rapat.undangan?.map(inv => inv.user_id) || [],
+        pesan_undangan: "",
       });
     } else {
       setFormData({
@@ -135,6 +153,8 @@ export default function Rapat({ onChanged }) {
         waktu_selesai: "",
         ruangan_id: "",
         deskripsi: "",
+        invited_users: [],
+        pesan_undangan: "",
       });
     }
     setShowModal(true);
@@ -151,6 +171,8 @@ export default function Rapat({ onChanged }) {
       waktu_selesai: "",
       ruangan_id: "",
       deskripsi: "",
+      invited_users: [],
+      pesan_undangan: "",
     });
   };
 
@@ -159,6 +181,15 @@ export default function Rapat({ onChanged }) {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleUserInvite = (userId) => {
+    setFormData(prev => ({
+      ...prev,
+      invited_users: prev.invited_users.includes(userId)
+        ? prev.invited_users.filter(id => id !== userId)
+        : [...prev.invited_users, userId]
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -686,6 +717,53 @@ export default function Rapat({ onChanged }) {
                   />
                 </div>
 
+                {/* Form Undangan */}
+                <div>
+                  <label className="block text-gray-800 font-semibold mb-2 text-sm">Undang Peserta</label>
+                  <div className="space-y-3">
+                    <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50">
+                      {userList.map(user => (
+                        <div key={user.id} className="flex items-center space-x-3 py-2">
+                          <input
+                            type="checkbox"
+                            id={`user-${user.id}`}
+                            checked={formData.invited_users.includes(user.id)}
+                            onChange={() => handleUserInvite(user.id)}
+                            className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 rounded focus:ring-blue-400"
+                          />
+                          <label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span className="text-blue-600 font-semibold text-sm">
+                                  {user.nama?.charAt(0) || user.mpk?.charAt(0) || 'U'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="text-gray-800 font-medium text-sm">{user.nama}</p>
+                                <p className="text-gray-500 text-xs">{user.unit_kerja} • {user.mpk}</p>
+                              </div>
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {formData.invited_users.length > 0 && (
+                      <div>
+                        <label className="block text-gray-800 font-semibold mb-2 text-sm">Pesan Undangan (Opsional)</label>
+                        <textarea
+                          name="pesan_undangan"
+                          value={formData.pesan_undangan}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm resize-none"
+                          placeholder="Tulis pesan undangan untuk peserta..."
+                          rows="2"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex gap-2 pt-3">
                   <button
                     type="button"
@@ -709,4 +787,5 @@ export default function Rapat({ onChanged }) {
     </div>
   );
 }
+
 

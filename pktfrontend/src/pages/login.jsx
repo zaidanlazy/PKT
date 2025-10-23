@@ -26,6 +26,12 @@ export default function Login() {
       return;
     }
 
+    // Basic validation - remove strict NPK format validation
+    if (mpk.length < 3) {
+      showNotification("NPK minimal 3 karakter", "warning");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -37,11 +43,9 @@ export default function Login() {
           navigate("/dashboard");
         }, 1500);
       } else {
-        const npkRegex = /^\d{6,}$/;
-    if (!npkRegex.test(mpk)) {
-      showNotification("Format NPK dan password salah", "error");
-      return;
-    }
+        // Show specific error message from API
+        const errorMessage = result.error?.message || "NPK atau password salah";
+        showNotification(errorMessage, "error");
       }
     } catch (error) {
       console.error("Login error:", error);

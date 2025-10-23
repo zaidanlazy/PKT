@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RapatController;
 use App\Http\Controllers\RuanganController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UndanganRapatController;
 
 // Public routes (no authentication required)
 Route::post('/register', [AuthController::class, 'register']);      
@@ -24,6 +25,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rapat', [RapatController::class, 'store']);
     Route::put('/rapat/{id}', [RapatController::class, 'update']);
     Route::delete('/rapat/{id}', [RapatController::class, 'destroy']);
+    
+    // Undangan routes
+    Route::get('/undangan/user', [UndanganRapatController::class, 'getByUser']);
+    Route::get('/undangan/rapat/{id}', [UndanganRapatController::class, 'getByRapat']);
+    Route::post('/undangan', [UndanganRapatController::class, 'store']);
+    Route::put('/undangan/{id}/status', [UndanganRapatController::class, 'updateStatus']);
+    Route::put('/undangan/{id}/read', [UndanganRapatController::class, 'markAsRead']);
+    Route::delete('/undangan/{id}', [UndanganRapatController::class, 'destroy']);
     
     // Ruangan routes
     Route::get('/ruangan', [RuanganController::class, 'index']);

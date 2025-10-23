@@ -29,11 +29,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (mpk, password) => {
     try {
       const { data } = await axiosClient.post("/login", { mpk, password });
-      setToken(data.token);
-      localStorage.setItem("token", data.token);
-      return { success: true, data };
+      
+      // Check if login was successful based on API response
+      if (data.status === 'success' && data.token) {
+        setToken(data.token);
+        localStorage.setItem("token", data.token);
+        setUser(data.data.user); // Set user data immediately
+        return { success: true, data };
+      } else {
+        return { success: false, error: { message: data.message || 'Login gagal' } };
+      }
     } catch (error) {
-      return { success: false, error };
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Terjadi kesalahan saat login';
+      return { success: false, error: { message: errorMessage } };
     }
   };
 
