@@ -13,6 +13,8 @@ import Undangan from "./Undangan";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // --- Data state (preserved from original) ---
   const [data, setData] = useState({
     total_ruangan: 0,
     total_rapat: 0,
@@ -23,13 +25,11 @@ export default function Dashboard() {
   });
 
   const [rapatList, setRapatList] = useState([]);
-  const [ruangRapatList, setRuangRapatList] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [sidebarHover, setSidebarHover] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [toasts, setToasts] = useState([]);
 
-  // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: "",
@@ -37,21 +37,20 @@ export default function Dashboard() {
     onConfirm: null,
     type: "delete",
     confirmText: "Hapus",
-    cancelText: "Batal"
+    cancelText: "Batal",
   });
 
-  // Fungsi untuk menambah toast
+  // --- Toast helpers (preserved) ---
   const addToast = (message, type = "info") => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
   };
 
-  // Fungsi untuk menghapus toast
   const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Fungsi untuk menampilkan confirm modal
+  // --- Confirm modal helpers (preserved) ---
   const showConfirmModal = (options) => {
     setConfirmModal({
       isOpen: true,
@@ -60,11 +59,10 @@ export default function Dashboard() {
       onConfirm: options.onConfirm,
       type: options.type || "delete",
       confirmText: options.confirmText || "Hapus",
-      cancelText: options.cancelText || "Batal"
+      cancelText: options.cancelText || "Batal",
     });
   };
 
-  // Fungsi untuk menutup confirm modal
   const closeConfirmModal = () => {
     setConfirmModal({
       isOpen: false,
@@ -73,49 +71,23 @@ export default function Dashboard() {
       onConfirm: null,
       type: "delete",
       confirmText: "Hapus",
-      cancelText: "Batal"
+      cancelText: "Batal",
     });
   };
 
+  // --- Data fetching (preserved) ---
   useEffect(() => {
     fetchDashboardData();
     fetchRapatList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    let hoverTimer;
-
-    if (sidebarHover) {
-      setSidebarOpen(true);
-    } else {
-      hoverTimer = setTimeout(() => {
-        setSidebarOpen(false);
-      }, 300);
-    }
-
-    return () => {
-      clearTimeout(hoverTimer);
-    };
-  }, [sidebarHover]);
-
-  const handleSidebarMouseEnter = () => {
-    setSidebarHover(true);
-  };
-
-  const handleSidebarMouseLeave = () => {
-    setSidebarHover(false);
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   const fetchDashboardData = async () => {
     try {
       const res = await axios.get("/dashboard");
       setData(res.data);
     } catch (err) {
-      console.error("Gagal memuat data dashboard");
+      console.error("Gagal memuat data dashboard", err);
       addToast("Gagal memuat data dashboard", "error");
     }
   };
@@ -123,8 +95,8 @@ export default function Dashboard() {
   const fetchRapatList = async () => {
     try {
       const res = await axios.get("/rapat");
-      const data = res.data?.data || res.data || [];
-      setRapatList(Array.isArray(data) ? data : []);
+      const payload = res.data?.data || res.data || [];
+      setRapatList(Array.isArray(payload) ? payload : []);
     } catch (err) {
       console.error("Gagal memuat data rapat:", err);
       setRapatList([]);
@@ -132,10 +104,22 @@ export default function Dashboard() {
     }
   };
 
-  const handleMenuClick = (menu) => {
-    setActiveMenu(menu);
-  };
+  // --- Sidebar hover open logic (preserved) ---
+  useEffect(() => {
+    let timer;
+    if (sidebarHover) {
+      setSidebarOpen(true);
+    } else {
+      timer = setTimeout(() => setSidebarOpen(false), 220);
+    }
+    return () => clearTimeout(timer);
+  }, [sidebarHover]);
 
+  const handleSidebarMouseEnter = () => setSidebarHover(true);
+  const handleSidebarMouseLeave = () => setSidebarHover(false);
+  const toggleSidebar = () => setSidebarOpen((s) => !s);
+
+  // --- Logout with confirm (preserved) ---
   const handleLogout = () => {
     showConfirmModal({
       title: "Konfirmasi Logout",
@@ -147,10 +131,49 @@ export default function Dashboard() {
       },
       type: "warning",
       confirmText: "Logout",
-      cancelText: "Batal"
+      cancelText: "Batal",
     });
   };
 
+  const handleMenuClick = (menu) => setActiveMenu(menu);
+
+  // --- Menu items: colors explicit, safe classes ---
+  const menuItems = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      gradientFrom: "from-blue-50",
+      gradientTo: "to-blue-100",
+      stroke: "#2563eb",
+      svgPath: (
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10h14V10" />
+      ),
+    },
+    {
+      key: "tambah-rapat",
+      label: "Tambah Rapat",
+      gradientFrom: "from-green-50",
+      gradientTo: "to-emerald-100",
+      stroke: "#059669",
+      svgPath: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />,
+    },
+    {
+      key: "undangan",
+      label: "Undangan Rapat",
+      gradientFrom: "from-indigo-50",
+      gradientTo: "to-indigo-100",
+      stroke: "#4f46e5",
+      // Icon baru untuk undangan rapat - envelope dengan checklist
+      svgPath: (
+        <>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+        </>
+      ),
+    },
+  ];
+
+  // --- Render content (preserve original structure) ---
   const renderContent = () => {
     switch (activeMenu) {
       case "tambah-rapat":
@@ -291,19 +314,17 @@ export default function Dashboard() {
     }
   };
 
+  // --- JSX returned (full layout) ---
   return (
-    <div className="min-h-screen bg-white p-6 relative overflow-hidden">
-      {/* Render semua toast notifications */}
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
+    <div className="min-h-screen bg-gray-50 p-6 md:p-8 relative overflow-hidden">
+      {/* Toast container */}
+      <div className="fixed top-6 right-6 z-50 space-y-3">
+        {toasts.map((toast) => (
+          <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
+        ))}
+      </div>
 
-      {/* Confirm Modal */}
+      {/* Confirm modal */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={closeConfirmModal}
@@ -315,163 +336,118 @@ export default function Dashboard() {
         cancelText={confirmModal.cancelText}
       />
 
-      <div className="absolute inset-0 overflow-hidden">
+      {/* background decor */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-50 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-50 rounded-full blur-3xl opacity-30"></div>
       </div>
 
-      <div className="flex gap-6">
-        <div
-          className={`bg-white backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 ${
-            sidebarOpen ? 'w-64' : 'w-20'
-          }`}
+      <div className="flex gap-6 relative z-10">
+        {/* Sidebar - PERBAIKAN: Menambahkan overflow-auto untuk scroll */}
+        <aside
+          className={`bg-white rounded-3xl border border-gray-200 shadow-xl h-[calc(100vh-3rem)] sticky top-6 transition-all duration-300 flex flex-col justify-between ${sidebarOpen ? "w-64" : "w-20"} overflow-hidden`}
           onMouseEnter={handleSidebarMouseEnter}
           onMouseLeave={handleSidebarMouseLeave}
         >
-          <div className="p-4 h-full flex flex-col">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-white rounded-full p-2 shadow-lg flex-shrink-0">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png"
-                  alt="Pupuk Kaltim Logo"
-                  className="h-8 w-8 object-contain"
-                />
-              </div>
-              {sidebarOpen && (
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-gray-800 truncate">Menu Utama</h2>
-                  <p className="text-gray-600 text-xs truncate">Sistem Reservasi</p>
+          <div className="flex flex-col h-full overflow-y-auto"> {/* PERBAIKAN: Tambahkan overflow-y-auto di sini */}
+            <div className="p-4 flex-1">
+              {/* header logo */}
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-white rounded-full p-2 shadow-lg flex-shrink-0">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png"
+                    alt="Pupuk Kaltim Logo"
+                    className="h-8 w-8 object-contain"
+                  />
                 </div>
-              )}
-              <button
-                onClick={toggleSidebar}
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0 md:hidden"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
-                </svg>
-              </button>
-            </div>
 
-            <nav className="flex-1">
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleMenuClick("dashboard")}
-                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "dashboard"
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                  </div>
-                  {sidebarOpen && (
-                    <div className="text-left flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">Dashboard</p>
-                      <p className="text-xs text-gray-500 truncate">Overview sistem</p>
-                    </div>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => handleMenuClick("tambah-rapat")}
-                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "tambah-rapat"
-                      ? "bg-green-50 text-green-600 border border-green-200"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                  {sidebarOpen && (
-                    <div className="text-left flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">Tambah Rapat</p>
-                      <p className="text-xs text-gray-500 truncate">Buat jadwal rapat baru</p>
-                    </div>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => handleMenuClick("undangan")}
-                  className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                    activeMenu === "undangan"
-                      ? "bg-indigo-50 text-indigo-600 border border-indigo-200"
-                      : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="p-2 bg-indigo-100 rounded-lg flex-shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5v-5a7.5 7.5 0 00-15 0v5h5l-5 5-5-5h5v-5a7.5 7.5 0 0115 0v5z" />
-                    </svg>
-                  </div>
-                  {sidebarOpen && (
-                    <div className="text-left flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">Undangan Rapat</p>
-                      <p className="text-xs text-gray-500 truncate">Kelola undangan rapat</p>
-                    </div>
-                  )}
-                </button>
-
-                {user?.role === 'admin' && (
-                  <div className="pt-4">
-                    {sidebarOpen && (
-                      <h3 className="text-gray-400 text-xs font-semibold uppercase tracking-wider px-3 mb-3">Master Data</h3>
-                    )}
-
-                    <button
-                      onClick={() => handleMenuClick("data-ruangan")}
-                      className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                        activeMenu === "data-ruangan"
-                          ? "bg-purple-50 text-purple-600 border border-purple-200"
-                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="p-2 bg-purple-100 rounded-lg flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                      </div>
-                      {sidebarOpen && (
-                        <div className="text-left flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">Data Ruangan</p>
-                          <p className="text-xs text-gray-500 truncate">Kelola data ruangan</p>
-                        </div>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => handleMenuClick("data-peserta")}
-                      className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                        activeMenu === "data-peserta"
-                          ? "bg-orange-50 text-orange-600 border border-orange-200"
-                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="p-2 bg-orange-100 rounded-lg flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      {sidebarOpen && (
-                        <div className="text-left flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">Data User</p>
-                          <p className="text-xs text-gray-500 truncate">Kelola data user</p>
-                        </div>
-                      )}
-                    </button>
+                {sidebarOpen && (
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-bold text-gray-800 truncate">Menu Utama</h2>
+                    <p className="text-gray-600 text-xs truncate">Sistem Reservasi</p>
                   </div>
                 )}
-              </div>
-            </nav>
 
-            <div className="pt-6 border-t border-gray-200">
+                <button
+                  onClick={toggleSidebar}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0 md:hidden"
+                  title="Toggle sidebar"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
+                  </svg>
+                </button>
+              </div>
+
+              {/* menu */}
+              <nav className="flex-1">
+                <div className="flex flex-col items-center md:items-stretch space-y-2">
+                  {menuItems.map((mi) => {
+                    const active = activeMenu === mi.key;
+                    return (
+                      <button
+                        key={mi.key}
+                        onClick={() => handleMenuClick(mi.key)}
+                        className={`flex items-center gap-3 transition-all duration-200 focus:outline-none ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        title={mi.label}
+                      >
+                        <div
+                          className={`h-11 w-11 flex items-center justify-center rounded-2xl shadow-md transition-transform duration-200 ${mi.gradientFrom} ${mi.gradientTo}`}
+                          style={{ backgroundImage: undefined }}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke={mi.stroke} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            {mi.svgPath}
+                          </svg>
+                        </div>
+
+                        {sidebarOpen && (
+                          <div className={`${active ? "text-gray-800 font-semibold" : "text-gray-700"}`}>
+                            <div className="text-sm">{mi.label}</div>
+                            <div className="text-xs text-gray-400">{mi.key === "dashboard" ? "Overview sistem" : mi.label === "Tambah Rapat" ? "Buat jadwal rapat baru" : "Kelola undangan"}</div>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+
+                  {/* admin-only group */}
+                  {user?.role === "admin" && (
+                    <>
+                      <div className="w-full border-t border-gray-100 my-3" />
+
+                      <button
+                        onClick={() => handleMenuClick("data-ruangan")}
+                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        title="Data Ruangan"
+                      >
+                        <div className="h-11 w-11 flex items-center justify-center rounded-2xl shadow-md bg-purple-50">
+                          <svg className="w-5 h-5" fill="none" stroke="#6d28d9" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
+                          </svg>
+                        </div>
+                        {sidebarOpen && <div className="text-sm text-gray-700 font-medium">Data Ruangan<div className="text-xs text-gray-400">Kelola data ruangan</div></div>}
+                      </button>
+
+                      <button
+                        onClick={() => handleMenuClick("data-peserta")}
+                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        title="Data User"
+                      >
+                        <div className="h-11 w-11 flex items-center justify-center rounded-2xl shadow-md bg-orange-50">
+                          <svg className="w-5 h-5" fill="none" stroke="#ea580c" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        {sidebarOpen && <div className="text-sm text-gray-700 font-medium">Data User<div className="text-xs text-gray-400">Kelola data user</div></div>}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </nav>
+            </div>
+
+            {/* footer area inside sidebar */}
+            <div className="p-4 border-t border-gray-100 mt-auto">
               <div className="flex items-center justify-between mb-4">
                 {sidebarOpen ? (
                   <>
@@ -523,19 +499,16 @@ export default function Dashboard() {
               </div>
               {sidebarOpen && (
                 <div className="text-center">
-                  <p className="text-gray-400 text-xs">
-                    © 2025 Pupuk Kaltim
-                  </p>
-                  <p className="text-gray-400 text-xs mt-1">
-                    Sistem Reservasi
-                  </p>
+                  <p className="text-gray-400 text-xs">© 2025 Pupuk Kaltim</p>
+                  <p className="text-gray-400 text-xs mt-1">Sistem Reservasi</p>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </aside>
 
-        <div className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-0' : 'ml-0'}`}>
+        {/* Main content area */}
+        <div className="flex-1 transition-all duration-300">
           <div className="relative z-10 mb-8">
             <div className="flex justify-between items-center">
               <div>
@@ -550,9 +523,9 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={toggleSidebar}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2 md:hidden"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 md:hidden"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
                 <span>Menu</span>
