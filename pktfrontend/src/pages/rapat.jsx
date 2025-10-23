@@ -13,6 +13,7 @@ export default function Rapat({ onChanged }) {
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // State untuk pencarian
 
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
@@ -35,6 +36,17 @@ export default function Rapat({ onChanged }) {
     deskripsi: "",
     invited_users: [],
     pesan_undangan: "",
+  });
+
+  // Filter user berdasarkan pencarian
+  const filteredUsers = userList.filter(user => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.nama?.toLowerCase().includes(query) ||
+      user.unit_kerja?.toLowerCase().includes(query) ||
+      user.mpk?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query)
+    );
   });
 
   // Fungsi untuk menambah toast
@@ -174,6 +186,7 @@ export default function Rapat({ onChanged }) {
       invited_users: [],
       pesan_undangan: "",
     });
+    setSearchQuery(""); // Reset pencarian saat modal ditutup
   };
 
   const handleInputChange = (e) => {
@@ -181,6 +194,10 @@ export default function Rapat({ onChanged }) {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const handleUserInvite = (userId) => {
@@ -470,8 +487,8 @@ export default function Rapat({ onChanged }) {
       {/* Modal Detail Rapat */}
       {showDetailModal && selectedRapatDetail && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
-            <div className="p-6">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-800">Detail Rapat</h3>
                 <button
@@ -565,8 +582,10 @@ export default function Rapat({ onChanged }) {
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="flex gap-2 pt-6">
+            <div className="p-6 border-t border-gray-200 bg-white">
+              <div className="flex gap-2">
                 <button
                   onClick={handleCloseDetailModal}
                   className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
@@ -591,8 +610,8 @@ export default function Rapat({ onChanged }) {
       {/* Modal Rapat */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
-            <div className="p-6">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-800">
                   {modalMode === "add" ? "Tambah Rapat" : "Edit Rapat"}
@@ -717,36 +736,79 @@ export default function Rapat({ onChanged }) {
                   />
                 </div>
 
-                {/* Form Undangan */}
+                {/* Form Undangan dengan Pencarian */}
                 <div>
                   <label className="block text-gray-800 font-semibold mb-2 text-sm">Undang Peserta</label>
                   <div className="space-y-3">
-                    <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50">
-                      {userList.map(user => (
-                        <div key={user.id} className="flex items-center space-x-3 py-2">
-                          <input
-                            type="checkbox"
-                            id={`user-${user.id}`}
-                            checked={formData.invited_users.includes(user.id)}
-                            onChange={() => handleUserInvite(user.id)}
-                            className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 rounded focus:ring-blue-400"
-                          />
-                          <label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span className="text-blue-600 font-semibold text-sm">
-                                  {user.nama?.charAt(0) || user.mpk?.charAt(0) || 'U'}
-                                </span>
-                              </div>
-                              <div>
-                                <p className="text-gray-800 font-medium text-sm">{user.nama}</p>
-                                <p className="text-gray-500 text-xs">{user.unit_kerja} • {user.mpk}</p>
-                              </div>
-                            </div>
-                          </label>
-                        </div>
-                      ))}
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm pl-10"
+                        placeholder="Cari peserta berdasarkan nama, unit kerja, atau NPK..."
+                      />
+                      <svg 
+                        className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" 
+                        fill="none" 
+                        stroke="currentColor"   
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                        />
+                      </svg>
                     </div>
+
+                    {/* Daftar User dengan Scroll */}
+                    <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50">
+                      {filteredUsers.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500 text-sm">
+                          {searchQuery ? "Tidak ada peserta yang cocok dengan pencarian" : "Tidak ada peserta tersedia"}
+                        </div>
+                      ) : (
+                        filteredUsers.map(user => (
+                          <div key={user.id} className="flex items-center space-x-3 py-2">
+                            <input
+                              type="checkbox"
+                              id={`user-${user.id}`}
+                              checked={formData.invited_users.includes(user.id)}
+                              onChange={() => handleUserInvite(user.id)}
+                              className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-200 rounded focus:ring-blue-400"
+                            />
+                            <label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <span className="text-blue-600 font-semibold text-sm">
+                                    {user.nama?.charAt(0) || user.mpk?.charAt(0) || 'U'}
+                                  </span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-gray-800 font-medium text-sm truncate">{user.nama}</p>
+                                  <p className="text-gray-500 text-xs truncate">
+                                    {user.unit_kerja} • {user.mpk}
+                                    {user.email && ` • ${user.email}`}
+                                  </p>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Info jumlah peserta terpilih */}
+                    {formData.invited_users.length > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                        <p className="text-blue-700 text-sm font-medium">
+                          {formData.invited_users.length} peserta terpilih
+                        </p>
+                      </div>
+                    )}
                     
                     {formData.invited_users.length > 0 && (
                       <div>
@@ -763,23 +825,26 @@ export default function Rapat({ onChanged }) {
                     )}
                   </div>
                 </div>
-
-                <div className="flex gap-2 pt-3">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
-                  >
-                    {modalMode === "add" ? "Tambah" : "Simpan"}
-                  </button>
-                </div>
               </form>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-white">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
+                >
+                  {modalMode === "add" ? "Tambah" : "Simpan"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -787,5 +852,3 @@ export default function Rapat({ onChanged }) {
     </div>
   );
 }
-
-
