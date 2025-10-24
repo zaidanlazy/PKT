@@ -15,9 +15,9 @@ class RapatController extends Controller
         $rapat = Rapat::with('ruangan')
                     ->orderBy('tanggal', 'desc')
                     ->orderBy('waktu_mulai', 'desc')
-                    ->whereDate('created_at', today())
+                    ->whereDate('tanggal', today())
                     ->get();
-                
+
         return response()->json([
             'data' => $rapat
         ]);
@@ -29,7 +29,7 @@ class RapatController extends Controller
                     ->orderBy('tanggal', 'desc')
                     ->orderBy('waktu_mulai', 'desc')
                     ->get();
-                
+
         return response()->json([
             'data' => $rapat
         ]);
@@ -123,7 +123,7 @@ class RapatController extends Controller
     public function update(Request $request, $id)
     {
         $rapat = Rapat::find($id);
-        
+
         if (!$rapat) {
             return response()->json([
                 'status' => 'error',
@@ -203,7 +203,7 @@ class RapatController extends Controller
     public function destroy($id)
     {
         $rapat = Rapat::find($id);
-        
+
         if (!$rapat) {
             return response()->json([
                 'status' => 'error',

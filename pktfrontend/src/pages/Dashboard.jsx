@@ -134,7 +134,7 @@ export default function Dashboard() {
   // --- Navigation handlers ---
   const handleMenuClick = (menu) => {
     setActiveMenu(menu);
-    
+
     // Navigate to different pages based on menu
     switch (menu) {
       case "tambah-rapat":
