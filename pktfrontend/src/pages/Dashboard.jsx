@@ -137,7 +137,7 @@ export default function Dashboard() {
 
   const handleMenuClick = (menu) => setActiveMenu(menu);
 
-  // --- Menu items: colors explicit, safe classes ---
+  // --- Menu items: semua warna aktif disamakan menjadi biru ---
   const menuItems = [
     {
       key: "dashboard",
@@ -388,22 +388,24 @@ export default function Dashboard() {
                       <button
                         key={mi.key}
                         onClick={() => handleMenuClick(mi.key)}
-                        className={`flex items-center gap-3 transition-all duration-200 focus:outline-none ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        className={`flex items-center gap-3 transition-all duration-200 focus:outline-none ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"} ${active ? "bg-blue-50 border border-blue-100" : "hover:bg-gray-50"}`}
                         title={mi.label}
                       >
                         <div
-                          className={`h-11 w-11 flex items-center justify-center rounded-2xl shadow-md transition-transform duration-200 ${mi.gradientFrom} ${mi.gradientTo}`}
+                          className={`h-11 w-11 flex items-center justify-center rounded-2xl shadow-md transition-transform duration-200 ${active ? "from-blue-100 to-blue-200" : `${mi.gradientFrom} ${mi.gradientTo}`}`}
                           style={{ backgroundImage: undefined }}
                         >
-                          <svg className="w-5 h-5" fill="none" stroke={mi.stroke} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <svg className="w-5 h-5" fill="none" stroke={active ? "#2563eb" : mi.stroke} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             {mi.svgPath}
                           </svg>
                         </div>
 
                         {sidebarOpen && (
-                          <div className={`${active ? "text-gray-800 font-semibold" : "text-gray-700"}`}>
+                          <div className={`${active ? "text-blue-700 font-semibold" : "text-gray-700"}`}>
                             <div className="text-sm">{mi.label}</div>
-                            <div className="text-xs text-gray-400">{mi.key === "dashboard" ? "Overview sistem" : mi.label === "Tambah Rapat" ? "Buat jadwal rapat baru" : "Kelola undangan"}</div>
+                            <div className={`text-xs ${active ? "text-blue-500" : "text-gray-400"}`}>
+                              {mi.key === "dashboard" ? "Overview sistem" : mi.label === "Tambah Rapat" ? "Buat jadwal rapat baru" : "Kelola undangan"}
+                            </div>
                           </div>
                         )}
                       </button>
@@ -417,28 +419,38 @@ export default function Dashboard() {
 
                       <button
                         onClick={() => handleMenuClick("data-ruangan")}
-                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"} ${activeMenu === "data-ruangan" ? "bg-blue-50 border border-blue-100" : "hover:bg-gray-50"}`}
                         title="Data Ruangan"
                       >
-                        <div className="h-11 w-11 flex items-center justify-center rounded-2xl shadow-md bg-purple-50">
-                          <svg className="w-5 h-5" fill="none" stroke="#6d28d9" viewBox="0 0 24 24">
+                        <div className={`h-11 w-11 flex items-center justify-center rounded-2xl shadow-md ${activeMenu === "data-ruangan" ? "from-blue-100 to-blue-200" : "bg-purple-50"}`}>
+                          <svg className="w-5 h-5" fill="none" stroke={activeMenu === "data-ruangan" ? "#2563eb" : "#6d28d9"} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
                           </svg>
                         </div>
-                        {sidebarOpen && <div className="text-sm text-gray-700 font-medium">Data Ruangan<div className="text-xs text-gray-400">Kelola data ruangan</div></div>}
+                        {sidebarOpen && (
+                          <div className={`${activeMenu === "data-ruangan" ? "text-blue-700 font-semibold" : "text-gray-700"}`}>
+                            Data Ruangan
+                            <div className={`text-xs ${activeMenu === "data-ruangan" ? "text-blue-500" : "text-gray-400"}`}>Kelola data ruangan</div>
+                          </div>
+                        )}
                       </button>
 
                       <button
                         onClick={() => handleMenuClick("data-peserta")}
-                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"}`}
+                        className={`flex items-center gap-3 transition-all duration-200 ${sidebarOpen ? "w-full px-3 py-3 rounded-xl" : "w-full flex justify-center py-2"} ${activeMenu === "data-peserta" ? "bg-blue-50 border border-blue-100" : "hover:bg-gray-50"}`}
                         title="Data User"
                       >
-                        <div className="h-11 w-11 flex items-center justify-center rounded-2xl shadow-md bg-orange-50">
-                          <svg className="w-5 h-5" fill="none" stroke="#ea580c" viewBox="0 0 24 24">
+                        <div className={`h-11 w-11 flex items-center justify-center rounded-2xl shadow-md ${activeMenu === "data-peserta" ? "from-blue-100 to-blue-200" : "bg-orange-50"}`}>
+                          <svg className="w-5 h-5" fill="none" stroke={activeMenu === "data-peserta" ? "#2563eb" : "#ea580c"} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a3 3 0 11-6 0 3 3 0 016 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
-                        {sidebarOpen && <div className="text-sm text-gray-700 font-medium">Data User<div className="text-xs text-gray-400">Kelola data user</div></div>}
+                        {sidebarOpen && (
+                          <div className={`${activeMenu === "data-peserta" ? "text-blue-700 font-semibold" : "text-gray-700"}`}>
+                            Data User
+                            <div className={`text-xs ${activeMenu === "data-peserta" ? "text-blue-500" : "text-gray-400"}`}>Kelola data user</div>
+                          </div>
+                        )}
                       </button>
                     </>
                   )}
