@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ConfirmModal from "./ConfirmModal";
 
-export default function SidebarLayout({ title, subtitle = "Sistem Manajemen Rapat Pupuk Kaltim", children }) {
+export default function SidebarLayout({ title, subtitle = "", children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
