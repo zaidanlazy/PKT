@@ -12,14 +12,14 @@ class DashboardController extends Controller
     {
         // Get total ruangan
         $total_ruangan = Ruangan::count();
-        
+
         // Get total rapat
         $total_rapat = Rapat::count();
-        
+
         // Get online and offline rapat counts
-        $total_online = Rapat::where('jenis', 'online')->count();
-        $total_offline = Rapat::where('jenis', 'offline')->count();
-        
+        $total_online = Rapat::where('jenis', 'online') -> where ('tanggal', '=', today())->count();
+        $total_offline = Rapat::where('jenis', 'offline')->where ('tanggal', '=', today())->count();
+
         // Get ruangan statistics
         $ruangan_tersedia = Ruangan::where('status', 'tersedia')->count();
         $ruangan_tidak_tersedia = Ruangan::where('status', 'tidak_tersedia')->count();

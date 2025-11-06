@@ -80,7 +80,8 @@ class RapatController extends Controller
                                            ->where('waktu_selesai', '>=', $request->waktu_selesai);
                                      });
                            })
-                           ->exists();
+
+           ->exists();
 
             if ($conflict) {
                 return response()->json([
@@ -198,6 +199,24 @@ class RapatController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function show($id)
+    {
+        $rapat = Rapat::with(['ruangan', 'undangan.user'])
+                    ->find($id);
+
+        if (!$rapat) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rapat tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $rapat
+        ]);
     }
 
     public function destroy($id)

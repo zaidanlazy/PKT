@@ -1,15 +1,22 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, token } = useAuth();
   const [mpk, setMpk] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [token, navigate]);
 
   const showNotification = (message, type = "error") => {
     setNotification({ show: true, message, type });
@@ -36,7 +43,7 @@ export default function Login() {
 
     try {
       const result = await login(mpk, password);
-      
+
       if (result.success) {
         showNotification("Login berhasil!", "success");
         setTimeout(() => {
@@ -65,8 +72,8 @@ export default function Login() {
       <div className="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full">
         {notification.show && (
           <div className={`relative p-6 rounded-2xl shadow-2xl border backdrop-blur-lg transform transition-all duration-500 animate-in slide-in-from-right-full ${
-            notification.type === "success" 
-              ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-green-800 shadow-green-200/50" 
+            notification.type === "success"
+              ? "bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 text-green-800 shadow-green-200/50"
               : notification.type === "warning"
               ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-yellow-200 text-yellow-800 shadow-yellow-200/50"
               : "bg-gradient-to-br from-red-50 to-rose-50 border-red-200 text-red-800 shadow-red-200/50"
@@ -74,8 +81,8 @@ export default function Login() {
             {/* Header dengan Icon */}
             <div className="flex items-start space-x-4">
               <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
-                notification.type === "success" 
-                  ? "bg-gradient-to-br from-green-500 to-emerald-500" 
+                notification.type === "success"
+                  ? "bg-gradient-to-br from-green-500 to-emerald-500"
                   : notification.type === "warning"
                   ? "bg-gradient-to-br from-yellow-500 to-amber-500"
                   : "bg-gradient-to-br from-red-500 to-rose-500"
@@ -94,29 +101,29 @@ export default function Login() {
                   </svg>
                 )}
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <h3 className={`font-bold text-lg mb-1 ${
-                  notification.type === "success" 
-                    ? "text-green-900" 
+                  notification.type === "success"
+                    ? "text-green-900"
                     : notification.type === "warning"
                     ? "text-yellow-900"
                     : "text-red-900"
                 }`}>
-                  {notification.type === "success" 
-                    ? "Berhasil!" 
+                  {notification.type === "success"
+                    ? "Berhasil!"
                     : notification.type === "warning"
                     ? "Peringatan"
                     : "Terjadi Kesalahan"}
                 </h3>
                 <p className="text-sm leading-relaxed">{notification.message}</p>
               </div>
-              
+
               <button
                 onClick={() => setNotification({ show: false, message: "", type: "" })}
                 className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${
-                  notification.type === "success" 
-                    ? "text-green-600 hover:bg-green-100" 
+                  notification.type === "success"
+                    ? "text-green-600 hover:bg-green-100"
                     : notification.type === "warning"
                     ? "text-yellow-600 hover:bg-yellow-100"
                     : "text-red-600 hover:bg-red-100"
@@ -127,18 +134,18 @@ export default function Login() {
                 </svg>
               </button>
             </div>
-            
+
             {/* Progress Bar dengan animasi */}
             <div className="mt-4 w-full bg-gray-200/50 rounded-full h-1.5 overflow-hidden">
-              <div 
+              <div
                 className={`h-full rounded-full transition-all duration-5000 ease-linear ${
-                  notification.type === "success" 
-                    ? "bg-gradient-to-r from-green-500 to-emerald-500" 
+                  notification.type === "success"
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
                     : notification.type === "warning"
                     ? "bg-gradient-to-r from-yellow-500 to-amber-500"
                     : "bg-gradient-to-r from-red-500 to-rose-500"
                 }`}
-                style={{ 
+                style={{
                   width: '100%',
                   animation: 'shrink 5s linear forwards'
                 }}
@@ -147,8 +154,8 @@ export default function Login() {
 
             {/* Background Pattern */}
             <div className={`absolute top-0 right-0 w-20 h-20 opacity-5 ${
-              notification.type === "success" 
-                ? "text-green-500" 
+              notification.type === "success"
+                ? "text-green-500"
                 : notification.type === "warning"
                 ? "text-yellow-500"
                 : "text-red-500"
@@ -184,9 +191,9 @@ export default function Login() {
           <div className="space-y-6">
             <div className="inline-flex items-center justify-center lg:justify-start space-x-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg">
               <div className="bg-white rounded-full p-3 shadow-xl">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
-                  alt="Pupuk Kaltim Logo" 
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png"
+                  alt="Pupuk Kaltim Logo"
                   className="h-16 w-16 object-contain"
                 />
               </div>
@@ -290,13 +297,7 @@ export default function Login() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500" />
-                    <span className="text-gray-600 text-sm">Ingat saya</span>
-                  </label>
-                  
-                </div>
+
 
                 <button
                   type="submit"
@@ -307,7 +308,7 @@ export default function Login() {
                     {isLoading ? (
                       <>
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Memproses...</span>
+                        <span>Loading</span>
                       </>
                     ) : (
                       <>
@@ -339,7 +340,7 @@ export default function Login() {
           from { width: 100%; }
           to { width: 0%; }
         }
-        
+
         @keyframes slideInFromRight {
           from {
             transform: translateX(100%);
@@ -350,11 +351,11 @@ export default function Login() {
             opacity: 1;
           }
         }
-        
+
         .animate-in {
           animation: slideInFromRight 0.5s ease-out;
         }
-        
+
         .slide-in-from-right-full {
           animation: slideInFromRight 0.5s ease-out;
         }

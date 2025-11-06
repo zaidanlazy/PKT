@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "../api/axiosClient";
 import Toast from "../components/Toast";
+import SidebarLayout from "../components/SidebarLayout";
 
 export default function Undangan() {
   const [undanganList, setUndanganList] = useState([]);
@@ -83,7 +84,8 @@ export default function Undangan() {
   };
 
   return (
-    <div className="relative z-10">
+    <SidebarLayout title="Undangan Rapat">
+      <div className="relative z-10">
       {/* Render semua toast notifications */}
       {toasts.map(toast => (
         <Toast
@@ -245,6 +247,7 @@ export default function Undangan() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

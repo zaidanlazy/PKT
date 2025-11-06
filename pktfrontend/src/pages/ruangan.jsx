@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "../api/axiosClient";
 import Toast from "../components/Toast";
 import ConfirmModal from "../components/ConfirmModal";
+import SidebarLayout from "../components/SidebarLayout";
 
 export default function Ruangan({ onChanged }) {
   const [ruanganList, setRuanganList] = useState([]);
@@ -163,7 +164,8 @@ export default function Ruangan({ onChanged }) {
   };
 
   return (
-    <div className="relative z-10">
+    <SidebarLayout title="Data Ruangan">
+      <div className="relative z-10">
       {/* Render semua toast notifications */}
       {toasts.map(toast => (
         <Toast
@@ -426,7 +428,8 @@ export default function Ruangan({ onChanged }) {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }
 
