@@ -114,11 +114,12 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
       stroke: "#2563eb",
       svgPath: (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1V10" />
+        
       ),
     },
     {
       key: "tambah-rapat",
-      label: "Tambah Rapat",
+      label: "Rapat",
       gradientFrom: "from-green-50",
       gradientTo: "to-emerald-100",
       stroke: "#059669",
@@ -207,7 +208,7 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
                           <div className={`${active ? "text-blue-700 font-semibold" : "text-gray-700"}`}>
                             <div className="text-sm">{mi.label}</div>
                             <div className={`text-xs ${active ? "text-blue-500" : "text-gray-400"}`}>
-                              {mi.key === "dashboard" ? "Overview sistem" : mi.label === "Tambah Rapat" ? "Buat jadwal rapat baru" : "Kelola undangan"}
+                              {mi.key === "dashboard" ? "Overview sistem" : mi.label === "Tambah Rapat" ? "Buat jadwal rapat baru" : "Kelola data rapat"}
                             </div>
                           </div>
                         )}
