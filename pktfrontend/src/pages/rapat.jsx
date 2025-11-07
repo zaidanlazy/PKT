@@ -313,61 +313,64 @@ export default function Rapat({ onChanged }) {
           cancelText={confirmModal.cancelText}
         />
 
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
-          <div className="p-6">
-            {/* Header dengan waktu real-time */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800">Data Rapat</h1>
-                <p className="text-gray-600">Kelola data rapat meeting</p>
-              </div>
-
-              {/* Komponen waktu real-time - SAMA PERSIS seperti di dashboard */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
-                <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-lg">
-                  <svg
-                    className="w-4 h-4 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {formatRealTime(currentTime)}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {formatRealDate(currentTime)}
-                </div>
-                <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1">
-                  <svg
-                    className="w-3 h-3 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  Bontang, Kalimantan Timur
-                </div>
-              </div>
+        {/* HEADER DATA RAPAT DAN WAKTU REAL-TIME DI LUAR TABEL */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Data Rapat</h1>
+              <p className="text-gray-600">Kelola data rapat meeting</p>
             </div>
 
+            {/* Komponen waktu real-time */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
+              <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-lg">
+                <svg
+                  className="w-4 h-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {formatRealTime(currentTime)}
+              </div>
+              <div className="text-sm text-gray-600">
+                {formatRealDate(currentTime)}
+              </div>
+              <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1">
+                <svg
+                  className="w-3 h-3 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Bontang, Kalimantan Timur
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Container Tabel */}
+        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
+          <div className="p-6">
             {/* Tombol tambah rapat */}
             <div className="flex justify-between items-center mb-6">
               <div></div>
@@ -576,7 +579,28 @@ export default function Rapat({ onChanged }) {
                     </p>
                   </div>
 
-                  {/* Waktu real-time di modal - SAMA PERSIS seperti di dashboard */}
+                  {/* Waktu real-time di modal */}
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-2 mt-4 lg:mt-0 text-right">
+                    <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-sm">
+                      <svg
+                        className="w-3 h-3 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {formatRealTime(currentTime)}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {formatRealDate(currentTime)}
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -592,7 +616,6 @@ export default function Rapat({ onChanged }) {
               {/* Form content */}
               <div className="p-6 overflow-y-auto">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* ... form fields tetap sama seperti kode asli Anda ... */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama Rapat</label>
                     <input
@@ -814,12 +837,12 @@ export default function Rapat({ onChanged }) {
                     {modalMode === "add" ? "Tambah Rapat" : "Simpan Perubahan"}
                   </button>
                 </div>
-                          </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Modal Detail Rapat (tetap sama seperti kode asli) */}
+        {/* Modal Detail Rapat */}
         {showDetailModal && selectedRapatDetail && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
