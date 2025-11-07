@@ -76,7 +76,6 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
   const routeToKey = (path) => {
     if (path.startsWith("/dashboard")) return "dashboard";
     if (path.startsWith("/rapat")) return "tambah-rapat";
-    if (path.startsWith("/undangan")) return "undangan";
     if (path.startsWith("/ruangan")) return "data-ruangan";
     if (path.startsWith("/user")) return "data-peserta";
     return "";
