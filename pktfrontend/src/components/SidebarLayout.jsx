@@ -122,14 +122,6 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
       gradientFrom: "from-green-50",
       gradientTo: "to-emerald-100",
       stroke: "#059669",
-      svgPath: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />,
-    },
-    {
-      key: "undangan",
-      label: "Undangan Rapat",
-      gradientFrom: "from-indigo-50",
-      gradientTo: "to-indigo-100",
-      stroke: "#4f46e5",
       svgPath: (
         <>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

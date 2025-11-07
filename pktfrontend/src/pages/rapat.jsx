@@ -321,7 +321,7 @@ export default function Rapat({ onChanged }) {
                 <h1 className="text-3xl font-bold text-gray-800">Data Rapat</h1>
                 <p className="text-gray-600">Kelola data rapat meeting</p>
               </div>
-              
+
               {/* Komponen waktu real-time - SAMA PERSIS seperti di dashboard */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
                 <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-lg">
@@ -378,7 +378,7 @@ export default function Rapat({ onChanged }) {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span>+ Tambah Rapat</span>
+                <span> Tambah Rapat</span>
               </button>
             </div>
 
@@ -575,7 +575,7 @@ export default function Rapat({ onChanged }) {
                       {modalMode === "add" ? "Buat rapat meeting baru" : "Edit data rapat meeting"}
                     </p>
                   </div>
-                  
+
                   {/* Waktu real-time di modal - SAMA PERSIS seperti di dashboard */}
                   <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-2 mt-4 lg:mt-0 text-right">
                     <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-sm">
@@ -621,7 +621,7 @@ export default function Rapat({ onChanged }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleCloseModal}
                   className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
@@ -689,7 +689,7 @@ export default function Rapat({ onChanged }) {
                         required
                       />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-gray-800 font-semibold mb-2 text-sm">Waktu Mulai</label>
@@ -758,7 +758,7 @@ export default function Rapat({ onChanged }) {
                           value={searchQuery}
                           onChange={handleSearchChange}
                           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm pl-10"
-                          placeholder="Cari peserta berdasarkan nama, unit kerja, atau NPK..."
+                          placeholder="Cari peserta berdasarkan nama, unit kerja, atau NPK"
                         />
                         <svg
                           className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"

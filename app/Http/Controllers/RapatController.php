@@ -16,8 +16,8 @@ class RapatController extends Controller
                     ->orderBy('tanggal', 'desc')
                     ->orderBy('waktu_mulai', 'desc')
                     ->whereDate('tanggal', today())
+                    ->where('is_active', '=', 1)
                     ->get();
-
         return response()->json([
             'data' => $rapat
         ]);
@@ -28,6 +28,7 @@ class RapatController extends Controller
         $rapat = Rapat::with('ruangan')
                     ->orderBy('tanggal', 'desc')
                     ->orderBy('waktu_mulai', 'desc')
+                    ->where('is_active', '=', 1)
                     ->get();
 
         return response()->json([
@@ -231,7 +232,9 @@ class RapatController extends Controller
         }
 
         try {
-            $rapat->delete();
+            // $rapat->delete();
+            $rapat->is_active = false;
+            $rapat->save();
 
             return response()->json([
                 'status' => 'success',
