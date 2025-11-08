@@ -10,7 +10,9 @@ class RuanganController extends Controller
 {
     public function index()
     {
-        $ruangan = Ruangan::orderBy('created_at', 'desc')->get();
+        $ruangan = Ruangan::orderBy('created_at', 'desc')
+                           ->where('is_active', '=', 1)
+                           ->get();
 
         return response()->json([
             'data' => $ruangan
@@ -111,6 +113,8 @@ class RuanganController extends Controller
 
         try {
             $ruangan->delete();
+            $ruangan->is_active = false;
+            $ruangan->save();
 
             return response()->json([
                 'status' => 'success',

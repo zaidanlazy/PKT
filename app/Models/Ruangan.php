@@ -10,7 +10,9 @@ class Ruangan extends Model
 
     protected $fillable = [
         'nama_ruangan',
-        
+        'status',
+        'is_active',
+
     ];
 
 }

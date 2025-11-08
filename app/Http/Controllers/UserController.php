@@ -13,8 +13,9 @@ class UserController extends Controller
     {
         $users = User::select('id', 'mpk', 'nama', 'email', 'unit_kerja', 'no_telp', 'role', 'created_at')
                      ->orderBy('created_at', 'desc')
+                     ->where('is_active', '=', 1)
                      ->get();
-        
+
         return response()->json($users);
     }
 
@@ -67,7 +68,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'status' => 'error',
@@ -120,7 +121,7 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'status' => 'error',
@@ -130,6 +131,8 @@ class UserController extends Controller
 
         try {
             $user->delete();
+                $user->is_active = false;
+                $user->save();
 
             return response()->json([
                 'status' => 'success',
