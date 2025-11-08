@@ -332,7 +332,7 @@ export default function User() {
                           <div className="flex flex-col items-center space-y-4">
                             <div className="p-4 bg-blue-50 rounded-2xl">
                               <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                               </svg>
                             </div>
                             <div className="text-center">
@@ -622,7 +622,7 @@ export default function User() {
                       value={userForm.mpk}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan NPK user"
+                      placeholder="Masukkan NPK"
                       required
                     />
                   </div>
@@ -635,7 +635,7 @@ export default function User() {
                       value={userForm.nama}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan nama user"
+                      placeholder="Masukkan nama "
                       required
                     />
                   </div>
@@ -648,7 +648,7 @@ export default function User() {
                       value={userForm.email}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan email user"
+                      placeholder="Masukkan email "
                       required
                     />
                   </div>
@@ -679,7 +679,9 @@ export default function User() {
                   </div>
 
                   <div>
-                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Password {modalMode === "edit" && "(kosongkan jika tidak ingin mengubah)"}</label>
+                    <label className="block text-gray-800 font-semibold mb-2 text-sm">
+                      Password {modalMode === "edit" && "(kosongkan jika tidak ingin mengubah)"}
+                    </label>
                     <input
                       type="password"
                       name="password"
@@ -689,6 +691,12 @@ export default function User() {
                       placeholder="Masukkan password"
                       required={modalMode === "add"}
                     />
+                    {/* CAPTION UNTUK TAMBAH USER BARU */}
+                    {modalMode === "add" && (
+                      <p className="text-xs text-gray-500 mt-2 ml-1">
+                        Password minimal 8 karakter
+                      </p>
+                    )}
                   </div>
 
                   <div>
