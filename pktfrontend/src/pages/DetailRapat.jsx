@@ -151,7 +151,9 @@ export default function DetailRapat() {
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
+      {/* RI
+      
+      GHT PANEL */}
       <div className="w-[320px] bg-[#FFFFFF] flex flex-col items-center justify-between py-16 relative">
         {/* Logo */}
         <div className="flex flex-col items-center mt-10 animate-fadeIn">
