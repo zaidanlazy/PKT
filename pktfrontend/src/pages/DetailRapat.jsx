@@ -38,13 +38,11 @@ export default function DetailRapat() {
     return `${displayHour}:${m} ${ampm}`;
   };
 
-  const formatShortDate = (dateObj) => {
-    return dateObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-  };
-
   const formatClockWithSeconds = (dateObj) => {
-    // Contoh:  08:39:05 PM
-    const datePart = dateObj.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+    const datePart = dateObj.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+    });
     const timePart = dateObj.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
@@ -59,95 +57,147 @@ export default function DetailRapat() {
       <div
         className="h-screen flex items-center justify-center text-white text-lg"
         style={{
-          backgroundImage: "url('https://lh7-rt.googleusercontent.com/docsz/AD_4nXd8TqRq2Mubk8l59LPBC_SmEwhLXxjJ1JrcsLqY_gYxtdEJrjSPy1bM7CklTGmtifI72Tl0bqew9EN82k9eIdWuPlV3ZLhE1mQ0ZIZfw76Pw1hEcoYRPvOxG-lrA3Xex1xljwb76U1FFk2od0R-roo?key=VkQzj34Nr2RqtWAmOpEsY_rf')",
+          backgroundImage:
+            "url('https://indooffice.co.id/wp-content/uploads/2023/05/Panduan-Lengkap-Ruang-Rapat-Virtual-Mengoptimalkan-Potensi-Bisnis-Anda.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center"
+          backgroundPosition: "center",
         }}
       >
-        Memuat detail rapat...
+        Loading
       </div>
     );
   }
 
   return (
     <div className="h-screen w-full flex overflow-hidden font-sans relative">
-      {/* LEFT SECTION dengan background image */}
+      {/* LEFT SECTION */}
       <div
         className="flex-1 text-white p-12 relative"
         style={{
-          backgroundImage: "url('https://lh7-rt.googleusercontent.com/docsz/AD_4nXd8TqRq2Mubk8l59LPBC_SmEwhLXxjJ1JrcsLqY_gYxtdEJrjSPy1bM7CklTGmtifI72Tl0bqew9EN82k9eIdWuPlV3ZLhE1mQ0ZIZfw76Pw1hEcoYRPvOxG-lrA3Xex1xljwb76U1FFk2od0R-roo?key=VkQzj34Nr2RqtWAmOpEsY_rf')",
+          backgroundImage:
+            "url('https://indooffice.co.id/wp-content/uploads/2023/05/Panduan-Lengkap-Ruang-Rapat-Virtual-Mengoptimalkan-Potensi-Bisnis-Anda.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center"
+          backgroundPosition: "center",
         }}
       >
-        {/* Overlay untuk meningkatkan keterbacaan teks */}
         <div className="absolute inset-0 bg-black/30"></div>
 
-        {/* Konten */}
         <div className="relative z-10">
-          {/* Room name (kiri atas) */}
+          {/* Header kiri atas */}
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-semibold mb-1">
+              <h2 className="text-xl font-extrabold mb-1">
                 {rapat.ruangan?.nama_ruangan || "Room 2"}
               </h2>
             </div>
 
-            {/* clock kecil yang update (posisi di pojok kanan atas kiri dari panel merah) */}
-            <div className="text-sm text-gray-300" aria-hidden>
+            {/* Jam berjalan real-time */}
+            <div className="text-sm font-extrabold leading-tight text-white-100" aria-hidden>
               {formatClockWithSeconds(now)}
             </div>
           </div>
 
-    
-
           {/* Current Event */}
           <div className="mt-20">
-            <h3 className="text-gray-300 text-sm font-semibold tracking-wider">Current Event</h3>
-            <div className="mt-6">
+            <h3 className="text-white-300 text-sm font-extrabold leading-tight">
+              RAPAT KEGIATAN INI
+            </h3>
+            <div className="mt-">
               <p className="text-5xl font-extrabold leading-tight">
-                {formatTimeDisplay(rapat.waktu_mulai)} - {formatTimeDisplay(rapat.waktu_selesai)}
+                {formatTimeDisplay(rapat.waktu_mulai)} -{" "}
+                {formatTimeDisplay(rapat.waktu_selesai)}
               </p>
-              <p className="text-2xl mt-4">{rapat.nama_rapat || "Discussion"}</p>
+              <p className="text-2xl mt-">
+                {rapat.nama_rapat || "Discussion"}
+              </p>
             </div>
           </div>
 
           {/* Next Events */}
-          <div className="mt-16 max-w-lg">
-            <h3 className="text-gray-300 text-sm font-semibold tracking-wider">Next Events</h3>
+          <div className="mt-10 max-w-lg">
+            <h3 className="text-white-300 text-sm font-extrabold leading-tight">
+              RAPAT KEGIATAN SELANJUTNYA
+            </h3>
             <div className="mt-4 space-y-8">
-              {/* Jika punya data next events dari API, replace bagian ini dengan map */}
               <div>
-                <p className="text-gray-300 text-sm">22 May 3:30 PM - 4:30 PM</p>
-                <p className="text-lg font-medium text-white/95">Status Meeting Scrum Team</p>
+                <p className="text-white-300 text-sm">
+                  22 May 3:30 PM - 4:30 PM
+                </p>
+                <p className="text-lg font-bold text-white/95">
+                  Status Meeting Scrum Team
+                </p>
               </div>
 
               <div>
-                <p className="text-gray-300 text-sm">22 May 4:30 PM - 5:30 PM</p>
-                <p className="text-lg font-medium text-white/95">Progress Update</p>
+                <p className="text-white-300 text-sm">
+                  22 May 4:30 PM - 5:30 PM
+                </p>
+                <p className="text-lg font-bold text-white/95">
+                  Progress Update
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANEL (lebar tetap) */}
-      <div className="w-[260px] bg-[#d6302b] flex flex-col items-center justify-center relative">
-        {/* ikon-ikon diletakkan secara vertikal, berada di tengah panel kanan */}
-        <div className="flex flex-col items-center gap-10">
-          {/* kotak ikon pertama */}
-          <div className="w-20 h-20 bg-white/8 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-inner">
-            {/* ikon kamera/meeting */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      {/* RIGHT PANEL */}
+      <div className="w-[300px] bg-[#d6302b] flex flex-col items-center justify-between py-16 relative">
+        {/* Ikon utama di bagian atas */}
+        <div className="flex flex-col items-center">
+          <div className="w-20 h-20 bg-[#5cc3ff] rounded-2xl flex items-center justify-center shadow-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-20 h-20 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="white"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87M9 11a4 4 0 110-8 4 4 0 010 8zm6 0a4 4 0 110-8 4 4 0 010 8z"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {/* Dua ikon kalender di bawah */}
+        <div className="flex flex-row items-center justify-center gap-10">
+          {/* Ikon kiri (kalender dengan X) */}
+          <div className="flex flex-col items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-20 h-20 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 7V3m8 4V3m1 8l-2 2m0-2l2 2M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           </div>
 
-          {/* kotak ikon kedua */}
-          <div className="w-20 h-20 bg-white/8 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-inner">
-            {/* ikon kalender */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          {/* Ikon kanan (kalender biasa) */}
+          <div className="flex flex-col items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-20 h-20 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="white "
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           </div>
         </div>

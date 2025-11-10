@@ -346,7 +346,7 @@ export default function Dashboard() {
                             </button>
                           ) : (
                             <span className="text-xs text-gray-400 italic">
-                              Tidak ada detail
+                             
                             </span>
                           )}
                         </td>

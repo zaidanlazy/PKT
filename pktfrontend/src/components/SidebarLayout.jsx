@@ -342,3 +342,4 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
     </div>
   );
 }
+

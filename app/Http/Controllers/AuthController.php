@@ -85,7 +85,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'MPK atau password salah'
+                'message' => 'NPK atau password salah'
             ], 401);
         }
 
