@@ -151,10 +151,8 @@ export default function DetailRapat() {
         </div>
       </div>
 
-      {/* RI
-      
-      GHT PANEL */}
-      <div className="w-[320px] bg-[#FFFFFF] flex flex-col items-center justify-between py-16 relative">
+      {/* RIGHT PANEL */}
+      <div className="w-[320px] bg-[#004C8C] flex flex-col items-center justify-between py-16 relative">
         {/* Logo */}
         <div className="flex flex-col items-center mt-10 animate-fadeIn">
           <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
@@ -174,7 +172,7 @@ export default function DetailRapat() {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-16 h-16 text-black"
+              className="w-16 h-16 text-white"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -186,7 +184,7 @@ export default function DetailRapat() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <p className="text-sm text-black mt-2 font-medium">Kalender</p>
+            <p className="text-sm text-white mt-2 font-extrabold">Kalender</p>
           </button>
 
           <button
@@ -195,10 +193,10 @@ export default function DetailRapat() {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-16 h-16 text-black"
+              className="w-16 h-16 text-white"
               fill="none"
               viewBox="0 0 24 24"
-              stroke="black"
+              stroke="white"
               strokeWidth={2}
             >
               <path
@@ -207,7 +205,7 @@ export default function DetailRapat() {
                 d="M13 16h-1v-4h-1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-sm text-black mt-2 font-medium">
+            <p className="text-sm text-white mt-2 font-extrabold">
               Rapat Berikutnya
             </p>
           </button>

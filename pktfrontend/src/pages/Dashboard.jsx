@@ -104,6 +104,7 @@ export default function Dashboard() {
       ? rapatList.filter((r) => getDateKey(r.tanggal) === todayKey)
       : [];
 
+
     return (
       <>
         {/* === Header utama: Dashboard kiri, waktu kanan === */}
@@ -116,8 +117,8 @@ export default function Dashboard() {
             </p>
           </div>
 {/* Kanan: Jam, tanggal, lokasi */}
-<div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
-  <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl mb-1">
+<div className="bg-white rounded-xl border border-gray-200 shadow-sm px-10 py-10 mt-5 lg:mt-0 text-right">
+  <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-3xl mb-1">
     <svg
       className="w-4 h-4 text-blue-600"
       fill="none"
@@ -346,7 +347,7 @@ export default function Dashboard() {
                             </button>
                           ) : (
                             <span className="text-xs text-gray-400 italic">
-                             
+
                             </span>
                           )}
                         </td>
