@@ -16,6 +16,8 @@ export default function Rapat({ onChanged }) {
   const [toasts, setToasts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
@@ -74,6 +76,28 @@ export default function Rapat({ onChanged }) {
     );
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(rapatList.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRapatList = rapatList.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   // Fungsi untuk menambah toast
   const addToast = (message, type = "info") => {
     const id = Date.now();
@@ -122,6 +146,7 @@ export default function Rapat({ onChanged }) {
       const res = await axios.get("/rapat-ruang");
       const data = res.data?.data || res.data || [];
       setRapatList(Array.isArray(data) ? data : []);
+      setCurrentPage(1); // Reset ke halaman pertama saat fetch data
     } catch (err) {
       console.error("Gagal memuat data rapat:", err);
       setRapatList([]);
@@ -423,7 +448,7 @@ export default function Rapat({ onChanged }) {
                         </td>
                       </tr>
                     ) : (
-                      rapatList.map((rapat, index) => (
+                      currentRapatList.map((rapat, index) => (
                         <tr
                           key={rapat.id}
                           className={`transition-all duration-200 hover:bg-blue-50/50 ${
@@ -545,16 +570,72 @@ export default function Rapat({ onChanged }) {
 
             {rapatList && rapatList.length > 0 && (
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <p className="text-gray-600 text-sm">
-                    Menampilkan <span className="font-semibold">{rapatList.length}</span> rapat
+                    Menampilkan <span className="font-semibold">{indexOfFirstItem + 1}</span> - <span className="font-semibold">{Math.min(indexOfLastItem, rapatList.length)}</span> dari <span className="font-semibold">{rapatList.length}</span> rapat
                   </p>
+
+                  {/* Pagination Controls */}
                   <div className="flex items-center space-x-2">
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Previous
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === 1
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Sebelumnya
                     </button>
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Next
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {[...Array(totalPages)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        // Show first page, last page, current page, and pages around current
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageChange(pageNumber)}
+                              className={`px-3 py-1.5 text-sm rounded-lg transition-all duration-200 ${
+                                currentPage === pageNumber
+                                  ? 'bg-blue-500 text-white font-semibold shadow-md'
+                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <span key={pageNumber} className="px-2 text-gray-400">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === totalPages
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Selanjutnya
                     </button>
                   </div>
                 </div>
@@ -578,9 +659,6 @@ export default function Rapat({ onChanged }) {
                       {modalMode === "add" ? "Buat rapat meeting baru" : "Edit data rapat meeting"}
                     </p>
                   </div>
-
-                  {/* Waktu real-time di modal */}
-                 
                 </div>
 
                 <button

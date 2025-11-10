@@ -13,6 +13,8 @@ export default function User() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
@@ -57,6 +59,28 @@ export default function User() {
       month: "long",
       day: "numeric",
     });
+
+  // Pagination logic
+  const totalPages = Math.ceil(userList.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUserList = userList.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   // Fungsi untuk menambah toast
   const addToast = (message, type = "info") => {
@@ -104,6 +128,7 @@ export default function User() {
       const res = await axios.get("/users");
       const data = res.data?.data || res.data || [];
       setUserList(Array.isArray(data) ? data : []);
+      setCurrentPage(1); // Reset ke halaman pertama saat fetch data
     } catch (err) {
       console.error("Gagal memuat data user:", err);
       setUserList([]);
@@ -247,7 +272,7 @@ export default function User() {
               <p className="text-gray-600">Kelola data user sistem</p>
             </div>
 
-            {/* Komponen waktu real-time - SAMA PERSIS seperti di rapat dan ruangan */}
+            {/* Komponen waktu real-time */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
               <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-lg">
                 <svg
@@ -349,7 +374,7 @@ export default function User() {
                         </td>
                       </tr>
                     ) : (
-                      userList.map((userData, index) => (
+                      currentUserList.map((userData, index) => (
                         <tr
                           key={userData.id}
                           className={`transition-all duration-200 hover:bg-blue-50/50 ${
@@ -460,16 +485,72 @@ export default function User() {
 
             {userList && userList.length > 0 && (
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <p className="text-gray-600 text-sm">
-                    Menampilkan <span className="font-semibold">{userList.length}</span> user
+                    Menampilkan <span className="font-semibold">{indexOfFirstItem + 1}</span> - <span className="font-semibold">{Math.min(indexOfLastItem, userList.length)}</span> dari <span className="font-semibold">{userList.length}</span> user
                   </p>
+
+                  {/* Pagination Controls */}
                   <div className="flex items-center space-x-2">
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Previous
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === 1
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Sebelumnya
                     </button>
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Next
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {[...Array(totalPages)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        // Show first page, last page, current page, and pages around current
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageChange(pageNumber)}
+                              className={`px-3 py-1.5 text-sm rounded-lg transition-all duration-200 ${
+                                currentPage === pageNumber
+                                  ? 'bg-blue-500 text-white font-semibold shadow-md'
+                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <span key={pageNumber} className="px-2 text-gray-400">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === totalPages
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Selanjutnya
                     </button>
                   </div>
                 </div>
@@ -610,7 +691,7 @@ export default function User() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                </button>
+                  </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

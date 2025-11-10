@@ -13,6 +13,8 @@ export default function Ruangan({ onChanged }) {
   const [selectedRuangan, setSelectedRuangan] = useState(null);
   const [toasts, setToasts] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
@@ -51,6 +53,28 @@ export default function Ruangan({ onChanged }) {
       month: "long",
       day: "numeric",
     });
+
+  // Pagination logic
+  const totalPages = Math.ceil(ruanganList.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRuanganList = ruanganList.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   // Fungsi untuk menambah toast
   const addToast = (message, type = "info") => {
@@ -98,6 +122,7 @@ export default function Ruangan({ onChanged }) {
       const res = await axios.get("/ruangan");
       const data = res.data?.data || res.data || [];
       setRuanganList(Array.isArray(data) ? data : []);
+      setCurrentPage(1); // Reset ke halaman pertama saat fetch data
     } catch (err) {
       console.error("Gagal memuat data ruangan:", err);
       setRuanganList([]);
@@ -220,7 +245,7 @@ export default function Ruangan({ onChanged }) {
               <p className="text-gray-600">Kelola data ruangan meeting</p>
             </div>
 
-            {/* Komponen waktu real-time - SAMA PERSIS seperti di rapat */}
+            {/* Komponen waktu real-time */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-3 mt-4 lg:mt-0 text-right">
               <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-lg">
                 <svg
@@ -318,7 +343,7 @@ export default function Ruangan({ onChanged }) {
                         </td>
                       </tr>
                     ) : (
-                      ruanganList.map((ruangan, index) => (
+                      currentRuanganList.map((ruangan, index) => (
                         <tr
                           key={ruangan.id}
                           className={`transition-all duration-200 hover:bg-blue-50/50 ${
@@ -379,16 +404,72 @@ export default function Ruangan({ onChanged }) {
 
             {ruanganList && ruanganList.length > 0 && (
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                   <p className="text-gray-600 text-sm">
-                    Menampilkan <span className="font-semibold">{ruanganList.length}</span> ruangan
+                    Menampilkan <span className="font-semibold">{indexOfFirstItem + 1}</span> - <span className="font-semibold">{Math.min(indexOfLastItem, ruanganList.length)}</span> dari <span className="font-semibold">{ruanganList.length}</span> ruangan
                   </p>
+
+                  {/* Pagination Controls */}
                   <div className="flex items-center space-x-2">
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Previous
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === 1
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Sebelumnya
                     </button>
-                    <button className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                      Next
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {[...Array(totalPages)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        // Show first page, last page, current page, and pages around current
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === totalPages ||
+                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageChange(pageNumber)}
+                              className={`px-3 py-1.5 text-sm rounded-lg transition-all duration-200 ${
+                                currentPage === pageNumber
+                                  ? 'bg-blue-500 text-white font-semibold shadow-md'
+                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          pageNumber === currentPage - 2 ||
+                          pageNumber === currentPage + 2
+                        ) {
+                          return (
+                            <span key={pageNumber} className="px-2 text-gray-400">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
+                        currentPage === totalPages
+                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+                      }`}
+                    >
+                      Selanjutnya
                     </button>
                   </div>
                 </div>
@@ -489,7 +570,7 @@ export default function Ruangan({ onChanged }) {
                     <button
                       type="button"
                       onClick={handleCloseModal}
-                      className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
+                   className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
                     >
                       Batal
                     </button>
