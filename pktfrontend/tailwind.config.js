@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Open Sans"', '"Segoe UI"', 'sans-serif'],
+      },
       keyframes: {
         fadeIn: {
           "0%": { opacity: 0, transform: "translateY(-10px)" },
