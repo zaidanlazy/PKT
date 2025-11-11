@@ -20,9 +20,20 @@ class DashboardController extends Controller
         $total_online = Rapat::where('jenis', 'online')-> where('tanggal', '=', today())->where('is_active', '=', 1)->count();
         $total_offline = Rapat::where('jenis', 'offline')->where('tanggal', '=', today())->where('is_active', '=', 1)->count();
 
-        // Get ruangan statistics
-        $ruangan_tersedia = Ruangan::where('status', 'tersedia')->count();
-        $ruangan_tidak_tersedia = Ruangan::where('status', 'tidak_tersedia')->count();
+        // Get ruangan statistics based on active offline meetings today
+        // Count unique rooms that are booked for offline meetings today
+        $ruangan_terpakai = Rapat::where('jenis', 'offline')
+            ->where('tanggal', '=', today())
+            ->where('is_active', '=', 1)
+            ->whereNotNull('ruangan_id')
+            ->select('ruangan_id')
+            ->distinct()
+            ->get()
+            ->count();
+        
+        // Available rooms = Total rooms - Rooms booked today
+        $ruangan_tersedia = max(0, $total_ruangan - $ruangan_terpakai);
+        $ruangan_tidak_tersedia = $ruangan_terpakai;
 
         return response()->json([
             'total_ruangan' => $total_ruangan,

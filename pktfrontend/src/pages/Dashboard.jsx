@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axiosClient";
 import Toast from "../components/Toast";
 import StatCard from "../components/StatCard";
@@ -7,6 +7,7 @@ import SidebarLayout from "../components/SidebarLayout";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [data, setData] = useState({
     total_ruangan: 0,
@@ -33,6 +34,25 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
     fetchRapatList();
+  }, []);
+
+  // Refresh data when navigating to dashboard
+  useEffect(() => {
+    if (location.pathname === "/dashboard") {
+      fetchDashboardData();
+      fetchRapatList();
+    }
+  }, [location.pathname]);
+
+  // Refresh data when window gains focus (user comes back to tab)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchDashboardData();
+      fetchRapatList();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   useEffect(() => {
@@ -173,9 +193,9 @@ export default function Dashboard() {
           />
           <StatCard
             title="Ruangan Tersedia"
-            value={data.ruangan_tersedia}
-            icon="check"
-            gradient="from-green-500 to-emerald-500"
+            value={data.ruangan_tersedia === 0 ? "Ruangan Kosong" : data.ruangan_tersedia}
+            icon={data.ruangan_tersedia === 0 ? "x" : "check"}
+            gradient={data.ruangan_tersedia === 0 ? "from-red-500 to-orange-500" : "from-green-500 to-emerald-500"}
           />
           <StatCard
             title="Rapat Online"
