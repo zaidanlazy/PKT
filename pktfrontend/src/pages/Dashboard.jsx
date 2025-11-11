@@ -137,8 +137,9 @@ export default function Dashboard() {
             </p>
           </div>
 {/* Kanan: Jam, tanggal, lokasi */}
-<div className="bg-white rounded-xl border border-gray-200 shadow-sm px-10 py-10 mt-5 lg:mt-0 text-right">
-  <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-3xl mb-1">
+<div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
+  {/* JAM */}
+  <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl mb-1 leading-none">
     <svg
       className="w-4 h-4 text-blue-600"
       fill="none"
@@ -154,10 +155,14 @@ export default function Dashboard() {
     </svg>
     {formatRealTime(currentTime)}
   </div>
-  <div className="text-sm text-gray-600">
+
+  {/* TANGGAL */}
+  <div className="text-sm text-gray-600 font-medium leading-tight">
     {formatRealDate(currentTime)}
   </div>
-  <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1">
+
+  {/* LOKASI */}
+  <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
     <svg
       className="w-3 h-3 text-gray-400"
       fill="none"
@@ -180,6 +185,7 @@ export default function Dashboard() {
     Bontang, Kalimantan Timur
   </div>
 </div>
+
 
         </div>
 

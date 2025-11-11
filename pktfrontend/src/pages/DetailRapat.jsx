@@ -8,8 +8,6 @@ export default function DetailRapat() {
   const [rapat, setRapat] = useState(null);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
-  const [showNextMeetings, setShowNextMeetings] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     fetchRapatDetail();
@@ -68,21 +66,6 @@ export default function DetailRapat() {
     );
   }
 
-  const generateCalendarDays = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const startDay = new Date(year, month, 1).getDay();
-
-    const days = [];
-    for (let i = 0; i < startDay; i++) days.push(null);
-    for (let i = 1; i <= daysInMonth; i++) days.push(i);
-    return days;
-  };
-
-  const calendarDays = generateCalendarDays();
-
   return (
     <div className="h-screen w-full flex overflow-hidden font-sans relative">
       {/* LEFT SECTION */}
@@ -98,17 +81,19 @@ export default function DetailRapat() {
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative z-10">
-          {/* Header kiri atas */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 tracking-tight">
-                {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
-              </h2>
-            </div>
-            <div className="text-lg font-semibold leading-tight tracking-wide">
-              {formatClockWithSeconds(now)}
-            </div>
-          </div>
+         {/* Header kiri atas */}
+        <div className="flex items-start justify-between">
+           <div>
+        <h2 className="text-3xl font-bold mb-2 tracking-tight">
+      {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
+    </h2>
+      </div>
+      
+     <div className="text-lg font-light tracking-wider text-white/90 font-mono drop-shadow-sm">
+    {formatClockWithSeconds(now)}
+  </div>
+</div>
+
 
           {/* Current Meeting */}
           <div className="mt-28">
@@ -131,17 +116,13 @@ export default function DetailRapat() {
             </h3>
             <div className="space-y-6">
               <div>
-                <p className="text-sm opacity-90">
-                  22 May 3:30 PM - 4:30 PM
-                </p>
+                <p className="text-sm opacity-90">22 May 3:30 PM - 4:30 PM</p>
                 <p className="text-2xl font-semibold text-white/95">
                   Status Meeting Scrum Team
                 </p>
               </div>
               <div>
-                <p className="text-sm opacity-90">
-                  22 May 4:30 PM - 5:30 PM
-                </p>
+                <p className="text-sm opacity-90">22 May 4:30 PM - 5:30 PM</p>
                 <p className="text-2xl font-semibold text-white/95">
                   Progress Update
                 </p>
@@ -152,7 +133,12 @@ export default function DetailRapat() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="w-[320px] bg-[#FFFFFF] flex flex-col items-center justify-between py-16 relative">
+      <div
+        className="w-[320px] flex flex-col items-center py-16 relative"
+        style={{
+          backgroundColor: "#004C8C", // warna biru khas Pupuk Kaltim
+        }}
+      >
         {/* Logo */}
         <div className="flex flex-col items-center mt-10 animate-fadeIn">
           <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
@@ -162,128 +148,33 @@ export default function DetailRapat() {
               className="w-full h-full object-contain"
             />
           </div>
-        </div>
 
-        {/* Buttons */}
-        <div className="flex flex-row items-center justify-center gap-14 mb-4">
-          <button
-            onClick={() => setShowCalendar(true)}
-            className="flex flex-col items-center justify-center focus:outline-none hover:scale-110 transition-transform"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-16 h-16 text-black"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="black"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <p className="text-sm text-black mt-2 font-bold">Kalender</p>
-          </button>
-
-          <button
-            onClick={() => setShowNextMeetings(true)}
-            className="flex flex-col items-center justify-center focus:outline-none hover:scale-110 transition-transform"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-16 h-16 text-black"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="black"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 16h-1v-4h-1m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <p className="text-sm text-black mt-2 font- bold">
-              Rapat Berikutnya
-            </p>
-          </button>
-        </div>
-      </div>
-
-      {/* MODALS (tidak diubah) */}
-      {showCalendar && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[520px] relative shadow-lg animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#004C8C] mb-4">
-              Kalender Rapat
-            </h2>
-            <div className="grid grid-cols-7 gap-2 text-center">
-              {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => (
-                <div
-                  key={d}
-                  className="font-semibold text-[#004C8C] border-b pb-1"
-                >
-                  {d}
-                </div>
-              ))}
-              {calendarDays.map((day, i) => (
-                <div
-                  key={i}
-                  className={`h-10 flex items-center justify-center rounded-lg ${
-                    day
-                      ? "bg-gray-100 hover:bg-[#004C8C] hover:text-white cursor-pointer transition"
-                      : ""
-                  }`}
-                >
-                  {day || ""}
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowCalendar(false)}
-              className="absolute top-2 right-3 text-gray-600 hover:text-red-500 text-lg font-bold"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showNextMeetings && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[520px] relative shadow-lg animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#004C8C] mb-4">
+          {/* Langsung tampilkan daftar rapat berikutnya */}
+          <div className="mt-12 text-center w-full px-6">
+            <h2 className="text-lg font-bold text-white mb-4">
               Rapat Berikutnya
             </h2>
             <div className="space-y-4">
-              <div className="p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
+              <div className="p-3 bg-white/10 rounded-lg">
+                <p className="text-sm text-gray-100">
                   22 May 3:30 PM - 4:30 PM
                 </p>
-                <p className="text-lg font-semibold text-[#004C8C]">
+                <p className="text-lg font-semibold text-white">
                   Status Meeting Scrum Team
                 </p>
               </div>
-              <div className="p-3 bg-gray-100 rounded-lg">
-                <p className="text-sm text-gray-700">
+              <div className="p-3 bg-white/10 rounded-lg">
+                <p className="text-sm text-gray-100">
                   22 May 4:30 PM - 5:30 PM
                 </p>
-                <p className="text-lg font-semibold text-[#004C8C]">
+                <p className="text-lg font-semibold text-white">
                   Progress Update
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setShowNextMeetings(false)}
-              className="absolute top-2 right-3 text-gray-600 hover:text-red-500 text-lg font-bold"
-            >
-              ✕
-            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
