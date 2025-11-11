@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "../api/axiosClient";
+import { ArrowLeft } from "lucide-react"; // ⬅️ ikon dari lucide-react
 
 export default function DetailRapat() {
   const { id } = useParams();
@@ -37,9 +38,9 @@ export default function DetailRapat() {
   };
 
   const formatClockWithSeconds = (dateObj) => {
-    const datePart = dateObj.toLocaleDateString("en-GB", {
+    const datePart = dateObj.toLocaleDateString("id-ID", {
       day: "2-digit",
-      month: "short",
+      month: "long", // bulan lengkap (contoh: November)
     });
     const timePart = dateObj.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -81,19 +82,19 @@ export default function DetailRapat() {
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative z-10">
-         {/* Header kiri atas */}
-        <div className="flex items-start justify-between">
-           <div>
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">
-      {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
-    </h2>
-      </div>
-      
-     <div className="text-lg font-light tracking-wider text-white/90 font-mono drop-shadow-sm">
-    {formatClockWithSeconds(now)}
-  </div>
-</div>
+          {/* Header kiri atas */}
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 tracking-tight">
+                {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
+              </h2>
+            </div>
 
+            {/* Waktu real-time */}
+            <div className="text-[1.35rem] font-light tracking-wider text-white/90 font-mono drop-shadow-sm">
+              {formatClockWithSeconds(now)}
+            </div>
+          </div>
 
           {/* Current Meeting */}
           <div className="mt-28">
@@ -108,27 +109,6 @@ export default function DetailRapat() {
               {rapat.nama_rapat || "Rapat Koordinasi Mingguan"}
             </p>
           </div>
-
-          {/* Next Meetings */}
-          <div className="mt-20 max-w-xl">
-            <h3 className="text-base font-semibold tracking-wide opacity-90 mb-3">
-              RAPAT KEGIATAN SELANJUTNYA
-            </h3>
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm opacity-90">22 May 3:30 PM - 4:30 PM</p>
-                <p className="text-2xl font-semibold text-white/95">
-                  Status Meeting Scrum Team
-                </p>
-              </div>
-              <div>
-                <p className="text-sm opacity-90">22 May 4:30 PM - 5:30 PM</p>
-                <p className="text-2xl font-semibold text-white/95">
-                  Progress Update
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -136,9 +116,18 @@ export default function DetailRapat() {
       <div
         className="w-[320px] flex flex-col items-center py-16 relative"
         style={{
-          backgroundColor: "#004C8C", // warna biru khas Pupuk Kaltim
+          backgroundColor: "#004C8C",
         }}
       >
+        {/* Tombol kembali elegan */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="absolute top-5 right-5 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-sm shadow-md transition-all duration-300 hover:scale-110"
+          title="Kembali ke Dashboard"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+
         {/* Logo */}
         <div className="flex flex-col items-center mt-10 animate-fadeIn">
           <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
@@ -149,7 +138,7 @@ export default function DetailRapat() {
             />
           </div>
 
-          {/* Langsung tampilkan daftar rapat berikutnya */}
+          {/* Rapat berikutnya */}
           <div className="mt-12 text-center w-full px-6">
             <h2 className="text-lg font-bold text-white mb-4">
               Rapat Berikutnya
