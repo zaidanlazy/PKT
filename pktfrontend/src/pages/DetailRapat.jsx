@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "../api/axiosClient";
-import { ArrowLeft } from "lucide-react"; // ⬅️ ikon dari lucide-react
+import { ArrowLeft } from "lucide-react";
 
 export default function DetailRapat() {
   const { id } = useParams();
@@ -40,7 +40,7 @@ export default function DetailRapat() {
   const formatClockWithSeconds = (dateObj) => {
     const datePart = dateObj.toLocaleDateString("id-ID", {
       day: "2-digit",
-      month: "long", // bulan lengkap (contoh: November)
+      month: "long",
     });
     const timePart = dateObj.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -62,7 +62,7 @@ export default function DetailRapat() {
           backgroundPosition: "center",
         }}
       >
-        Loading
+        Loading...
       </div>
     );
   }
@@ -82,7 +82,6 @@ export default function DetailRapat() {
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative z-10">
-          {/* Header kiri atas */}
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-3xl font-bold mb-2 tracking-tight">
@@ -90,13 +89,11 @@ export default function DetailRapat() {
               </h2>
             </div>
 
-            {/* Waktu real-time */}
             <div className="text-[1.35rem] font-light tracking-wider text-white/90 font-mono drop-shadow-sm">
               {formatClockWithSeconds(now)}
             </div>
           </div>
 
-          {/* Current Meeting */}
           <div className="mt-28">
             <h3 className="text-base font-semibold tracking-wide opacity-90 mb-1">
               RAPAT KEGIATAN INI
@@ -114,12 +111,12 @@ export default function DetailRapat() {
 
       {/* RIGHT PANEL */}
       <div
-        className="w-[320px] flex flex-col items-center py-16 relative"
+        className="w-[320px] flex flex-col items-center py-16 relative h-screen"
         style={{
           backgroundColor: "#004C8C",
         }}
       >
-        {/* Tombol kembali elegan */}
+        {/* Tombol kembali */}
         <button
           onClick={() => navigate("/dashboard")}
           className="absolute top-5 right-5 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-sm shadow-md transition-all duration-300 hover:scale-110"
@@ -129,8 +126,8 @@ export default function DetailRapat() {
         </button>
 
         {/* Logo */}
-        <div className="flex flex-col items-center mt-10 animate-fadeIn">
-          <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4">
+        <div className="flex flex-col items-center mt-10 w-full px-6 flex-1 overflow-hidden">
+          <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4 mx-auto">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/400px-Logo_pupuk_kaltim.svg.png?20190120151511"
               alt="Pupuk Kaltim"
@@ -138,28 +135,26 @@ export default function DetailRapat() {
             />
           </div>
 
-          {/* Rapat berikutnya */}
-          <div className="mt-12 text-center w-full px-6">
+          {/* Scrollable Section */}
+          <div className="mt-12 text-center w-full flex-1 overflow-y-auto px-2 custom-scrollbar">
             <h2 className="text-lg font-bold text-white mb-4">
               Rapat Berikutnya
             </h2>
-            <div className="space-y-4">
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-sm text-gray-100">
-                  22 May 3:30 PM - 4:30 PM
-                </p>
-                <p className="text-lg font-semibold text-white">
-                  Status Meeting Scrum Team
-                </p>
-              </div>
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-sm text-gray-100">
-                  22 May 4:30 PM - 5:30 PM
-                </p>
-                <p className="text-lg font-semibold text-white">
-                  Progress Update
-                </p>
-              </div>
+
+            <div className="space-y-4 pb-10">
+              {[...Array(15)].map((_, i) => (
+                <div
+                  key={i}
+                  className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
+                >
+                  <p className="text-sm text-gray-100">
+                    22 May 3:{30 + i} PM - 4:{30 + i} PM
+                  </p>
+                  <p className="text-lg font-semibold text-white">
+                    Status Meeting {i + 1}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
