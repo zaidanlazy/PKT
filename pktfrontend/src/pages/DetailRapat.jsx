@@ -7,25 +7,157 @@ export default function DetailRapat() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [rapat, setRapat] = useState(null);
+  const [rapatBerikutnya, setRapatBerikutnya] = useState(null);
+  const [rapatHariIni, setRapatHariIni] = useState([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    fetchRapatDetail();
-    const t = setInterval(() => setNow(new Date()), 1000);
+    bootstrap();
+    const t = setInterval(() => {
+      setNow(new Date());
+      tickUpdate();
+    }, 1000);
     return () => clearInterval(t);
   }, [id]);
 
-  const fetchRapatDetail = async () => {
+  const bootstrap = async () => {
     try {
-      const res = await axios.get(`/rapat/${id}`);
-      setRapat(res.data?.data || res.data);
+      // Ambil daftar rapat hari ini
+      const listRes = await axios.get("/rapat-today-all");
+      const listData = Array.isArray(listRes.data?.data) ? listRes.data.data : [];
+      setRapatHariIni(listData);
+
+      // Ambil rapat yang diminta
+      let requested = null;
+      try {
+        const res = await axios.get(`/rapat/${id}`);
+        requested = res.data?.data || res.data;
+      } catch (e) {
+        // Jika backend mengembalikan 410 (rapat selesai), tampilkan pesan dan kembali
+        if (e?.response?.status === 410) {
+          alert("Rapat sudah selesai");
+          navigate("/dashboard", { replace: true });
+          return;
+        }
+        throw e;
+      }
+
+      // Hitung rapat aktif & berikutnya berbasis daftar hari ini
+      const { aktif, berikutnya } = getAktifDanBerikutnya(listData, new Date());
+
+      // Jika ada rapat aktif dan berbeda dengan ID saat ini, redirect ke aktif
+      if (aktif && aktif.id?.toString() !== id) {
+        navigate(`/rapat/detail/${aktif.id}`, { replace: true });
+        return;
+      }
+
+      // Jika rapat yang diminta sudah lewat, pindah ke berikutnya bila ada
+      if (isFinishedToday(requested, new Date())) {
+        if (berikutnya) {
+          navigate(`/rapat/detail/${berikutnya.id}`, { replace: true });
+          return;
+        }
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      setRapat(requested);
+      setRapatBerikutnya(berikutnya || null);
     } catch (err) {
       console.error(err);
       navigate("/dashboard");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Dipanggil setiap detik untuk pindah otomatis ketika rapat selesai
+  const tickUpdate = () => {
+    if (!rapat) return;
+    const nowDate = new Date();
+
+    // Setiap 30 detik, refresh daftar rapat hari ini agar rapat baru langsung tercermin
+    if (nowDate.getSeconds() % 30 === 0) {
+      refreshTodayList();
+    }
+
+    // Jika rapat selesai, tentukan tujuan berikutnya
+    if (isFinishedToday(rapat, nowDate)) {
+      const { aktif, berikutnya } = getAktifDanBerikutnya(rapatHariIni, nowDate);
+      if (aktif) {
+        navigate(`/rapat/detail/${aktif.id}`, { replace: true });
+      } else if (berikutnya) {
+        navigate(`/rapat/detail/${berikutnya.id}`, { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    } else {
+      // Jika masih aktif, perbarui rapat berikutnya dari daftar terbaru
+      const { berikutnya } = getAktifDanBerikutnya(rapatHariIni, nowDate, rapat);
+      setRapatBerikutnya(berikutnya || null);
+    }
+  };
+
+  const refreshTodayList = async () => {
+    try {
+      const listRes = await axios.get("/rapat");
+      const listData = Array.isArray(listRes.data?.data) ? listRes.data.data : [];
+      setRapatHariIni(listData);
+    } catch (e) {
+      // ignore refresh error
+    }
+  };
+
+  // Util: cek apakah rapat sudah selesai hari ini
+  const isFinishedToday = (rapatItem, nowDate) => {
+    if (!rapatItem) return false;
+    const todayKey = nowDate.toISOString().slice(0, 10);
+    const meetingDate = String(rapatItem.tanggal).slice(0, 10);
+    const nowHHmm = nowDate.toTimeString().slice(0, 5);
+    return meetingDate < todayKey || (meetingDate === todayKey && nowHHmm > rapatItem.waktu_selesai);
+  };
+
+  // Util: bandingkan HH:mm
+  const isTimeBetween = (hhmm, start, end) => start <= hhmm && hhmm <= end;
+
+  // Hitung rapat aktif dan berikutnya dari daftar hari ini
+  const getAktifDanBerikutnya = (list, nowDate, current = null) => {
+    const todayKey = nowDate.toISOString().slice(0, 10);
+    const nowHHmm = nowDate.toTimeString().slice(0, 5);
+
+    // Ambil hanya rapat hari ini; jika fokus ruangan, biasanya offline
+    const todayList = (Array.isArray(list) ? list : [])
+      .filter(r => String(r.tanggal).slice(0, 10) === todayKey)
+      .sort((a, b) => (a.waktu_mulai > b.waktu_mulai ? 1 : -1));
+
+    let aktif = null;
+    for (const r of todayList) {
+      if (isTimeBetween(nowHHmm, r.waktu_mulai, r.waktu_selesai)) {
+        aktif = r;
+        break;
+      }
+    }
+
+    let berikutnya = null;
+    if (aktif) {
+      berikutnya = todayList.find(r => r.waktu_mulai > aktif.waktu_selesai) || null;
+    } else {
+      // Jika tidak ada aktif, pilih rapat terdekat setelah sekarang
+      berikutnya = todayList.find(r => r.waktu_mulai > nowHHmm) || null;
+    }
+
+    // Jika current dipaksa tampil, hitung next berdasarkan current
+    if (!aktif && current && String(current.tanggal).slice(0, 10) === todayKey) {
+      if (isTimeBetween(nowHHmm, current.waktu_mulai, current.waktu_selesai)) {
+        aktif = current;
+        berikutnya = todayList.find(r => r.waktu_mulai > current.waktu_selesai) || null;
+      } else if (current.waktu_mulai >= nowHHmm && current.waktu_mulai <= (berikutnya?.waktu_mulai || "99:99")) {
+        berikutnya = current;
+      }
+    }
+
+    return { aktif, berikutnya };
   };
 
   const formatTimeDisplay = (timeStr) => {
@@ -147,19 +279,27 @@ export default function DetailRapat() {
             </h2>
 
             <div className="space-y-4 pb-10">
-              {[...Array(15)].map((_, i) => (
-                <div
-                  key={i}
-                  className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
-                >
+              {rapatBerikutnya ? (
+                <div className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all">
                   <p className="text-sm text-gray-100">
-                    22 May 3:{30 + i} PM - 4:{30 + i} PM
+                    {formatTimeDisplay(rapatBerikutnya.waktu_mulai)} - {formatTimeDisplay(rapatBerikutnya.waktu_selesai)}
                   </p>
                   <p className="text-lg font-semibold text-white">
-                    Status Meeting {i + 1}
+                    {rapatBerikutnya.nama_rapat}
+                  </p>
+                  {rapatBerikutnya.ruangan && (
+                    <p className="text-xs text-gray-300 mt-1">
+                      {rapatBerikutnya.ruangan.nama_ruangan}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 bg-white/10 rounded-lg">
+                  <p className="text-sm text-gray-300 italic">
+                    Tidak ada rapat selanjutnya
                   </p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

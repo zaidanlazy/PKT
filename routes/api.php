@@ -10,7 +10,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UndanganRapatController;
 
 // Public routes (no authentication required)
-Route::post('/register', [AuthController::class, 'register']);      
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (authentication required)
@@ -22,11 +22,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/rapat', [RapatController::class, 'index']);
     Route::get('/rapat-ruang', [RapatController::class, 'indexrapat']);
+    Route::get('/rapat-today-all', [RapatController::class, 'todayAll']);
+    
     Route::get('/rapat/{id}', [RapatController::class, 'show']);
     Route::post('/rapat', [RapatController::class, 'store']);
     Route::put('/rapat/{id}', [RapatController::class, 'update']);
     Route::delete('/rapat/{id}', [RapatController::class, 'destroy']);
-    
+
     // Undangan routes
     Route::get('/undangan/user', [UndanganRapatController::class, 'getByUser']);
     Route::get('/undangan/rapat/{id}', [UndanganRapatController::class, 'getByRapat']);
@@ -34,13 +36,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/undangan/{id}/status', [UndanganRapatController::class, 'updateStatus']);
     Route::put('/undangan/{id}/read', [UndanganRapatController::class, 'markAsRead']);
     Route::delete('/undangan/{id}', [UndanganRapatController::class, 'destroy']);
-    
+
     // Ruangan routes
     Route::get('/ruangan', [RuanganController::class, 'index']);
     Route::post('/ruangan', [RuanganController::class, 'store']);
     Route::put('/ruangan/{id}', [RuanganController::class, 'update']);
     Route::delete('/ruangan/{id}', [RuanganController::class, 'destroy']);
-    
+
     // Admin only routes
     Route::middleware('admin')->group(function () {
         Route::get('/users', [UserController::class, 'index']);

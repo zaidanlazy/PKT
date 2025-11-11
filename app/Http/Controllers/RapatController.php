@@ -17,7 +17,9 @@ class RapatController extends Controller
                     ->orderBy('waktu_mulai', 'desc')
                     ->whereDate('tanggal', today())
                     ->where('is_active', '=', 1)
+                    ->orderBy('id', 'desc')
                     ->get();
+
         return response()->json([
             'data' => $rapat
         ]);
@@ -38,18 +40,45 @@ class RapatController extends Controller
 
     public function store(Request $request)
     {
-        $validated = Validator::make($request->all(), [
-            'nama_rapat' => 'required|string|max:255',
-            'jenis' => 'required|in:online,offline',
-            'tanggal' => 'required|date|after_or_equal:today',
-            'waktu_mulai' => 'required|date_format:H:i',
-            'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
-            'ruangan_id' => 'nullable|exists:ruangan,id',
-            'deskripsi' => 'nullable|string',
-            'invited_users' => 'nullable|array',
-            'invited_users.*' => 'exists:users,id',
-            'pesan_undangan' => 'nullable|string|max:500'
-        ]);
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'nama_rapat' => 'required|string|max:255',
+                'jenis' => 'required|in:online,offline',
+                'tanggal' => 'required|date|after_or_equal:today',
+                'waktu_mulai' => 'required|date_format:H:i',
+                'waktu_selesai' => [
+                    'required',
+                    'date_format:H:i',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($request->waktu_mulai && $value) {
+                            list($startHour, $startMin) = explode(':', $request->waktu_mulai);
+                            list($endHour, $endMin) = explode(':', $value);
+                            $startMinutes = (int)$startHour * 60 + (int)$startMin;
+                            $endMinutes = (int)$endHour * 60 + (int)$endMin;
+                            if ($endMinutes <= $startMinutes) {
+                                $fail('Waktu selesai harus setelah waktu mulai.');
+                            }
+                        }
+                    },
+                ],
+                'ruangan_id' => 'nullable|exists:ruangan,id',
+                'deskripsi' => 'nullable|string',
+                'invited_users' => 'nullable|array',
+                'invited_users.*' => 'exists:users,id',
+                'pesan_undangan' => 'nullable|string|max:500'
+            ],
+            [
+                'nama_rapat.required' => 'Nama rapat tidak boleh kosong.',
+                'jenis.required' => 'Jenis rapat harus dipilih.',
+                'tanggal.required' => 'Kalender tidak boleh kosong.',
+                'tanggal.after_or_equal' => 'Tanggal rapat tidak boleh sebelum hari ini.',
+                'waktu_mulai.required' => 'Waktu mulai tidak boleh kosong.',
+                'waktu_selesai.required' => 'Waktu selesai tidak boleh kosong.',
+                'waktu_selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
+                'ruangan_id.exists' => 'Ruangan yang dipilih tidak valid.',
+            ]
+        );
 
         if ($validated->fails()) {
             return response()->json([
@@ -95,6 +124,19 @@ class RapatController extends Controller
         try {
             $rapat = Rapat::create($request->all());
 
+            // Jika rapat offline dengan ruangan, tandai ruangan tidak tersedia
+            if ($rapat->jenis === 'offline' && $rapat->ruangan_id) {
+                try {
+                    $ruangan = Ruangan::find($rapat->ruangan_id);
+                    if ($ruangan && $ruangan->status !== 'tidak_tersedia') {
+                        $ruangan->status = 'tidak_tersedia';
+                        $ruangan->save();
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+
             // Create invitations if users are invited
             if ($request->has('invited_users') && is_array($request->invited_users)) {
                 foreach ($request->invited_users as $userId) {
@@ -133,15 +175,41 @@ class RapatController extends Controller
             ], 404);
         }
 
-        $validated = Validator::make($request->all(), [
-            'nama_rapat' => 'required|string|max:255',
-            'jenis' => 'required|in:online,offline',
-            'tanggal' => 'required|date',
-            'waktu_mulai' => 'required|date_format:H:i',
-            'waktu_selesai' => 'required|date_format:H:i|after:waktu_mulai',
-            'ruangan_id' => 'nullable|exists:ruangan,id',
-            'deskripsi' => 'nullable|string',
-        ]);
+        $validated = Validator::make(
+            $request->all(),
+            [
+                'nama_rapat' => 'required|string|max:255',
+                'jenis' => 'required|in:online,offline',
+                'tanggal' => 'required|date',
+                'waktu_mulai' => 'required|date_format:H:i',
+                'waktu_selesai' => [
+                    'required',
+                    'date_format:H:i',
+                    function ($attribute, $value, $fail) use ($request) {
+                        if ($request->waktu_mulai && $value) {
+                            list($startHour, $startMin) = explode(':', $request->waktu_mulai);
+                            list($endHour, $endMin) = explode(':', $value);
+                            $startMinutes = (int)$startHour * 60 + (int)$startMin;
+                            $endMinutes = (int)$endHour * 60 + (int)$endMin;
+                            if ($endMinutes <= $startMinutes) {
+                                $fail('Waktu selesai harus setelah waktu mulai.');
+                            }
+                        }
+                    },
+                ],
+                'ruangan_id' => 'nullable|exists:ruangan,id',
+                'deskripsi' => 'nullable|string',
+            ],
+            [
+                'nama_rapat.required' => 'Nama rapat tidak boleh kosong.',
+                'jenis.required' => 'Jenis rapat harus dipilih.',
+                'tanggal.required' => 'Kalender tidak boleh kosong.',
+                'waktu_mulai.required' => 'Waktu mulai tidak boleh kosong.',
+                'waktu_selesai.required' => 'Waktu selesai tidak boleh kosong.',
+                'waktu_selesai.after' => 'Waktu selesai harus setelah waktu mulai.',
+                'ruangan_id.exists' => 'Ruangan yang dipilih tidak valid.',
+            ]
+        );
 
         if ($validated->fails()) {
             return response()->json([
@@ -187,6 +255,19 @@ class RapatController extends Controller
         try {
             $rapat->update($request->all());
 
+            // Pastikan ruangan ditandai tidak tersedia ketika rapat offline aktif
+            if ($rapat->jenis === 'offline' && $rapat->ruangan_id) {
+                try {
+                    $ruangan = Ruangan::find($rapat->ruangan_id);
+                    if ($ruangan && $ruangan->status !== 'tidak_tersedia') {
+                        $ruangan->status = 'tidak_tersedia';
+                        $ruangan->save();
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Rapat berhasil diupdate',
@@ -212,6 +293,38 @@ class RapatController extends Controller
                 'status' => 'error',
                 'message' => 'Rapat tidak ditemukan'
             ], 404);
+        }
+
+        // Jika rapat hari ini sudah lewat waktunya, tandai nonaktif dan tolak detail
+        try {
+            $today = now()->format('Y-m-d');
+            $currentTime = now()->format('H:i');
+            $rapatDate = date('Y-m-d', strtotime($rapat->tanggal));
+            if ($rapatDate === $today && $currentTime > $rapat->waktu_selesai) {
+                if ($rapat->is_active) {
+                    $rapat->is_active = false;
+                    $rapat->save();
+                }
+                // Ruangan kembali tersedia
+                if ($rapat->jenis === 'offline' && $rapat->ruangan_id) {
+                    try {
+                        $ruangan = Ruangan::find($rapat->ruangan_id);
+                        if ($ruangan && $ruangan->status !== 'tersedia') {
+                            $ruangan->status = 'tersedia';
+                            $ruangan->save();
+                        }
+                    } catch (\Exception $e) {
+                        // ignore
+                    }
+                }
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Rapat sudah selesai',
+                    'finished' => true
+                ], 410);
+            }
+        } catch (\Exception $e) {
+            // ignore sweep error
         }
 
         return response()->json([
@@ -248,5 +361,44 @@ class RapatController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Mengembalikan semua rapat hari ini (termasuk yang sudah selesai),
+     * serta menandai rapat yang sudah melewati waktu selesai sebagai nonaktif.
+     */
+    public function todayAll()
+    {
+        $today = now()->format('Y-m-d');
+        $currentTime = now()->format('H:i');
+
+        $rapat = Rapat::with('ruangan')
+            ->whereDate('tanggal', $today)
+            ->orderBy('waktu_mulai', 'desc')
+            ->get();
+
+        // Sweep: set nonaktif untuk rapat yang sudah selesai hari ini
+        foreach ($rapat as $r) {
+            try {
+                if ($r->is_active && $currentTime > $r->waktu_selesai) {
+                    $r->is_active = false;
+                    $r->save();
+                    // Ruangan kembali tersedia
+                    if ($r->jenis === 'offline' && $r->ruangan_id) {
+                        $ruangan = Ruangan::find($r->ruangan_id);
+                        if ($ruangan && $ruangan->status !== 'tersedia') {
+                            $ruangan->status = 'tersedia';
+                            $ruangan->save();
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // ignore
+            }
+        }
+
+        return response()->json([
+            'data' => $rapat
+        ]);
     }
 }

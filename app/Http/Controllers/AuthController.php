@@ -81,11 +81,19 @@ class AuthController extends Controller
         // Cari user berdasarkan MPK
         $user = User::where('mpk', $request->mpk)->first();
 
-        // Cek apakah user ada dan password benar
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        // Jika user tidak ditemukan -> NPK salah
+        if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'NPK atau password salah'
+                'message' => 'NPK anda salah'
+            ], 401);
+        }
+
+        // Jika password tidak cocok -> password salah
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password anda salah'
             ], 401);
         }
 

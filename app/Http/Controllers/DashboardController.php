@@ -30,7 +30,9 @@ class DashboardController extends Controller
             ->distinct()
             ->get()
             ->count();
-        
+
+        $total_ruangan = Ruangan::where('is_active', '=', 1)->count();
+
         // Available rooms = Total rooms - Rooms booked today
         $ruangan_tersedia = max(0, $total_ruangan - $ruangan_terpakai);
         $ruangan_tidak_tersedia = $ruangan_terpakai;
