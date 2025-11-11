@@ -54,15 +54,20 @@ export default function DetailRapat() {
   if (loading || !rapat) {
     return (
       <div
-        className="h-screen flex items-center justify-center text-white text-lg"
+        className="relative h-screen flex items-center justify-center text-white text-2xl font-semibold"
         style={{
-          backgroundImage:
-            "url('https://media.istockphoto.com/id/1489796304/id/vektor/latar-belakang-gradasi-warna-langit-biru-dengan-tekstur-butiran.jpg?s=170667a&w=0&k=20&c=nRbMgdaVrXibQ0ma-gBxet_mwcijkJpgw7Jmn6pNkg8=')",
+          backgroundImage: "url('/assets/image.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        Loading...
+        {/* Overlay hitam transparan */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        {/* Teks Loading */}
+        <div className="relative z-10 animate-pulse">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -71,16 +76,16 @@ export default function DetailRapat() {
     <div className="h-screen w-full flex overflow-hidden font-sans relative">
       {/* LEFT SECTION */}
       <div
-        className="flex-1 text-white px-16 py-10 relative"
+        className="flex-1 text-white px-16 py-10 relative flex flex-col"
         style={{
-          backgroundImage:
-            "url('https://media.istockphoto.com/id/1489796304/id/vektor/latar-belakang-gradasi-warna-langit-biru-dengan-tekstur-butiran.jpg?s=170667a&w=0&k=20&c=nRbMgdaVrXibQ0ma-gBxet_mwcijkJpgw7Jmn6pNkg8=')",
+          backgroundImage: "url('/assets/image.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
         <div className="absolute inset-0 bg-black/30"></div>
 
+        {/* Nama ruangan dan waktu */}
         <div className="relative z-10">
           <div className="flex items-start justify-between">
             <div>
@@ -88,24 +93,24 @@ export default function DetailRapat() {
                 {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
               </h2>
             </div>
-
             <div className="text-[1.35rem] font-light tracking-wider text-white/90 font-mono drop-shadow-sm">
               {formatClockWithSeconds(now)}
             </div>
           </div>
+        </div>
 
-          <div className="mt-28">
-            <h3 className="text-base font-semibold tracking-wide opacity-90 mb-1">
-              RAPAT KEGIATAN INI
-            </h3>
-            <p className="text-6xl font-bold leading-tight text-white drop-shadow-sm">
-              {formatTimeDisplay(rapat.waktu_mulai)} -{" "}
-              {formatTimeDisplay(rapat.waktu_selesai)}
-            </p>
-            <p className="text-4xl mt-4 font-extrabold tracking-wide text-white">
-              {rapat.nama_rapat || "Rapat Koordinasi Mingguan"}
-            </p>
-          </div>
+        {/* Info rapat — tetap di kiri, hanya turun sedikit */}
+        <div className="relative z-10 mt-40">
+          <h3 className="text-base font-semibold tracking-wide opacity-90 mb-1">
+            RAPAT KEGIATAN INI
+          </h3>
+          <p className="text-6xl font-bold leading-tight text-white drop-shadow-sm">
+            {formatTimeDisplay(rapat.waktu_mulai)} -{" "}
+            {formatTimeDisplay(rapat.waktu_selesai)}
+          </p>
+          <p className="text-4xl mt-4 font-extrabold tracking-wide text-white">
+            {rapat.nama_rapat || "Rapat Koordinasi Mingguan"}
+          </p>
         </div>
       </div>
 
@@ -125,7 +130,7 @@ export default function DetailRapat() {
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        {/* Logo */}
+        {/* Logo & daftar rapat berikutnya */}
         <div className="flex flex-col items-center mt-10 w-full px-6 flex-1 overflow-hidden">
           <div className="w-32 h-32 bg-white rounded-2xl flex items-center justify-center shadow-lg p-4 mx-auto">
             <img
