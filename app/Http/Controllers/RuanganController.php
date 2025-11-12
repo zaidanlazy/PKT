@@ -10,6 +10,9 @@ class RuanganController extends Controller
 {
     public function index()
     {
+        // Update status ruangan berdasarkan rapat aktif hari ini
+        $this->updateRuanganStatus();
+
         $ruangan = Ruangan::orderBy('created_at', 'desc')
                            ->where('is_active', '=', 1)
                            ->get();
@@ -17,6 +20,59 @@ class RuanganController extends Controller
         return response()->json([
             'data' => $ruangan
         ]);
+    }
+
+    /**
+     * Memperbarui status ruangan berdasarkan rapat aktif hari ini
+     */
+    private function updateRuanganStatus()
+    {
+        try {
+            $today = now()->format('Y-m-d');
+            $currentTime = now()->format('H:i');
+
+            // Get all active offline meetings for today
+            $rapatAktif = \App\Models\Rapat::where('jenis', 'offline')
+                ->whereDate('tanggal', $today)
+                ->where('is_active', 1)
+                ->whereNotNull('ruangan_id')
+                ->get();
+
+            // Get all unique room IDs that are currently in use by active meetings
+            $ruanganTerpakai = $rapatAktif
+                ->filter(function($r) use ($currentTime) {
+                    // Only count rooms for meetings that haven't finished yet
+                    return $currentTime <= $r->waktu_selesai;
+                })
+                ->pluck('ruangan_id')
+                ->unique()
+                ->toArray();
+
+            // Get all rooms
+            $semuaRuangan = Ruangan::where('is_active', 1)->get();
+
+            foreach ($semuaRuangan as $ruangan) {
+                try {
+                    if (in_array($ruangan->id, $ruanganTerpakai)) {
+                        // Room is being used by an active meeting
+                        if ($ruangan->status !== 'tidak_tersedia') {
+                            $ruangan->status = 'tidak_tersedia';
+                            $ruangan->save();
+                        }
+                    } else {
+                        // Room is not being used by any active meeting
+                        if ($ruangan->status !== 'tersedia') {
+                            $ruangan->status = 'tersedia';
+                            $ruangan->save();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+        } catch (\Exception $e) {
+            // ignore
+        }
     }
 
     public function store(Request $request)

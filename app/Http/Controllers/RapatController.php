@@ -90,18 +90,24 @@ class RapatController extends Controller
 
         // Check if ruangan is available for offline meetings
         if ($request->jenis === 'offline' && $request->ruangan_id) {
+            // Update status ruangan terlebih dahulu berdasarkan rapat aktif hari ini
+            $today = now()->format('Y-m-d');
+            $currentTime = now()->format('H:i');
+            $this->updateRuanganStatusFromRapat($today, $currentTime);
+
             $ruangan = Ruangan::find($request->ruangan_id);
-            if (!$ruangan || $ruangan->status !== 'tersedia') {
+            if (!$ruangan) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Ruangan tidak tersedia'
+                    'message' => 'Ruangan tidak ditemukan'
                 ], 422);
             }
 
-            // Check for time conflicts
+            // Check for time conflicts dengan rapat aktif saja
             $conflict = Rapat::where('ruangan_id', $request->ruangan_id)
                            ->where('tanggal', $request->tanggal)
                            ->where('jenis', 'offline')
+                           ->where('is_active', 1)
                            ->where(function($query) use ($request) {
                                $query->whereBetween('waktu_mulai', [$request->waktu_mulai, $request->waktu_selesai])
                                      ->orWhereBetween('waktu_selesai', [$request->waktu_mulai, $request->waktu_selesai])
@@ -110,8 +116,7 @@ class RapatController extends Controller
                                            ->where('waktu_selesai', '>=', $request->waktu_selesai);
                                      });
                            })
-
-           ->exists();
+                           ->exists();
 
             if ($conflict) {
                 return response()->json([
@@ -119,22 +124,39 @@ class RapatController extends Controller
                     'message' => 'Ruangan sudah digunakan pada waktu tersebut'
                 ], 422);
             }
+
+            // Jika masih ada konflik atau ruangan tidak tersedia, cek lagi apakah benar-benar digunakan
+            if ($ruangan->status !== 'tersedia') {
+                // Double check: apakah ruangan benar-benar digunakan oleh rapat aktif yang belum selesai?
+                $rapatAktifRuangan = Rapat::where('ruangan_id', $request->ruangan_id)
+                    ->whereDate('tanggal', $request->tanggal)
+                    ->where('is_active', 1)
+                    ->where('waktu_selesai', '>=', $currentTime)
+                    ->exists();
+
+                if ($rapatAktifRuangan && !$conflict) {
+                    // Ada rapat aktif tapi tidak konflik dengan waktu yang diminta, perbaiki status
+                    $ruangan->status = 'tersedia';
+                    $ruangan->save();
+                } elseif ($rapatAktifRuangan) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Ruangan tidak tersedia'
+                    ], 422);
+                } else {
+                    // Tidak ada rapat aktif, perbaiki status
+                    $ruangan->status = 'tersedia';
+                    $ruangan->save();
+                }
+            }
         }
 
         try {
             $rapat = Rapat::create($request->all());
 
-            // Jika rapat offline dengan ruangan, tandai ruangan tidak tersedia
-            if ($rapat->jenis === 'offline' && $rapat->ruangan_id) {
-                try {
-                    $ruangan = Ruangan::find($rapat->ruangan_id);
-                    if ($ruangan && $ruangan->status !== 'tidak_tersedia') {
-                        $ruangan->status = 'tidak_tersedia';
-                        $ruangan->save();
-                    }
-                } catch (\Exception $e) {
-                    // ignore
-                }
+            // Update status ruangan berdasarkan rapat aktif hari ini setelah create
+            if ($rapat->jenis === 'offline') {
+                $this->updateRuanganStatusFromRapat($today, $currentTime);
             }
 
             // Create invitations if users are invited
@@ -221,18 +243,24 @@ class RapatController extends Controller
 
         // Check if ruangan is available for offline meetings
         if ($request->jenis === 'offline' && $request->ruangan_id) {
+            // Update status ruangan terlebih dahulu berdasarkan rapat aktif hari ini
+            $today = now()->format('Y-m-d');
+            $currentTime = now()->format('H:i');
+            $this->updateRuanganStatusFromRapat($today, $currentTime);
+
             $ruangan = Ruangan::find($request->ruangan_id);
-            if (!$ruangan || $ruangan->status !== 'tersedia') {
+            if (!$ruangan) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Ruangan tidak tersedia'
+                    'message' => 'Ruangan tidak ditemukan'
                 ], 422);
             }
 
-            // Check for time conflicts (excluding current rapat)
+            // Check for time conflicts dengan rapat aktif saja (kecuali rapat yang sedang diupdate)
             $conflict = Rapat::where('ruangan_id', $request->ruangan_id)
                            ->where('tanggal', $request->tanggal)
                            ->where('jenis', 'offline')
+                           ->where('is_active', 1)
                            ->where('id', '!=', $id)
                            ->where(function($query) use ($request) {
                                $query->whereBetween('waktu_mulai', [$request->waktu_mulai, $request->waktu_selesai])
@@ -250,22 +278,40 @@ class RapatController extends Controller
                     'message' => 'Ruangan sudah digunakan pada waktu tersebut'
                 ], 422);
             }
+
+            // Jika masih ada konflik atau ruangan tidak tersedia, cek lagi apakah benar-benar digunakan
+            if ($ruangan->status !== 'tersedia') {
+                // Double check: apakah ruangan benar-benar digunakan oleh rapat aktif yang belum selesai (selain yang sedang diupdate)?
+                $rapatAktifRuangan = Rapat::where('ruangan_id', $request->ruangan_id)
+                    ->whereDate('tanggal', $request->tanggal)
+                    ->where('is_active', 1)
+                    ->where('id', '!=', $id)
+                    ->where('waktu_selesai', '>=', $currentTime)
+                    ->exists();
+
+                if ($rapatAktifRuangan && !$conflict) {
+                    // Ada rapat aktif tapi tidak konflik dengan waktu yang diminta, perbaiki status
+                    $ruangan->status = 'tersedia';
+                    $ruangan->save();
+                } elseif ($rapatAktifRuangan) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Ruangan tidak tersedia'
+                    ], 422);
+                } else {
+                    // Tidak ada rapat aktif, perbaiki status
+                    $ruangan->status = 'tersedia';
+                    $ruangan->save();
+                }
+            }
         }
 
         try {
             $rapat->update($request->all());
 
-            // Pastikan ruangan ditandai tidak tersedia ketika rapat offline aktif
-            if ($rapat->jenis === 'offline' && $rapat->ruangan_id) {
-                try {
-                    $ruangan = Ruangan::find($rapat->ruangan_id);
-                    if ($ruangan && $ruangan->status !== 'tidak_tersedia') {
-                        $ruangan->status = 'tidak_tersedia';
-                        $ruangan->save();
-                    }
-                } catch (\Exception $e) {
-                    // ignore
-                }
+            // Update status ruangan berdasarkan rapat aktif hari ini setelah update
+            if ($rapat->jenis === 'offline') {
+                $this->updateRuanganStatusFromRapat($today, $currentTime);
             }
 
             return response()->json([
@@ -349,6 +395,13 @@ class RapatController extends Controller
             $rapat->is_active = false;
             $rapat->save();
 
+            // Update status ruangan setelah rapat dihapus
+            if ($rapat->jenis === 'offline') {
+                $today = now()->format('Y-m-d');
+                $currentTime = now()->format('H:i');
+                $this->updateRuanganStatusFromRapat($today, $currentTime);
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Rapat berhasil dihapus'
@@ -383,22 +436,67 @@ class RapatController extends Controller
                 if ($r->is_active && $currentTime > $r->waktu_selesai) {
                     $r->is_active = false;
                     $r->save();
-                    // Ruangan kembali tersedia
-                    if ($r->jenis === 'offline' && $r->ruangan_id) {
-                        $ruangan = Ruangan::find($r->ruangan_id);
-                        if ($ruangan && $ruangan->status !== 'tersedia') {
-                            $ruangan->status = 'tersedia';
-                            $ruangan->save();
-                        }
-                    }
                 }
             } catch (\Exception $e) {
                 // ignore
             }
         }
 
+        // Update status semua ruangan berdasarkan rapat aktif hari ini
+        $this->updateRuanganStatusFromRapat($today, $currentTime);
+
         return response()->json([
             'data' => $rapat
         ]);
+    }
+
+    /**
+     * Memperbarui status ruangan berdasarkan rapat aktif hari ini
+     */
+    private function updateRuanganStatusFromRapat($today, $currentTime)
+    {
+        try {
+            // Get all active offline meetings for today
+            $rapatAktif = Rapat::where('jenis', 'offline')
+                ->whereDate('tanggal', $today)
+                ->where('is_active', 1)
+                ->whereNotNull('ruangan_id')
+                ->get();
+
+            // Get all unique room IDs that are currently in use by active meetings
+            $ruanganTerpakai = $rapatAktif
+                ->filter(function($r) use ($currentTime) {
+                    // Only count rooms for meetings that haven't finished yet
+                    return $currentTime <= $r->waktu_selesai;
+                })
+                ->pluck('ruangan_id')
+                ->unique()
+                ->toArray();
+
+            // Get all rooms
+            $semuaRuangan = Ruangan::where('is_active', 1)->get();
+
+            foreach ($semuaRuangan as $ruangan) {
+                try {
+                    if (in_array($ruangan->id, $ruanganTerpakai)) {
+                        // Room is being used by an active meeting
+                        if ($ruangan->status !== 'tidak_tersedia') {
+                            $ruangan->status = 'tidak_tersedia';
+                            $ruangan->save();
+                        }
+                    } else {
+                        // Room is not being used by any active meeting
+                        if ($ruangan->status !== 'tersedia') {
+                            $ruangan->status = 'tersedia';
+                            $ruangan->save();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // ignore
+                }
+            }
+        } catch (\Exception $e) {
+            // ignore
+        }
     }
 }
