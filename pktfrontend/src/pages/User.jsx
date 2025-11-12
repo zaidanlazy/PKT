@@ -16,6 +16,17 @@ export default function User() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // State untuk validasi form
+  const [formErrors, setFormErrors] = useState({
+    mpk: "",
+    nama: "",
+    email: "",
+    unit_kerja: "",
+    no_telp: "",
+    password: "",
+    role: ""
+  });
+
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -119,6 +130,84 @@ export default function User() {
     });
   };
 
+  // Fungsi validasi form
+  const validateForm = () => {
+    const errors = {
+      mpk: "",
+      nama: "",
+      email: "",
+      unit_kerja: "",
+      no_telp: "",
+      password: "",
+      role: ""
+    };
+
+    let isValid = true;
+
+    // Validasi NPK
+    if (!userForm.mpk.trim()) {
+      errors.mpk = "NPK harus diisi";
+      isValid = false;
+      addToast("NPK harus diisi", "error");
+    }
+
+    // Validasi Nama
+    if (!userForm.nama.trim()) {
+      errors.nama = "Nama harus diisi";
+      isValid = false;
+      addToast("Nama harus diisi", "error");
+    }
+
+    // Validasi Email
+    if (!userForm.email.trim()) {
+      errors.email = "Email harus diisi";
+      isValid = false;
+      addToast("Email harus diisi", "error");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email)) {
+      errors.email = "Format email tidak valid";
+      isValid = false;
+      addToast("Format email tidak valid", "error");
+    }
+
+    // Validasi Unit Kerja
+    if (!userForm.unit_kerja.trim()) {
+      errors.unit_kerja = "Unit kerja harus diisi";
+      isValid = false;
+      addToast("Unit kerja harus diisi", "error");
+    }
+
+    // Validasi No. Telepon
+    if (!userForm.no_telp.trim()) {
+      errors.no_telp = "No. telepon harus diisi";
+      isValid = false;
+      addToast("No. telepon harus diisi", "error");
+    } else if (!/^[0-9+\-\s()]+$/.test(userForm.no_telp)) {
+      errors.no_telp = "Format nomor telepon tidak valid";
+      isValid = false;
+      addToast("Format nomor telepon tidak valid", "error");
+    }
+
+    // Validasi Password
+    if (modalMode === "add") {
+      if (!userForm.password) {
+        errors.password = "Password harus diisi";
+        isValid = false;
+        addToast("Password harus diisi", "error");
+      } else if (userForm.password.length < 8) {
+        errors.password = "Password minimal 8 karakter";
+        isValid = false;
+        addToast("Password minimal 8 karakter", "error");
+      }
+    } else if (modalMode === "edit" && userForm.password && userForm.password.length < 8) {
+      errors.password = "Password minimal 8 karakter";
+      isValid = false;
+      addToast("Password minimal 8 karakter", "error");
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
   useEffect(() => {
     fetchUserList();
   }, []);
@@ -148,6 +237,17 @@ export default function User() {
 
   const handleOpenModal = (mode, userData = null) => {
     setModalMode(mode);
+    // Reset errors saat membuka modal
+    setFormErrors({
+      mpk: "",
+      nama: "",
+      email: "",
+      unit_kerja: "",
+      no_telp: "",
+      password: "",
+      role: ""
+    });
+
     if (mode === "edit" && userData) {
       setSelectedUser(userData);
       setUserForm({
@@ -185,17 +285,41 @@ export default function User() {
       password: "",
       role: "user"
     });
+    setFormErrors({
+      mpk: "",
+      nama: "",
+      email: "",
+      unit_kerja: "",
+      no_telp: "",
+      password: "",
+      role: ""
+    });
   };
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
     setUserForm({
       ...userForm,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
+    // Reset error untuk field yang sedang diisi
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ""
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validasi form sebelum submit
+    if (!validateForm()) {
+      return; // Stop jika validasi gagal
+    }
+
     try {
       const userDataToSubmit = { ...userForm };
       if (modalMode === "edit" && !userDataToSubmit.password) {
@@ -264,65 +388,65 @@ export default function User() {
           cancelText={confirmModal.cancelText}
         />
 
-       {/* HEADER DATA USER DAN WAKTU REAL-TIME DI LUAR TABEL */}
-<div className="mb-6">
-  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800">Data User</h1>
-      <p className="text-gray-600">Kelola data user sistem</p>
-    </div>
+        {/* HEADER DATA USER DAN WAKTU REAL-TIME DI LUAR TABEL */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Data User</h1>
+              <p className="text-gray-600">Kelola data user sistem</p>
+            </div>
 
-    {/* Komponen waktu real-time */}
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
-      {/* JAM */}
-      <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl leading-none mb-1">
-        <svg
-          className="w-4 h-4 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {formatRealTime(currentTime)}
-      </div>
+            {/* Komponen waktu real-time */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
+              {/* JAM */}
+              <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl leading-none mb-1">
+                <svg
+                  className="w-4 h-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {formatRealTime(currentTime)}
+              </div>
 
-      {/* TANGGAL */}
-      <div className="text-sm text-gray-600 font-medium leading-tight">
-        {formatRealDate(currentTime)}
-      </div>
+              {/* TANGGAL */}
+              <div className="text-sm text-gray-600 font-medium leading-tight">
+                {formatRealDate(currentTime)}
+              </div>
 
-      {/* LOKASI */}
-      <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
-        <svg
-          className="w-3 h-3 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        Bontang, Kalimantan Timur
-      </div>
-    </div>
-  </div>
-</div>
+              {/* LOKASI */}
+              <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
+                <svg
+                  className="w-3 h-3 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Bontang, Kalimantan Timur
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Container Tabel */}
         <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
@@ -700,6 +824,7 @@ export default function User() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* NPK */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">NPK</label>
                     <input
@@ -707,12 +832,23 @@ export default function User() {
                       name="mpk"
                       value={userForm.mpk}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.mpk ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       placeholder="Masukkan NPK"
                       required
                     />
+                    {formErrors.mpk && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.mpk}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Nama */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama</label>
                     <input
@@ -720,12 +856,23 @@ export default function User() {
                       name="nama"
                       value={userForm.nama}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan nama "
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.nama ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
+                      placeholder="Masukkan nama"
                       required
                     />
+                    {formErrors.nama && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.nama}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Email */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Email</label>
                     <input
@@ -733,12 +880,23 @@ export default function User() {
                       name="email"
                       value={userForm.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan email "
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.email ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
+                      placeholder="Masukkan email"
                       required
                     />
+                    {formErrors.email && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.email}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Unit Kerja */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Unit Kerja</label>
                     <input
@@ -746,12 +904,23 @@ export default function User() {
                       name="unit_kerja"
                       value={userForm.unit_kerja}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.unit_kerja ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       placeholder="Masukkan unit kerja"
                       required
                     />
+                    {formErrors.unit_kerja && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.unit_kerja}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* No. Telepon */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">No. Telepon</label>
                     <input
@@ -759,11 +928,23 @@ export default function User() {
                       name="no_telp"
                       value={userForm.no_telp}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.no_telp ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       placeholder="Masukkan nomor telepon"
+                      required
                     />
+                    {formErrors.no_telp && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.no_telp}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Password */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">
                       Password {modalMode === "edit" && "(kosongkan jika tidak ingin mengubah)"}
@@ -773,10 +954,20 @@ export default function User() {
                       name="password"
                       value={userForm.password}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.password ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       placeholder="Masukkan password"
                       required={modalMode === "add"}
                     />
+                    {formErrors.password && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.password}</span>
+                      </p>
+                    )}
                     {/* CAPTION UNTUK TAMBAH USER BARU */}
                     {modalMode === "add" && (
                       <p className="text-xs text-gray-500 mt-2 ml-1">
@@ -785,6 +976,7 @@ export default function User() {
                     )}
                   </div>
 
+                  {/* Role */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Role</label>
                     <select

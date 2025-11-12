@@ -19,6 +19,16 @@ export default function Rapat({ onChanged }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // State untuk validasi form
+  const [formErrors, setFormErrors] = useState({
+    nama_rapat: "",
+    jenis: "",
+    tanggal: "",
+    waktu_mulai: "",
+    waktu_selesai: "",
+    ruangan_id: ""
+  });
+
   // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -135,6 +145,91 @@ export default function Rapat({ onChanged }) {
     });
   };
 
+  // Fungsi validasi form
+  const validateForm = () => {
+    const errors = {
+      nama_rapat: "",
+      jenis: "",
+      tanggal: "",
+      waktu_mulai: "",
+      waktu_selesai: "",
+      ruangan_id: ""
+    };
+
+    let isValid = true;
+
+    // Validasi Nama Rapat
+    if (!formData.nama_rapat.trim()) {
+      errors.nama_rapat = "Nama rapat harus diisi";
+      isValid = false;
+      addToast("Nama rapat harus diisi", "error");
+    }
+
+    // Validasi Jenis Rapat
+    if (!formData.jenis) {
+      errors.jenis = "Jenis rapat harus dipilih";
+      isValid = false;
+      addToast("Jenis rapat harus dipilih", "error");
+    }
+
+    // Validasi Tanggal
+    if (!formData.tanggal) {
+      errors.tanggal = "Tanggal rapat harus diisi";
+      isValid = false;
+      addToast("Tanggal rapat harus diisi", "error");
+    }
+
+    // Validasi Waktu Mulai
+    if (!formData.waktu_mulai) {
+      errors.waktu_mulai = "Waktu mulai harus diisi";
+      isValid = false;
+      addToast("Waktu mulai harus diisi", "error");
+    }
+
+    // Validasi Waktu Selesai
+    if (!formData.waktu_selesai) {
+      errors.waktu_selesai = "Waktu selesai harus diisi";
+      isValid = false;
+      addToast("Waktu selesai harus diisi", "error");
+    }
+
+    // Validasi waktu (waktu selesai harus setelah waktu mulai)
+    if (formData.waktu_mulai && formData.waktu_selesai) {
+      if (formData.waktu_selesai <= formData.waktu_mulai) {
+        errors.waktu_selesai = "Waktu selesai harus setelah waktu mulai";
+        isValid = false;
+        addToast("Waktu selesai harus setelah waktu mulai", "error");
+      }
+    }
+
+    // Validasi Ruangan untuk rapat offline
+    if (formData.jenis === "offline" && !formData.ruangan_id) {
+      errors.ruangan_id = "Ruangan harus dipilih untuk rapat offline";
+      isValid = false;
+      addToast("Ruangan harus dipilih untuk rapat offline", "error");
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  // Reset form errors saat input berubah
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    
+    // Reset error untuk field yang sedang diisi
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ""
+      });
+    }
+  };
+
   useEffect(() => {
     fetchRapatList();
     fetchRuanganList();
@@ -190,6 +285,16 @@ export default function Rapat({ onChanged }) {
 
   const handleOpenModal = (mode, rapat = null) => {
     setModalMode(mode);
+    // Reset errors saat membuka modal
+    setFormErrors({
+      nama_rapat: "",
+      jenis: "",
+      tanggal: "",
+      waktu_mulai: "",
+      waktu_selesai: "",
+      ruangan_id: ""
+    });
+
     if (mode === "edit" && rapat) {
       const formattedDate = new Date(rapat.tanggal)
         .toISOString()
@@ -209,7 +314,7 @@ export default function Rapat({ onChanged }) {
     } else {
       setFormData({
         nama_rapat: "",
-        jenis: "online",
+        jenis: "offline",
         tanggal: "",
         waktu_mulai: "",
         waktu_selesai: "",
@@ -227,7 +332,7 @@ export default function Rapat({ onChanged }) {
     setSelectedRapat(null);
     setFormData({
       nama_rapat: "",
-      jenis: "online",
+      jenis: "offline",
       tanggal: "",
       waktu_mulai: "",
       waktu_selesai: "",
@@ -236,14 +341,15 @@ export default function Rapat({ onChanged }) {
       invited_users: [],
       pesan_undangan: "",
     });
-    setSearchQuery("");
-  };
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    setFormErrors({
+      nama_rapat: "",
+      jenis: "",
+      tanggal: "",
+      waktu_mulai: "",
+      waktu_selesai: "",
+      ruangan_id: ""
     });
+    setSearchQuery("");
   };
 
   const handleSearchChange = (e) => {
@@ -261,6 +367,12 @@ export default function Rapat({ onChanged }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validasi form sebelum submit
+    if (!validateForm()) {
+      return; // Stop jika validasi gagal
+    }
+
     try {
       if (modalMode === "add") {
         await axios.post("/rapat", formData);
@@ -339,64 +451,64 @@ export default function Rapat({ onChanged }) {
         />
 
         {/* HEADER DATA RAPAT DAN WAKTU REAL-TIME DI LUAR TABEL */}
-<div className="mb-6">
-  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800">Data Rapat</h1>
-      <p className="text-gray-600">Kelola data rapat meeting</p>
-    </div>
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Data Rapat</h1>
+              <p className="text-gray-600">Kelola data rapat meeting</p>
+            </div>
 
-    {/* Komponen waktu real-time */}
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
-      {/* JAM */}
-      <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl leading-none mb-1">
-        <svg
-          className="w-4 h-4 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {formatRealTime(currentTime)}
-      </div>
+            {/* Komponen waktu real-time */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
+              {/* JAM */}
+              <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl leading-none mb-1">
+                <svg
+                  className="w-4 h-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {formatRealTime(currentTime)}
+              </div>
 
-      {/* TANGGAL */}
-      <div className="text-sm text-gray-600 font-medium leading-tight">
-        {formatRealDate(currentTime)}
-      </div>
+              {/* TANGGAL */}
+              <div className="text-sm text-gray-600 font-medium leading-tight">
+                {formatRealDate(currentTime)}
+              </div>
 
-      {/* LOKASI */}
-      <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
-        <svg
-          className="w-3 h-3 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        Bontang, Kalimantan Timur
-      </div>
-    </div>
-  </div>
-</div>
+              {/* LOKASI */}
+              <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
+                <svg
+                  className="w-3 h-3 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Bontang, Kalimantan Timur
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Container Tabel */}
         <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
@@ -679,6 +791,7 @@ export default function Rapat({ onChanged }) {
               {/* Form content */}
               <div className="p-6 overflow-y-auto">
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Nama Rapat */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama Rapat</label>
                     <input
@@ -686,12 +799,23 @@ export default function Rapat({ onChanged }) {
                       name="nama_rapat"
                       value={formData.nama_rapat}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                      className={`w-full px-4 py-3 bg-gray-50 border ${
+                        formErrors.nama_rapat ? "border-red-300" : "border-gray-200"
+                      } rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       placeholder="Masukkan nama kegiatan"
                       required
                     />
+                    {formErrors.nama_rapat && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.nama_rapat}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Jenis Rapat */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Jenis Rapat</label>
                     <div className="flex gap-4">
@@ -718,8 +842,17 @@ export default function Rapat({ onChanged }) {
                         <span className="text-gray-800 text-sm">Offline</span>
                       </label>
                     </div>
+                    {formErrors.jenis && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        <span>{formErrors.jenis}</span>
+                      </p>
+                    )}
                   </div>
 
+                  {/* Tanggal dan Waktu */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-gray-800 font-semibold mb-2 text-sm">Tanggal</label>
@@ -728,9 +861,19 @@ export default function Rapat({ onChanged }) {
                         name="tanggal"
                         value={formData.tanggal}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                        className={`w-full px-4 py-3 bg-gray-50 border ${
+                          formErrors.tanggal ? "border-red-300" : "border-gray-200"
+                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                         required
                       />
+                      {formErrors.tanggal && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span>{formErrors.tanggal}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -741,9 +884,19 @@ export default function Rapat({ onChanged }) {
                           name="waktu_mulai"
                           value={formData.waktu_mulai}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          className={`w-full px-4 py-3 bg-gray-50 border ${
+                            formErrors.waktu_mulai ? "border-red-300" : "border-gray-200"
+                          } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                           required
                         />
+                        {formErrors.waktu_mulai && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            <span>{formErrors.waktu_mulai}</span>
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-gray-800 font-semibold mb-2 text-sm">Waktu Selesai</label>
@@ -752,13 +905,24 @@ export default function Rapat({ onChanged }) {
                           name="waktu_selesai"
                           value={formData.waktu_selesai}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                          className={`w-full px-4 py-3 bg-gray-50 border ${
+                            formErrors.waktu_selesai ? "border-red-300" : "border-gray-200"
+                          } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                           required
                         />
+                        {formErrors.waktu_selesai && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            <span>{formErrors.waktu_selesai}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
 
+                  {/* Ruangan untuk Rapat Offline */}
                   {formData.jenis === "offline" && (
                     <div>
                       <label className="block text-gray-800 font-semibold mb-2 text-sm">Ruangan</label>
@@ -766,7 +930,9 @@ export default function Rapat({ onChanged }) {
                         name="ruangan_id"
                         value={formData.ruangan_id}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
+                        className={`w-full px-4 py-3 bg-gray-50 border ${
+                          formErrors.ruangan_id ? "border-red-300" : "border-gray-200"
+                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       >
                         <option value="">Pilih Ruangan</option>
                         {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
@@ -775,9 +941,18 @@ export default function Rapat({ onChanged }) {
                           </option>
                         ))}
                       </select>
+                      {formErrors.ruangan_id && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center space-x-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span>{formErrors.ruangan_id}</span>
+                        </p>
+                      )}
                     </div>
                   )}
 
+                  {/* Deskripsi */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Deskripsi</label>
                     <textarea
