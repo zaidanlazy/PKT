@@ -220,7 +220,7 @@ export default function Rapat({ onChanged }) {
       ...formData,
       [name]: value,
     });
-    
+
     // Reset error untuk field yang sedang diisi
     if (formErrors[name]) {
       setFormErrors({
@@ -367,7 +367,7 @@ export default function Rapat({ onChanged }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validasi form sebelum submit
     if (!validateForm()) {
       return; // Stop jika validasi gagal
@@ -935,10 +935,13 @@ export default function Rapat({ onChanged }) {
                         } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm`}
                       >
                         <option value="">Pilih Ruangan</option>
-                        {ruanganList.filter(r => r.status === "tersedia").map(ruangan => (
-                          <option key={ruangan.id} value={ruangan.id}>
-                            {ruangan.nama_ruangan} - {ruangan.lokasi}
-                          </option>
+                        {ruanganList
+                        // Tampilkan ruangan yang tersedia, atau ruangan yang sedang digunakan di form ini
+                        .filter(r => r.status === "tersedia" || r.id === formData.ruangan_id)
+                        .map(ruangan => (
+                            <option key={ruangan.id} value={ruangan.id}>
+                            {ruangan.nama_ruangan} {ruangan.lokasi ? `- ${ruangan.lokasi}` : ""}
+                            </option>
                         ))}
                       </select>
                       {formErrors.ruangan_id && (

@@ -3,23 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ruangan;
+use App\Models\Rapat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class RuanganController extends Controller
 {
+    /**
+     * Menampilkan semua ruangan aktif dan memperbarui statusnya otomatis
+     */
     public function index()
     {
-        // Update status ruangan berdasarkan rapat aktif hari ini
-        $this->updateRuanganStatus();
+        try {
+            // Update status ruangan berdasarkan rapat aktif hari ini
+            $this->updateRuanganStatus();
 
-        $ruangan = Ruangan::orderBy('created_at', 'desc')
-                           ->where('is_active', '=', 1)
-                           ->get();
+            // Ambil semua ruangan aktif
+            $ruangan = Ruangan::where('is_active', 1)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        return response()->json([
-            'data' => $ruangan
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'data' => $ruangan
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data ruangan',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -31,50 +45,43 @@ class RuanganController extends Controller
             $today = now()->format('Y-m-d');
             $currentTime = now()->format('H:i');
 
-            // Get all active offline meetings for today
-            $rapatAktif = \App\Models\Rapat::where('jenis', 'offline')
+            // Ambil semua rapat offline aktif hari ini
+            $rapatAktif = Rapat::where('jenis', 'offline')
                 ->whereDate('tanggal', $today)
                 ->where('is_active', 1)
                 ->whereNotNull('ruangan_id')
                 ->get();
 
-            // Get all unique room IDs that are currently in use by active meetings
+            // Ambil semua ruangan yang sedang dipakai oleh rapat aktif
             $ruanganTerpakai = $rapatAktif
-                ->filter(function($r) use ($currentTime) {
-                    // Only count rooms for meetings that haven't finished yet
-                    return $currentTime <= $r->waktu_selesai;
+                ->filter(function ($r) use ($currentTime) {
+                    // Hanya rapat yang belum selesai
+                    return $currentTime = $r->waktu_selesai;
                 })
                 ->pluck('ruangan_id')
                 ->unique()
                 ->toArray();
 
-            // Get all rooms
+            // Ambil semua ruangan aktif
             $semuaRuangan = Ruangan::where('is_active', 1)->get();
 
             foreach ($semuaRuangan as $ruangan) {
-                try {
-                    if (in_array($ruangan->id, $ruanganTerpakai)) {
-                        // Room is being used by an active meeting
-                        if ($ruangan->status !== 'tidak_tersedia') {
-                            $ruangan->status = 'tidak_tersedia';
-                            $ruangan->save();
-                        }
-                    } else {
-                        // Room is not being used by any active meeting
-                        if ($ruangan->status !== 'tersedia') {
-                            $ruangan->status = 'tersedia';
-                            $ruangan->save();
-                        }
-                    }
-                } catch (\Exception $e) {
-                    // ignore
+                $newStatus = in_array($ruangan->id, $ruanganTerpakai)
+                    ? 'tidak_tersedia'
+                    : 'tersedia';
+
+                if ($ruangan->status !== $newStatus) {
+                    $ruangan->update(['status' => $newStatus]);
                 }
             }
         } catch (\Exception $e) {
-            // ignore
+            // abaikan error internal agar tidak ganggu API utama
         }
     }
 
+    /**
+     * Menambahkan ruangan baru
+     */
     public function store(Request $request)
     {
         $validated = Validator::make($request->all(), [
@@ -93,6 +100,7 @@ class RuanganController extends Controller
             $payload = [
                 'nama_ruangan' => $request->input('nama_ruangan'),
                 'status' => 'tersedia',
+                'is_active' => 1,
             ];
 
             $ruangan = Ruangan::create($payload);
@@ -102,7 +110,6 @@ class RuanganController extends Controller
                 'message' => 'Ruangan berhasil ditambahkan',
                 'data' => $ruangan
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -112,6 +119,9 @@ class RuanganController extends Controller
         }
     }
 
+    /**
+     * Mengupdate data ruangan
+     */
     public function update(Request $request, $id)
     {
         $ruangan = Ruangan::find($id);
@@ -136,17 +146,15 @@ class RuanganController extends Controller
         }
 
         try {
-            $payload = [
+            $ruangan->update([
                 'nama_ruangan' => $request->input('nama_ruangan'),
-            ];
-            $ruangan->update($payload);
+            ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Ruangan berhasil diupdate',
                 'data' => $ruangan
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -156,6 +164,9 @@ class RuanganController extends Controller
         }
     }
 
+    /**
+     * Menonaktifkan (soft delete) ruangan
+     */
     public function destroy($id)
     {
         $ruangan = Ruangan::find($id);
@@ -168,19 +179,18 @@ class RuanganController extends Controller
         }
 
         try {
-            $ruangan->delete();
-            $ruangan->is_active = false;
+            // Tidak dihapus dari DB, hanya dinonaktifkan
+            $ruangan->is_active = 0;
             $ruangan->save();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Ruangan berhasil dihapus'
+                'message' => 'Ruangan berhasil dinonaktifkan'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan saat menghapus ruangan',
+                'message' => 'Terjadi kesalahan saat menonaktifkan ruangan',
                 'error' => $e->getMessage()
             ], 500);
         }

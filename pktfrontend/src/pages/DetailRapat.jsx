@@ -212,11 +212,11 @@ export default function DetailRapat() {
               return (
                 <>
                   <h3 className="text-3xl font-bold text-white mb-4">
-                    Tidak ada rapat saat ini
+                    Tidak Ada Rapat Saat Ini
                   </h3>
                   {rapatBerikutnya ? (
                     <p className="text-xl text-white">
-                      Silakan menunggu rapat selanjutnya di samping kanan.
+                      Silahkan Menunggu Rapat Berikutnya
                     </p>
                   ) : (
                     <p className="text-xl text-white">
@@ -251,42 +251,44 @@ export default function DetailRapat() {
             />
           </div>
 
-          <div className="mt-12 text-center w-full flex-1 overflow-y-auto px-2 custom-scrollbar">
+          <div className="mt-12 text-center w-full flex-1 overflow-hidden flex flex-col">
             <h2 className="text-lg font-bold text-white mb-4">
               Rapat Berikutnya
             </h2>
 
-                {rapatHariIni && rapatHariIni.length > 0 ? (
-                    rapatHariIni
-                    .filter(r => {
+            {/* Container List Rapat dengan Scroll */}
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+              {rapatHariIni && rapatHariIni.length > 0 ? (
+                rapatHariIni
+                  .filter(r => {
                     const nowHHmm = now.toTimeString().slice(0, 5);
                     return r.waktu_mulai > nowHHmm; // hanya rapat yang belum mulai
-                    })
-                    .map((r, i) => (
+                  })
+                  .map((r, i) => (
                     <div
-                        key={r.id || i}
-                        className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
+                      key={r.id || i}
+                      className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all mb-3 last:mb-0"
                     >
-                        <p className="text-sm text-gray-100">
+                      <p className="text-sm text-gray-100">
                         {formatTimeDisplay(r.waktu_mulai)} - {formatTimeDisplay(r.waktu_selesai)}
-                        </p>
-                        <p className="text-lg font-semibold text-white">{r.nama_rapat}</p>
-                        {r.ruangan && (
+                      </p>
+                      <p className="text-lg font-semibold text-white">{r.nama_rapat}</p>
+                      {r.ruangan && (
                         <p className="text-xs text-gray-300 mt-1">
-                            {r.ruangan.nama_ruangan}
+                          {r.ruangan.nama_ruangan}
                         </p>
-                        )}
+                      )}
                     </div>
-                    ))
-                ) : (
+                  ))
+              ) : (
                 <div className="p-3 bg-white/10 rounded-lg">
-                    <p className="text-sm text-gray-300 italic">Tidak ada rapat selanjutnya</p>
+                  <p className="text-sm text-gray-300 italic">Tidak ada rapat selanjutnya</p>
                 </div>
-                )}
-
+              )}
             </div>
           </div>
         </div>
       </div>
+    </div>
   );
 }
