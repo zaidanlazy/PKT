@@ -2,6 +2,143 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
+// Komponen Modal untuk menampilkan rapat hari ini
+function TodayMeetingsModal({ isOpen, onClose }) {
+  const [todayMeetings, setTodayMeetings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Format tanggal untuk hari ini
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('id-ID', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Simulasi data rapat hari ini
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true);
+      // Simulasi fetching data
+      setTimeout(() => {
+        const mockMeetings = [
+          {
+            id: 1,
+            title: "Rapat Tim Marketing",
+            time: "09:00 - 10:30",
+            room: "Ruang Meeting A",
+            organizer: "Budi Santoso"
+          },
+          {
+            id: 2,
+            title: "Briefing Proyek Baru",
+            time: "11:00 - 12:00",
+            room: "Ruang Meeting B",
+            organizer: "Siti Rahayu"
+          },
+          {
+            id: 3,
+            title: "Review Kinerja Triwulan",
+            time: "14:00 - 16:00",
+            room: "Ruang Rapat Utama",
+            organizer: "Ahmad Wijaya"
+          }
+        ];
+        setTodayMeetings(mockMeetings);
+        setIsLoading(false);
+      }, 1000);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Rapat Hari Ini</h2>
+              <p className="text-blue-100">{formattedDate}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-blue-100 transition-colors duration-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            </div>
+          ) : todayMeetings.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">Tidak ada rapat hari ini</h3>
+              <p className="text-gray-500">Tidak ada jadwal rapat untuk hari ini.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {todayMeetings.map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="border border-gray-200 rounded-2xl p-4 hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-800 text-lg">{meeting.title}</h3>
+                    <span className="bg-blue-100 text-blue-600 text-sm font-medium px-3 py-1 rounded-full">
+                      {meeting.time}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span>{meeting.room}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span>Dipimpin oleh: {meeting.organizer}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-4 bg-gray-50">
+          <div className="flex justify-end">
+            <button
+              onClick={onClose}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-xl font-medium transition-colors duration-200"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const { login, token } = useAuth();
@@ -10,6 +147,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [showTodayMeetings, setShowTodayMeetings] = useState(false);
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
@@ -62,12 +200,18 @@ export default function Login() {
     }
   };
 
-  const handleRegisterRedirect = () => {
-    navigate("/register");
+  const handleTodayMeetingsClick = () => {
+    setShowTodayMeetings(true);
   };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Modal Lihat Rapat Hari Ini */}
+      <TodayMeetingsModal 
+        isOpen={showTodayMeetings} 
+        onClose={() => setShowTodayMeetings(false)} 
+      />
+
       {/* Modern Notification Container */}
       <div className="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full">
         {notification.show && (
@@ -228,6 +372,45 @@ export default function Login() {
                 </div>
                 <span className="text-lg">Kelola jadwal secara efisien</span>
               </div>
+              
+              {/* Tombol Lihat Rapat Hari Ini yang Lebih Menarik */}
+              <button
+                onClick={handleTodayMeetingsClick}
+                className="w-full group relative overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 border border-cyan-200 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95"
+              >
+                <div className="flex items-center space-x-4">
+                  {/* Icon dengan efek khusus */}
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-cyan-200/50 group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    {/* Ping animation */}
+                    <div className="absolute inset-0 rounded-xl bg-cyan-400 animate-ping opacity-20 group-hover:opacity-30"></div>
+                  </div>
+                  
+                  {/* Text Content */}
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-gray-800 text-lg group-hover:text-cyan-700 transition-colors duration-300">
+                      Lihat Rapat Hari Ini
+                    </h3>
+                    <p className="text-sm text-gray-600 group-hover:text-cyan-600 transition-colors duration-300">
+                      Cek jadwal rapat yang sudah dijadwalkan untuk hari ini
+                    </p>
+                  </div>
+                  
+                  {/* Arrow Icon */}
+                  <div className="text-cyan-500 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all duration-300">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+                
+                {/* Background Effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              </button>
             </div>
           </div>
         </div>
@@ -296,8 +479,6 @@ export default function Login() {
                     </div>
                   </div>
                 </div>
-
-
 
                 <button
                   type="submit"

@@ -86,6 +86,42 @@ export default function Rapat({ onChanged }) {
     );
   });
 
+  // Fungsi untuk select all users yang terfilter
+  const handleSelectAll = () => {
+    const allFilteredUserIds = filteredUsers.map(user => user.id);
+    const currentlySelected = formData.invited_users;
+    
+    // Cek apakah semua user yang terfilter sudah terpilih
+    const allSelected = allFilteredUserIds.every(id => 
+      currentlySelected.includes(id)
+    );
+
+    if (allSelected) {
+      // Jika semua sudah terpilih, hapus semua user yang terfilter
+      const newSelectedUsers = currentlySelected.filter(id => 
+        !allFilteredUserIds.includes(id)
+      );
+      setFormData(prev => ({
+        ...prev,
+        invited_users: newSelectedUsers
+      }));
+    } else {
+      // Jika belum semua terpilih, tambahkan semua user yang terfilter
+      const newSelectedUsers = [...new Set([...currentlySelected, ...allFilteredUserIds])];
+      setFormData(prev => ({
+        ...prev,
+        invited_users: newSelectedUsers
+      }));
+    }
+  };
+
+  // Fungsi untuk menghitung berapa banyak user yang terfilter sudah terpilih
+  const getSelectedFilteredCount = () => {
+    return filteredUsers.filter(user => 
+      formData.invited_users.includes(user.id)
+    ).length;
+  };
+
   // Pagination logic
   const totalPages = Math.ceil(rapatList.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -968,7 +1004,7 @@ export default function Rapat({ onChanged }) {
                     />
                   </div>
 
-                  {/* Form Undangan dengan Pencarian */}
+                  {/* Form Undangan dengan Pencarian dan Select All */}
                   <div>
                     <label className="block text-gray-800 font-semibold mb-2 text-sm">Undang Peserta</label>
                     <div className="space-y-3">
@@ -995,6 +1031,29 @@ export default function Rapat({ onChanged }) {
                           />
                         </svg>
                       </div>
+
+                      {/* Select All Button */}
+                      {filteredUsers.length > 0 && (
+                        <div className="flex justify-between items-center">
+                          <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            className="flex items-center space-x-2 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>
+                              {getSelectedFilteredCount() === filteredUsers.length 
+                                ? "Batal Pilih Semua" 
+                                : "Pilih Semua"}
+                            </span>
+                          </button>
+                          <span className="text-sm text-gray-500">
+                            {getSelectedFilteredCount()} dari {filteredUsers.length} terpilih
+                          </span>
+                        </div>
+                      )}
 
                       {/* Daftar User dengan Scroll */}
                       <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50">
