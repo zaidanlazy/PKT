@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 function TodayMeetingsModal({ isOpen, onClose }) {
   const [todayMeetings, setTodayMeetings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Format tanggal untuk hari ini
   const today = new Date();
@@ -16,38 +17,31 @@ function TodayMeetingsModal({ isOpen, onClose }) {
     day: 'numeric'
   });
 
-  // Simulasi data rapat hari ini
+  // Fetch data rapat hari ini (tanpa autentikasi)
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-      // Simulasi fetching data
-      setTimeout(() => {
-        const mockMeetings = [
-          {
-            id: 1,
-            title: "Rapat Tim Marketing",
-            time: "09:00 - 10:30",
-            room: "Ruang Meeting A",
-            organizer: "Budi Santoso"
-          },
-          {
-            id: 2,
-            title: "Briefing Proyek Baru",
-            time: "11:00 - 12:00",
-            room: "Ruang Meeting B",
-            organizer: "Siti Rahayu"
-          },
-          {
-            id: 3,
-            title: "Review Kinerja Triwulan",
-            time: "14:00 - 16:00",
-            room: "Ruang Rapat Utama",
-            organizer: "Ahmad Wijaya"
+      setError(null);
+
+      // Gunakan endpoint publik tanpa Authorization header
+      fetch("http://localhost:8000/api/rapat/hari-ini/public")
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Gagal mengambil data');
           }
-        ];
-        setTodayMeetings(mockMeetings);
-        setIsLoading(false);
-      }, 1000);
+          return res.json();
+        })
+        .then((json) => {
+          console.log('Data rapat hari ini:', json.data); // Debug log
+          setTodayMeetings(json.data || []);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setError(err.message);
+          setTodayMeetings([]);
+          setIsLoading(false);
+        });
     }
   }, [isOpen]);
 
@@ -80,6 +74,16 @@ function TodayMeetingsModal({ isOpen, onClose }) {
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">Tidak dapat mengambil data</h3>
+              <p className="text-gray-500">Terjadi kesalahan saat mengambil data rapat.</p>
+            </div>
           ) : todayMeetings.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -97,24 +101,47 @@ function TodayMeetingsModal({ isOpen, onClose }) {
                   key={meeting.id}
                   className="border border-gray-200 rounded-2xl p-4 hover:shadow-lg transition-shadow duration-300"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-800 text-lg">{meeting.title}</h3>
-                    <span className="bg-blue-100 text-blue-600 text-sm font-medium px-3 py-1 rounded-full">
-                      {meeting.time}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 text-lg mb-1">{meeting.nama_rapat}</h3>
+                      <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${
+                        meeting.jenis === 'online'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {meeting.jenis === 'online' ? 'Online' : 'Offline'}
+                      </span>
+                    </div>
+                    <span className="bg-blue-100 text-blue-600 text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap ml-2">
+                      <div className="flex items-center gap-1">
+                        <svg
+                          className="w-3 h-3 text-blue-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {meeting.waktu_mulai} - {meeting.waktu_selesai}
+                      </div>
                     </span>
                   </div>
+
+                  {meeting.deskripsi && (
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{meeting.deskripsi}</p>
+                  )}
+
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
-                      <span>{meeting.room}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span>Dipimpin oleh: {meeting.organizer}</span>
+                      <span>{meeting.ruangan ? meeting.ruangan.nama_ruangan : 'Online Meeting'}</span>
                     </div>
                   </div>
                 </div>
@@ -200,16 +227,18 @@ export default function Login() {
     }
   };
 
+  // HANDLE KLIK - Removed duplicate state declarations
   const handleTodayMeetingsClick = () => {
     setShowTodayMeetings(true);
   };
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+
       {/* Modal Lihat Rapat Hari Ini */}
-      <TodayMeetingsModal 
-        isOpen={showTodayMeetings} 
-        onClose={() => setShowTodayMeetings(false)} 
+      <TodayMeetingsModal
+        isOpen={showTodayMeetings}
+        onClose={() => setShowTodayMeetings(false)}
       />
 
       {/* Modern Notification Container */}
@@ -372,7 +401,7 @@ export default function Login() {
                 </div>
                 <span className="text-lg">Kelola jadwal secara efisien</span>
               </div>
-              
+
               {/* Tombol Lihat Rapat Hari Ini yang Lebih Menarik */}
               <button
                 onClick={handleTodayMeetingsClick}
@@ -389,7 +418,7 @@ export default function Login() {
                     {/* Ping animation */}
                     <div className="absolute inset-0 rounded-xl bg-cyan-400 animate-ping opacity-20 group-hover:opacity-30"></div>
                   </div>
-                  
+
                   {/* Text Content */}
                   <div className="flex-1 text-left">
                     <h3 className="font-semibold text-gray-800 text-lg group-hover:text-cyan-700 transition-colors duration-300">
@@ -399,7 +428,7 @@ export default function Login() {
                       Cek jadwal rapat yang sudah dijadwalkan untuk hari ini
                     </p>
                   </div>
-                  
+
                   {/* Arrow Icon */}
                   <div className="text-cyan-500 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all duration-300">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,7 +436,7 @@ export default function Login() {
                     </svg>
                   </div>
                 </div>
-                
+
                 {/* Background Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </button>

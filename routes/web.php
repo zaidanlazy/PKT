@@ -11,4 +11,8 @@ Route::get('/', function () {
 Route::prefix('api')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/login', function () {
+    return response()->json(['error' => 'Unauthorized'], 401);
+})->name('login');
+
 });

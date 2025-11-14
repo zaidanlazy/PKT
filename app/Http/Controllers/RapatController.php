@@ -285,4 +285,49 @@ class RapatController extends Controller
 
         return response()->json(['data' => $rapat]);
     }
+
+
+ public function todayMeetingsPublic()
+{
+    $today = now()->toDateString();
+
+    $rapat = Rapat::with('ruangan')
+        ->whereDate('tanggal', $today)
+        ->where('is_active', 1)
+        ->orderBy('waktu_mulai', 'desc')
+        ->get()
+        ->map(function($item) {
+
+            //format waktu
+            $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 5) : '';
+            $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 5) : '';
+
+            return [
+                'id' => $item->id,
+                'nama_rapat' => $item->nama_rapat,
+                'jenis' => $item->jenis,
+                'deskripsi' => $item->deskripsi,
+                'ruangan' => $item->ruangan ? [
+                    'id' => $item->ruangan->id,
+                    'nama_ruangan' => $item->ruangan->nama_ruangan,
+                    'kapasitas' => $item->ruangan->kapasitas ?? null,
+                ] : null,
+                'waktu_mulai' => $waktuMulai,
+                'waktu_selesai' => $waktuSelesai,
+
+                // ⬇⬇ TAMBAHKAN FIELD INI
+                'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
+
+                'tanggal' => $item->tanggal,
+            ];
+        });
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $rapat
+    ]);
+}
+
+
+
 }

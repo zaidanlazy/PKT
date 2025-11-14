@@ -13,17 +13,23 @@ use App\Http\Controllers\UndanganRapatController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Route publik - tidak perlu login
+Route::get('/rapat/hari-ini/public', [RapatController::class, 'todayMeetingsPublic']);
+
 // Protected routes (authentication required)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/rapat/hari-ini/list', [RapatController::class, 'todayMeetings']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/rapat', [RapatController::class, 'index']);
     Route::get('/rapat-ruang', [RapatController::class, 'indexrapat']);
     Route::get('/rapat-today-all', [RapatController::class, 'todayAll']);
-    
+
     Route::get('/rapat/{id}', [RapatController::class, 'show']);
     Route::post('/rapat', [RapatController::class, 'store']);
     Route::put('/rapat/{id}', [RapatController::class, 'update']);
