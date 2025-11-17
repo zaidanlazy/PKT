@@ -219,7 +219,7 @@ export default function DetailRapat() {
                   </h3>
                   {rapatBerikutnya ? (
                     <p className="text-xl text-white">
-                      Silakan menunggu rapat selanjutnya di samping kanan.
+                      Silakan menunggu rapat selanjutnya.
                     </p>
                   ) : (
                     <p className="text-xl text-white">

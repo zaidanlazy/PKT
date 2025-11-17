@@ -40,11 +40,12 @@ class RapatController extends Controller
             $request->all(),
             [
                 'nama_rapat' => 'required|string|max:255',
-                'jenis' => 'required|in:online,offline',
+                'jenis' => 'required|in:online,offline,',
                 'tanggal' => 'required|date|after_or_equal:today',
                 'waktu_mulai' => 'required|date_format:H:i',
                 'waktu_selesai' => [
                     'required',
+                    //waktu selesai harus lebih besar dari waktu mulai
                     'date_format:H:i',
                     function ($attribute, $value, $fail) use ($request) {
                         if ($request->waktu_mulai && $value) {
@@ -58,7 +59,7 @@ class RapatController extends Controller
                         }
                     },
                 ],
-                'ruangan_id' => 'nullable|exists:ruangan,id',
+                'ruangan_id' => 'required|exists:ruangan,id',
                 'deskripsi' => 'nullable|string',
                 'invited_users' => 'nullable|array',
                 'invited_users.*' => 'exists:users,id',
@@ -77,8 +78,6 @@ class RapatController extends Controller
         // CEK APAKAH RUANGAN SUDAH DIPAKAI
         if ($request->jenis === 'offline' && $request->ruangan_id) {
             $isRuanganTerpakai = Rapat::where('ruangan_id', $request->ruangan_id)
-                ->where('tanggal', $request->tanggal)
-                ->where('is_active', 1)
                 ->where(function ($query) use ($request) {
                     $query->whereBetween('waktu_mulai', [$request->waktu_mulai, $request->waktu_selesai])
                           ->orWhereBetween('waktu_selesai', [$request->waktu_mulai, $request->waktu_selesai])
@@ -315,7 +314,7 @@ class RapatController extends Controller
                 'waktu_mulai' => $waktuMulai,
                 'waktu_selesai' => $waktuSelesai,
 
-                // ⬇⬇ TAMBAHKAN FIELD INI
+                // gabungan waktu mulai dan selesai
                 'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
 
                 'tanggal' => $item->tanggal,

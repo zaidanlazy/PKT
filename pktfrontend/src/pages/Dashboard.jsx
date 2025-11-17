@@ -183,7 +183,7 @@ export default function Dashboard() {
         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
       />
     </svg>
-    Bontang, Kalimantan Timur
+    
   </div>
 </div>
 
@@ -349,7 +349,7 @@ export default function Dashboard() {
                           {rapat.jenis === "offline" ? (
                             getDateKey(rapat.tanggal) === todayKey && nowHHmm > rapat.waktu_selesai ? (
                               <span className="text-xs font-medium text-gray-500">
-                
+
                               </span>
                             ) : (
                               <button
