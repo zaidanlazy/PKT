@@ -20,8 +20,9 @@ export default function DetailRapat() {
     "/assets/biru.jpg",
     "/assets/oren.jpg",
     "/assets/putih.jpg",
-    "/assets/ungu biru.jpg",
+    "/assets/ungu.jpg",
     "/assets/kuning.jpg",
+    "/assets/biruu.jpg",
 
   ];
 
