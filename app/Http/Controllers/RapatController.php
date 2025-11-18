@@ -298,8 +298,8 @@ class RapatController extends Controller
         ->map(function($item) {
 
             //format waktu
-            $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 5) : '';
-            $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 5) : '';
+            $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 16) : '';
+            $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 16) : '';
 
             return [
                 'id' => $item->id,
@@ -316,8 +316,6 @@ class RapatController extends Controller
 
                 // gabungan waktu mulai dan selesai
                 'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-
-                'tanggal' => $item->tanggal,
             ];
         });
 
