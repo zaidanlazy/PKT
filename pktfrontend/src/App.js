@@ -11,6 +11,7 @@ import Undangan from "./pages/Undangan";
 import Ruangan from "./pages/ruangan";
 import User from "./pages/User";
 import DetailRapat from "./pages/DetailRapat"; // Import komponen baru
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -28,6 +29,9 @@ function App() {
               <Register />
             </GuestRoute>
           } />
+
+          <Route path="*" element={<NotFound />} />
+          
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

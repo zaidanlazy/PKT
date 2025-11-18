@@ -15,7 +15,7 @@ class RuanganController extends Controller
     public function index()
     {
         try {
-            // Update status ruangan berdasarkan rapat aktif hari ini
+            //
             $this->updateRuanganStatus();
 
             // Ambil semua ruangan aktif
@@ -39,45 +39,46 @@ class RuanganController extends Controller
     /**
      * Memperbarui status ruangan berdasarkan rapat aktif hari ini
      */
-    private function updateRuanganStatus()
-    {
-        try {
-            $today = now()->format('Y-m-d');
-            $currentTime = now()->format('H:i');
+   private function updateRuanganStatus()
+{
+    try {
+        $today = now()->format('Y-m-d');
+        $currentTime = now()->format('H:i');
 
-            // Ambil semua rapat offline aktif hari ini
-            $rapatAktif = Rapat::where('jenis', 'offline')
-                ->whereDate('tanggal', $today)
-                ->where('is_active', 1)
-                ->whereNotNull('ruangan_id')
-                ->get();
+        // Ambil semua rapat offline aktif hari ini
+        $rapatAktif = Rapat::where('jenis', 'offline')
+            ->whereDate('tanggal', $today)
+            ->where('is_active', 1)
+            ->whereNotNull('ruangan_id')
+            ->get();
 
-            // Ambil semua ruangan yang sedang dipakai oleh rapat aktif
-            $ruanganTerpakai = $rapatAktif
-                ->filter(function ($r) use ($currentTime) {
-                    // Hanya rapat yang belum selesai
-                    return $currentTime = $r->waktu_selesai;
-                })
-                ->pluck('ruangan_id')
-                ->unique()
-                ->toArray();
+        // Ambil ruangan yang sedang dipakai rapat yg BELUM selesai
+        $ruanganTerpakai = $rapatAktif
+            ->filter(function ($r) use ($currentTime) {
+                // Rapat aktif kalau waktu selesai > waktu sekarang
+                return $r->waktu_mulai <= $currentTime && $r->waktu_selesai > $currentTime;
+            })
+            ->pluck('ruangan_id')
+            ->unique()
+            ->toArray();
 
-            // Ambil semua ruangan aktif
-            $semuaRuangan = Ruangan::where('is_active', 1)->get();
+        // Update status ruangan
+        $semuaRuangan = Ruangan::where('is_active', 1)->get();
 
-            foreach ($semuaRuangan as $ruangan) {
-                $newStatus = in_array($ruangan->id, $ruanganTerpakai)
-                    ? 'tidak_tersedia'
-                    : 'tersedia';
+        foreach ($semuaRuangan as $ruangan) {
+            $newStatus = in_array($ruangan->id, $ruanganTerpakai)
+                ? 'tidak_tersedia'
+                : 'tersedia';
 
-                if ($ruangan->status !== $newStatus) {
-                    $ruangan->update(['status' => $newStatus]);
-                }
+            if ($ruangan->status !== $newStatus) {
+                $ruangan->update(['status' => $newStatus]);
             }
-        } catch (\Exception $e) {
-            // abaikan error internal agar tidak ganggu API utama
         }
+    } catch (\Exception $e) {
+        // abaikan error internal agar tidak ganggu API utama
     }
+}
+
 
     /**
      * Menambahkan ruangan baru

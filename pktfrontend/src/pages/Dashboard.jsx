@@ -232,25 +232,6 @@ export default function Dashboard() {
                     : "Tidak ada rapat terjadwal hari ini"}
                 </p>
               </div>
-              <button
-                onClick={() => navigate("/rapat")}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Tambah Rapat
-              </button>
             </div>
 
             {rapatHariIni.length === 0 ? (
@@ -288,19 +269,19 @@ export default function Dashboard() {
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Nama Kegiatan Rapat
+                        Name meetings
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Jenis
+                        Type
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Tanggal
+                        Date
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Waktu
+                        Time
                       </th>
                       <th className="text-center py-3 px-4 text-sm font-semibold text-gray-900">
-                        Aksi
+                        Action
                       </th>
                     </tr>
                   </thead>

@@ -14,13 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'append'=>\App\Http\Middleware\UpdateRuanganStatusMiddleware::class,
         ]);
-        
+
         // Disable CSRF for API routes
         $middleware->api(append: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
-        
+
         // Remove CSRF middleware for API routes
         $middleware->validateCsrfTokens(except: [
             'api/*'

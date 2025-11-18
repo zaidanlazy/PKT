@@ -36,15 +36,14 @@ class DashboardController extends Controller
             ->count();
 
         // Hitung ruangan yang masih dipakai (offline aktif)
-        $ruangan_terpakai = Rapat::where('jenis', 'offline')
-            ->where('tanggal', today())
+        $ruangan_terpakai = Ruangan::where('status', 'tidak_tersedia')
             ->where('is_active', 1)
-            ->whereNotNull('ruangan_id')
-            ->distinct('ruangan_id')
-            ->count('ruangan_id');
+            ->count();
 
-        // Ruangan tersedia = total aktif - yang terpakai
-        $ruangan_tersedia = max(0, $total_ruangan - $ruangan_terpakai);
+        $ruangan_tersedia = Ruangan::where('status', 'tersedia')
+            ->where('is_active', 1)
+            ->count();
+
 
         return response()->json([
             'total_ruangan' => $total_ruangan,
