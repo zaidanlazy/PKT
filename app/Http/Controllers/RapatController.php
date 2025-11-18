@@ -59,7 +59,7 @@ class RapatController extends Controller
                         }
                     },
                 ],
-                'ruangan_id' => 'required|exists:ruangan,id',
+                'ruangan_id' => 'nullable|required_if:jenis,offline|exists:ruangan,id',
                 'deskripsi' => 'nullable|string',
                 'invited_users' => 'nullable|array',
                 'invited_users.*' => 'exists:users,id',
