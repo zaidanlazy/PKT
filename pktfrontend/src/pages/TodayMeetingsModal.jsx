@@ -97,6 +97,12 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
     setIsBgLoaded(false); // Reset background load state
   };
 
+  // Fungsi untuk navigasi ke halaman detail
+  const handleNavigateToDetail = (rapatId) => {
+    navigate(`/rapat/detail/${rapatId}`);
+    onClose();
+  };
+
   const handleBackToList = () => {
     setShowDetail(false);
     setSelectedMeeting(null);
@@ -133,6 +139,13 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
     return `${datePart} ${timePart}`;
   };
 
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
   const getMeetingStatus = (meeting) => {
     const todayKey = now.toISOString().slice(0, 10);
     const start = new Date(`${todayKey}T${meeting.waktu_mulai}:00`);
@@ -147,7 +160,20 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
     }
   };
 
+  const getDateKey = (value) => {
+    if (typeof value === "string") {
+      const key = value.slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key)) return key;
+    }
+    const dt = new Date(value);
+    const pad2 = (n) => String(n).padStart(2, "0");
+    return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+  };
+
   if (!isOpen) return null;
+
+  const todayKey = now.toISOString().slice(0, 10);
+  const nowHHmm = now.toTimeString().slice(0, 5);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -353,7 +379,7 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
               </div>
             )
           ) : (
-            // Tampilan Daftar Rapat (sebelumnya)
+            // Tampilan Daftar Rapat dengan Tombol Detail (BARU)
             <div className="p-6">
               {isLoading ? (
                 <div className="flex justify-center items-center py-12">
@@ -380,99 +406,111 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                   <p className="text-gray-500">Tidak ada jadwal rapat untuk hari ini.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {todayMeetings.map((meeting) => (
-                    <div
-                      key={meeting.id}
-                      onClick={() => handleMeetingClick(meeting)}
-                      className={`border border-gray-200 rounded-2xl p-4 hover:shadow-lg transition-all duration-300 cursor-pointer group ${
-                        meeting.jenis === 'online' 
-                          ? 'hover:border-red-300 opacity-70' 
-                          : 'hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <h3 className={`font-semibold text-lg mb-1 group-hover:text-blue-600 transition-colors ${
-                            meeting.jenis === 'online' ? 'text-gray-500' : 'text-gray-800'
-                          }`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
+                          Nama Rapat
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
+                          Tipe
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
+                          Tanggal
+                        </th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
+                          Waktu
+                        </th>
+                        <th className="text-center py-3 px-4 text-sm font-semibold text-gray-900">
+                          Aksi
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {todayMeetings.map((meeting) => (
+                        <tr
+                          key={meeting.id}
+                          className="border-b border-gray-100 hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4 text-sm text-gray-900">
                             {meeting.nama_rapat}
-                            {meeting.jenis === 'online' && (
-                              <span className="ml-2 text-xs text-red-500 font-normal">(Online - Tidak dapat melihat detail)</span>
-                            )}
-                          </h3>
-                          <div className="flex items-center space-x-2 mt-2">
-                            <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${
-                              meeting.jenis === 'online'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-green-100 text-green-800'
-                            }`}>
-                              {meeting.jenis === 'online' ? 'Online' : 'Offline'}
-                            </span>
-                            <span className={`inline-block text-xs font-medium px-2 py-1 rounded-full ${
-                              getMeetingStatus(meeting) === "sedang-berlangsung"
-                                ? 'bg-green-100 text-green-800'
-                                : getMeetingStatus(meeting) === "akan-datang"
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {getMeetingStatus(meeting) === "sedang-berlangsung" 
-                                ? 'Sedang Berlangsung' 
-                                : getMeetingStatus(meeting) === "akan-datang"
-                                ? 'Akan Datang'
-                                : 'Selesai'
-                              }
-                            </span>
-                          </div>
-                        </div>
-                        <span className={`text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap ml-2 ${
-                          meeting.jenis === 'online'
-                            ? 'bg-gray-100 text-gray-600'
-                            : 'bg-blue-100 text-blue-600'
-                        }`}>
-                          <div className="flex items-center gap-1">
-                            <svg
-                              className={`w-3 h-3 ${
-                                meeting.jenis === 'online' ? 'text-gray-500' : 'text-blue-500'
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                meeting.jenis === "online"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-green-100 text-green-800"
                               }`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            {meeting.waktu_mulai} - {meeting.waktu_selesai}
-                          </div>
-                        </span>
-                      </div>
-
-                      {meeting.deskripsi && (
-                        <p className={`text-sm mb-3 line-clamp-2 ${
-                          meeting.jenis === 'online' ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                          {meeting.deskripsi}
-                        </p>
-                      )}
-
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center space-x-2">
-                          <svg className={`w-4 h-4 flex-shrink-0 ${
-                            meeting.jenis === 'online' ? 'text-gray-400' : 'text-gray-400'
-                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          <span className={meeting.jenis === 'online' ? 'text-gray-400' : 'text-gray-600'}>
-                            {meeting.ruangan ? meeting.ruangan.nama_ruangan : 'Online Meeting'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                              {meeting.jenis === "online" ? "Online" : "Offline"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {formatDate(meeting.tanggal)}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <svg
+                                className="w-3 h-3 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              {meeting.waktu_mulai} - {meeting.waktu_selesai}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            {meeting.jenis === "offline" ? (
+                              getDateKey(meeting.tanggal) === todayKey && nowHHmm > meeting.waktu_selesai ? (
+                                <span className="text-xs font-medium text-gray-400 italic">
+                                  Rapat Selesai
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleNavigateToDetail(meeting.id)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1 transition-colors"
+                                >
+                                  <svg
+                                    className="w-3 h-3"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    />
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    />
+                                  </svg>
+                                  Detail
+                                </button>
+                              )
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">
+                                Tidak tersedia
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -499,7 +537,7 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                   </button>
                   <button
                     onClick={handleGoToDetailPage}
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-colors duration-200 text-sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-colors duration-200 text-sm"
                   >
                     Lihat Halaman Detail
                   </button>

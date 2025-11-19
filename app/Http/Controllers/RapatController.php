@@ -281,46 +281,83 @@ class RapatController extends Controller
         return response()->json(['data' => $rapat]);
     }
 
+    public function todayMeetingsPublic()
+    {
+        $today = now()->toDateString();
 
- public function todayMeetingsPublic()
-{
-    $today = now()->toDateString();
+        $rapat = Rapat::with('ruangan')
+            ->whereDate('tanggal', $today)
+            ->where('is_active', 1)
+            ->orderBy('waktu_mulai', 'asc')
+            ->get()
+            ->map(function($item) {
+                //format waktu
+                $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 5) : '';
+                $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 5) : '';
 
-    $rapat = Rapat::with('ruangan')
-        ->whereDate('tanggal', $today)
-        ->where('is_active', 1)
-        ->orderBy('waktu_mulai', 'desc')
-        ->get()
-        ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'nama_rapat' => $item->nama_rapat,
+                    'jenis' => $item->jenis,
+                    'deskripsi' => $item->deskripsi,
+                    'tanggal' => $item->tanggal,
+                    'ruangan' => $item->ruangan ? [
+                        'id' => $item->ruangan->id,
+                        'nama_ruangan' => $item->ruangan->nama_ruangan,
+                        'kapasitas' => $item->ruangan->kapasitas ?? null,
+                    ] : null,
+                    'waktu_mulai' => $waktuMulai,
+                    'waktu_selesai' => $waktuSelesai,
+                    'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
+                ];
+            });
 
-            //format waktu
-            $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 16) : '';
-            $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 16) : '';
+        return response()->json([
+            'status' => 'success',
+            'data' => $rapat
+        ]);
+    }
 
-            return [
-                'id' => $item->id,
-                'nama_rapat' => $item->nama_rapat,
-                'jenis' => $item->jenis,
-                'deskripsi' => $item->deskripsi,
-                'ruangan' => $item->ruangan ? [
-                    'id' => $item->ruangan->id,
-                    'nama_ruangan' => $item->ruangan->nama_ruangan,
-                    'kapasitas' => $item->ruangan->kapasitas ?? null,
-                ] : null,
-                'waktu_mulai' => $waktuMulai,
-                'waktu_selesai' => $waktuSelesai,
+    // METHOD BARU: Detail Rapat Public (Tanpa Auth)
+    public function showPublic($id)
+    {
+        $rapat = Rapat::with(['ruangan', 'undangan.user'])
+            ->where('is_active', 1)
+            ->find($id);
 
-                // gabungan waktu mulai dan selesai
-                'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-            ];
-        });
+        if (!$rapat) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rapat tidak ditemukan atau sudah tidak aktif'
+            ], 404);
+        }
 
-    return response()->json([
-        'status' => 'success',
-        'data' => $rapat
-    ]);
-}
+        // Format waktu
+        $waktuMulai = $rapat->waktu_mulai ? substr($rapat->waktu_mulai, 0, 5) : '';
+        $waktuSelesai = $rapat->waktu_selesai ? substr($rapat->waktu_selesai, 0, 5) : '';
 
+        $data = [
+            'id' => $rapat->id,
+            'nama_rapat' => $rapat->nama_rapat,
+            'jenis' => $rapat->jenis,
+            'deskripsi' => $rapat->deskripsi,
+            'tanggal' => $rapat->tanggal,
+            'waktu_mulai' => $waktuMulai,
+            'waktu_selesai' => $waktuSelesai,
+            'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
+            'ruangan' => $rapat->ruangan ? [
+                'id' => $rapat->ruangan->id,
+                'nama_ruangan' => $rapat->ruangan->nama_ruangan,
+                'kapasitas' => $rapat->ruangan->kapasitas ?? null,
+                'lokasi' => $rapat->ruangan->lokasi ?? null,
+            ] : null,
+            // Jangan tampilkan data undangan di public untuk privacy
+            'jumlah_undangan' => $rapat->undangan ? $rapat->undangan->count() : 0,
+        ];
 
-
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ]);
+    }
 }
