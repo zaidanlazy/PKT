@@ -6,6 +6,7 @@ use App\Models\Rapat;
 use App\Models\Ruangan;
 use App\Models\UndanganRapat;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
 class RapatController extends Controller
@@ -35,92 +36,140 @@ class RapatController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = Validator::make(
-            $request->all(),
-            [
-                'nama_rapat' => 'required|string|max:255',
-                'jenis' => 'required|in:online,offline,',
-                'tanggal' => 'required|date|after_or_equal:today',
-                'waktu_mulai' => 'required|date_format:H:i',
-                'waktu_selesai' => [
-                    'required',
-                    //waktu selesai harus lebih besar dari waktu mulai
-                    'date_format:H:i',
-                    function ($attribute, $value, $fail) use ($request) {
-                        if ($request->waktu_mulai && $value) {
-                            list($startHour, $startMin) = explode(':', $request->waktu_mulai);
-                            list($endHour, $endMin) = explode(':', $value);
-                            $startMinutes = (int)$startHour * 60 + (int)$startMin;
-                            $endMinutes = (int)$endHour * 60 + (int)$endMin;
-                            if ($endMinutes <= $startMinutes) {
-                                $fail('Waktu selesai harus setelah waktu mulai.');
-                            }
+{
+    $validated = Validator::make(
+        $request->all(),
+        [
+            'nama_rapat' => 'required|string|max:255',
+            'jenis' => 'required|in:online,offline',
+            'tanggal' => 'required|date|after_or_equal:today',
+            'waktu_mulai' => 'required|date_format:H:i',
+
+            'waktu_selesai' => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->waktu_mulai && $value) {
+                        list($startHour, $startMin) = explode(':', $request->waktu_mulai);
+                        list($endHour, $endMin) = explode(':', $value);
+
+                        $startMinutes = (int)$startHour * 60 + (int)$startMin;
+                        $endMinutes = (int)$endHour * 60 + (int)$endMin;
+
+                        if ($endMinutes <= $startMinutes) {
+                            $fail('Waktu selesai harus setelah waktu mulai.');
                         }
-                    },
-                ],
-                'ruangan_id' => 'nullable|required_if:jenis,offline|exists:ruangan,id',
-                'deskripsi' => 'nullable|string',
-                'invited_users' => 'nullable|array',
-                'invited_users.*' => 'exists:users,id',
-                'pesan_undangan' => 'nullable|string|max:500'
-            ]
-        );
+                    }
+                },
+            ],
 
-        if ($validated->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validasi gagal',
-                'errors' => $validated->errors()
-            ], 422);
-        }
+            'ruangan_id' => 'required_if:jenis,offline|nullable|exists:ruangan,id',
+            'deskripsi' => 'nullable|string',
+            'invited_users' => 'nullable|array',
+            'invited_users.*' => 'exists:users,id',
+            'pesan_undangan' => 'nullable|string|max:500'
+        ]
+    );
 
-        // CEK APAKAH RUANGAN SUDAH DIPAKAI
-        if ($request->jenis === 'offline' && $request->ruangan_id) {
+    if ($validated->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Validasi gagal',
+            'errors' => $validated->errors()
+        ], 422);
+    }
 
-            $isRuanganTerpakai = Rapat::where('ruangan_id', $request->ruangan_id)
-                ->where('tanggal', $request->tanggal)
-                ->where('waktu_selesai', '>', $request->waktu_mulai)
-                ->exists();
+    try {
+        // Buat rapat hanya dengan field yang diizinkan
+        $rapat = Rapat::create($request->only([
+            'nama_rapat',
+            'jenis',
+            'tanggal',
+            'waktu_mulai',
+            'waktu_selesai',
+            'ruangan_id',
+            'deskripsi'
+        ]));
 
-            if ($isRuanganTerpakai) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Ruangan sedang di gunakan.'
-                ], 409);
-            }
-        }
+        // === PROSES UNDANGAN ===
+        if ($request->has('invited_users') && is_array($request->invited_users)) {
+            foreach ($request->invited_users as $userId) {
 
+                UndanganRapat::create([
+                    'rapat_id' => $rapat->id,
+                    'user_id' => $userId,
+                    'pesan_undangan' => $request->pesan_undangan,
+                    'status' => 'pending'
+                ]);
 
-        try {
-            $rapat = Rapat::create($request->all());
+                // KIRIM WA
+                $user = User::find($userId);
 
-            // Tambahkan undangan jika ada
-            if ($request->has('invited_users') && is_array($request->invited_users)) {
-                foreach ($request->invited_users as $userId) {
-                    UndanganRapat::create([
-                        'rapat_id' => $rapat->id,
-                        'user_id' => $userId,
-                        'pesan_undangan' => $request->pesan_undangan,
-                        'status' => 'pending'
-                    ]);
+                if ($user && $user->no_telp) {
+
+                    $ruanganText = "";
+                    if ($rapat->jenis === 'offline' && $rapat->ruangan) {
+                        $ruanganText = "Ruangan    : {$rapat->ruangan->nama_ruangan}\n";
+                    }
+
+                    $message =
+                        "*UNDANGAN RAPAT*\n\n" .
+                        "Nama Rapat : {$rapat->nama_rapat}\n" .
+                        "Jenis      : {$rapat->jenis}\n" .
+                        "Tanggal    : {$rapat->tanggal}\n" .
+                        "Mulai      : {$rapat->waktu_mulai}\n" .
+                        "Selesai    : {$rapat->waktu_selesai}\n" .
+                        $ruanganText .
+                        "\nPesan:\n{$request->pesan_undangan}\n\n" .
+                        "Silakan cek aplikasi untuk detail lebih lengkap.";
+
+                    $this->sendWhatsapp($user->no_telp, $message);
                 }
             }
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Rapat berhasil ditambahkan',
-                'data' => $rapat->load(['ruangan', 'undangan.user'])
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan saat menambah rapat',
-                'error' => $e->getMessage()
-            ], 500);
         }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Rapat berhasil ditambahkan',
+            'data' => $rapat->load(['ruangan', 'undangan.user'])
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Terjadi kesalahan saat menambah rapat',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+private function sendWhatsapp($target, $message)
+{
+    $token = env('FONNTE_TOKEN');
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, [
+        CURLOPT_URL => "https://api.fonnte.com/send",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => [
+            'target' => $target,
+            'message' => $message
+        ],
+        CURLOPT_HTTPHEADER => [
+            "Authorization: $token"
+        ],
+    ]);
+
+    $response = curl_exec($curl);
+    curl_close($curl);
+
+    return $response;
+}
+
+
 
     public function update(Request $request, $id)
     {
@@ -281,83 +330,46 @@ class RapatController extends Controller
         return response()->json(['data' => $rapat]);
     }
 
-    public function todayMeetingsPublic()
-    {
-        $today = now()->toDateString();
 
-        $rapat = Rapat::with('ruangan')
-            ->whereDate('tanggal', $today)
-            ->where('is_active', 1)
-            ->orderBy('waktu_mulai', 'asc')
-            ->get()
-            ->map(function($item) {
-                //format waktu
-                $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 5) : '';
-                $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 5) : '';
+ public function todayMeetingsPublic()
+{
+    $today = now()->toDateString();
 
-                return [
-                    'id' => $item->id,
-                    'nama_rapat' => $item->nama_rapat,
-                    'jenis' => $item->jenis,
-                    'deskripsi' => $item->deskripsi,
-                    'tanggal' => $item->tanggal,
-                    'ruangan' => $item->ruangan ? [
-                        'id' => $item->ruangan->id,
-                        'nama_ruangan' => $item->ruangan->nama_ruangan,
-                        'kapasitas' => $item->ruangan->kapasitas ?? null,
-                    ] : null,
-                    'waktu_mulai' => $waktuMulai,
-                    'waktu_selesai' => $waktuSelesai,
-                    'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-                ];
-            });
+    $rapat = Rapat::with('ruangan')
+        ->whereDate('tanggal', $today)
+        ->where('is_active', 1)
+        ->orderBy('waktu_mulai', 'desc')
+        ->get()
+        ->map(function($item) {
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $rapat
-        ]);
-    }
+            //format waktu
+            $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 16) : '';
+            $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 16) : '';
 
-    // METHOD BARU: Detail Rapat Public (Tanpa Auth)
-    public function showPublic($id)
-    {
-        $rapat = Rapat::with(['ruangan', 'undangan.user'])
-            ->where('is_active', 1)
-            ->find($id);
+            return [
+                'id' => $item->id,
+                'nama_rapat' => $item->nama_rapat,
+                'jenis' => $item->jenis,
+                'deskripsi' => $item->deskripsi,
+                'ruangan' => $item->ruangan ? [
+                    'id' => $item->ruangan->id,
+                    'nama_ruangan' => $item->ruangan->nama_ruangan,
+                    'kapasitas' => $item->ruangan->kapasitas ?? null,
+                ] : null,
+                'waktu_mulai' => $waktuMulai,
+                'waktu_selesai' => $waktuSelesai,
 
-        if (!$rapat) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Rapat tidak ditemukan atau sudah tidak aktif'
-            ], 404);
-        }
+                // gabungan waktu mulai dan selesai
+                'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
+            ];
+        });
 
-        // Format waktu
-        $waktuMulai = $rapat->waktu_mulai ? substr($rapat->waktu_mulai, 0, 5) : '';
-        $waktuSelesai = $rapat->waktu_selesai ? substr($rapat->waktu_selesai, 0, 5) : '';
+    return response()->json([
+        'status' => 'success',
+        'data' => $rapat
+    ]);
+}
 
-        $data = [
-            'id' => $rapat->id,
-            'nama_rapat' => $rapat->nama_rapat,
-            'jenis' => $rapat->jenis,
-            'deskripsi' => $rapat->deskripsi,
-            'tanggal' => $rapat->tanggal,
-            'waktu_mulai' => $waktuMulai,
-            'waktu_selesai' => $waktuSelesai,
-            'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-            'ruangan' => $rapat->ruangan ? [
-                'id' => $rapat->ruangan->id,
-                'nama_ruangan' => $rapat->ruangan->nama_ruangan,
-                'kapasitas' => $rapat->ruangan->kapasitas ?? null,
-                'lokasi' => $rapat->ruangan->lokasi ?? null,
-            ] : null,
-            // Jangan tampilkan data undangan di public untuk privacy
-            'jumlah_undangan' => $rapat->undangan ? $rapat->undangan->count() : 0,
-        ];
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $data
-        ]);
-    }
+
 }

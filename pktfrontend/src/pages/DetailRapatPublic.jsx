@@ -243,7 +243,7 @@ export default function DetailRapatPublic() {
             </svg>
             Kembali
           </button>
-          
+
           <div className="flex items-start justify-between">
             <h2 className="text-3xl font-bold mb-2 tracking-tight">
               {rapat.ruangan?.nama_ruangan || "RUANG RAPAT UTAMA"}
@@ -344,9 +344,9 @@ export default function DetailRapatPublic() {
                   const todayKey = now.toISOString().slice(0, 10);
                   const meetingDate = String(r.tanggal).slice(0, 10);
                   const nowHHmm = now.toTimeString().slice(0, 5);
-                  
-                  return meetingDate === todayKey && 
-                         r.waktu_mulai > nowHHmm && 
+
+                  return meetingDate === todayKey &&
+                         r.waktu_mulai > nowHHmm &&
                          r.id !== parseInt(id) &&
                          r.jenis === 'offline';
                 })

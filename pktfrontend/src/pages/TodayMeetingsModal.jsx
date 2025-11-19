@@ -91,7 +91,7 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
       setNotification("Ini rapat online - tidak dapat melihat detail");
       return;
     }
-    
+
     setSelectedMeeting(meeting);
     setShowDetail(true);
     setIsBgLoaded(false); // Reset background load state
@@ -188,7 +188,7 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
           </div>
         </div>
       )}
-      
+
       <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6">
@@ -343,10 +343,10 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                             const todayKey = now.toISOString().slice(0, 10);
                             const meetingDate = String(r.tanggal).slice(0, 10);
                             const nowHHmm = now.toTimeString().slice(0, 5);
-                            
+
                             // Filter hanya rapat hari ini yang belum mulai, bukan rapat yang sedang dilihat, dan hanya rapat offline
-                            return meetingDate === todayKey && 
-                                   r.waktu_mulai > nowHHmm && 
+                            return meetingDate === todayKey &&
+                                   r.waktu_mulai > nowHHmm &&
                                    r.id !== selectedMeeting.id &&
                                    r.jenis === 'offline'; // Hanya tampilkan rapat offline
                           })
@@ -521,8 +521,8 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-500">
-              {showDetail 
-                ? "Klik 'Lihat Halaman Detail' untuk informasi lengkap" 
+              {showDetail
+                ? "Klik 'Lihat Halaman Detail' untuk informasi lengkap"
                 : `${todayMeetings.length} rapat hari ini`
               }
             </div>
