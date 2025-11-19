@@ -200,7 +200,7 @@ export default function Dashboard() {
           />
           <StatCard
             title="Ruangan Tersedia"
-            value={data.ruangan_tersedia === 0 ? "Ruangan Kosong" : data.ruangan_tersedia}
+            value={data.ruangan_tersedia}
             icon={data.ruangan_tersedia === 0 ? "x" : "check"}
             gradient={data.ruangan_tersedia === 0 ? "from-red-500 to-orange-500" : "from-green-500 to-emerald-500"}
           />

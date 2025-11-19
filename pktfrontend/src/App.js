@@ -12,6 +12,7 @@ import Ruangan from "./pages/ruangan";
 import User from "./pages/User";
 import DetailRapat from "./pages/DetailRapat"; // Import komponen baru
 import NotFound from "./pages/NotFound";
+import TodayMeetingsModal from "./pages/TodayMeetingsModal";
 
 function App() {
   return (
@@ -30,8 +31,14 @@ function App() {
             </GuestRoute>
           } />
 
+          <Route path="/TodayMetingsModal/:id" element={
+            <ProtectedRoute>
+              <TodayMeetingsModal />
+            </ProtectedRoute>
+          } />
+
           <Route path="*" element={<NotFound />} />
-          
+
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />

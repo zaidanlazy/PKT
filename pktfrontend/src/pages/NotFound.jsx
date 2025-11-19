@@ -3,7 +3,7 @@ export default function NotFound() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
       {/* IMAGE */}
       <img
-        src="https://cdn-icons-png.flaticon.com/512/5231/5231019.png"
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWptd8q5S_ZJ62e76gSIZS5Ndl6zraIoFUgQ&s"
         alt="Astronaut Illustration"
         className="w-56 mb-6"
       />
@@ -24,20 +24,6 @@ export default function NotFound() {
 
       {/* SEARCH BAR */}
       <div className="mt-6 flex w-full max-w-md">
-        <div className="flex items-center gap-2 w-full">
-          <div className="flex items-center border rounded-lg px-3 py-2 w-full bg-white shadow-sm">
-            <span className="text-gray-400">🔍</span>
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full outline-none ml-2"
-            />
-          </div>
-
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-            Search
-          </button>
-        </div>
       </div>
     </div>
   );

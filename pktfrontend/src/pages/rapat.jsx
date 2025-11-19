@@ -90,15 +90,15 @@ export default function Rapat({ onChanged }) {
   const handleSelectAll = () => {
     const allFilteredUserIds = filteredUsers.map(user => user.id);
     const currentlySelected = formData.invited_users;
-    
+
     // Cek apakah semua user yang terfilter sudah terpilih
-    const allSelected = allFilteredUserIds.every(id => 
+    const allSelected = allFilteredUserIds.every(id =>
       currentlySelected.includes(id)
     );
 
     if (allSelected) {
       // Jika semua sudah terpilih, hapus semua user yang terfilter
-      const newSelectedUsers = currentlySelected.filter(id => 
+      const newSelectedUsers = currentlySelected.filter(id =>
         !allFilteredUserIds.includes(id)
       );
       setFormData(prev => ({
@@ -117,7 +117,7 @@ export default function Rapat({ onChanged }) {
 
   // Fungsi untuk menghitung berapa banyak user yang terfilter sudah terpilih
   const getSelectedFilteredCount = () => {
-    return filteredUsers.filter(user => 
+    return filteredUsers.filter(user =>
       formData.invited_users.includes(user.id)
     ).length;
   };
@@ -421,7 +421,14 @@ export default function Rapat({ onChanged }) {
       fetchRapatList();
       if (onChanged) onChanged();
     } catch (err) {
-      addToast("Gagal menyimpan data rapat", "error");
+      // Tangani error spesifik dari backend
+      if (err.response && err.response.status === 409) {
+        addToast(err.response.data.message || "Ruangan sudah digunakan pada waktu tersebut", "error");
+      } else if (err.response && err.response.data && err.response.data.message) {
+        addToast(err.response.data.message, "error");
+      } else {
+        addToast("Gagal menyimpan data rapat", "error");
+      }
       console.error(err);
     }
   };
@@ -746,7 +753,6 @@ export default function Rapat({ onChanged }) {
                     <div className="flex items-center space-x-1">
                       {[...Array(totalPages)].map((_, index) => {
                         const pageNumber = index + 1;
-                        // Show first page, last page, current page, and pages around current
                         if (
                           pageNumber === 1 ||
                           pageNumber === totalPages ||
@@ -972,7 +978,6 @@ export default function Rapat({ onChanged }) {
                       >
                         <option value="">Pilih Ruangan</option>
                         {ruanganList
-                        // Tampilkan ruangan yang tersedia, atau ruangan yang sedang digunakan di form ini
                         .filter(r => r.status === "tersedia" || r.id === formData.ruangan_id)
                         .map(ruangan => (
                             <option key={ruangan.id} value={ruangan.id}>
@@ -1044,8 +1049,8 @@ export default function Rapat({ onChanged }) {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             <span>
-                              {getSelectedFilteredCount() === filteredUsers.length 
-                                ? "Batal Pilih Semua" 
+                              {getSelectedFilteredCount() === filteredUsers.length
+                                ? "Batal Pilih Semua"
                                 : "Pilih Semua"}
                             </span>
                           </button>

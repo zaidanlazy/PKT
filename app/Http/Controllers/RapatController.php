@@ -77,24 +77,20 @@ class RapatController extends Controller
 
         // CEK APAKAH RUANGAN SUDAH DIPAKAI
         if ($request->jenis === 'offline' && $request->ruangan_id) {
+
             $isRuanganTerpakai = Rapat::where('ruangan_id', $request->ruangan_id)
-                ->where(function ($query) use ($request) {
-                    $query->whereBetween('waktu_mulai', [$request->waktu_mulai, $request->waktu_selesai])
-                          ->orWhereBetween('waktu_selesai', [$request->waktu_mulai, $request->waktu_selesai])
-                          ->orWhere(function ($q) use ($request) {
-                              $q->where('waktu_mulai', '<=', $request->waktu_mulai)
-                                ->where('waktu_selesai', '>=', $request->waktu_selesai);
-                          });
-                })
+                ->where('tanggal', $request->tanggal)
+                ->where('waktu_selesai', '>', $request->waktu_mulai)
                 ->exists();
 
             if ($isRuanganTerpakai) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Ruangan sudah digunakan pada waktu tersebut.'
+                    'message' => 'Ruangan sedang di gunakan.'
                 ], 409);
             }
         }
+
 
         try {
             $rapat = Rapat::create($request->all());
