@@ -25,9 +25,10 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down()
-    {
-        Schema::table('ruangan', function (Blueprint $table) {
+   public function down()
+{
+    Schema::table('ruangan', function (Blueprint $table) {
         $table->dropColumn(['status', 'is_active']);
    });
-}
+}   
+};

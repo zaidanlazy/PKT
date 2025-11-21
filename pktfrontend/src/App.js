@@ -53,14 +53,14 @@ function App() {
               <Rapat />
             </ProtectedRoute>
           } />
-          
+
           {/* Route PROTECTED untuk detail rapat (DENGAN LOGIN) - Jika masih diperlukan */}
           <Route path="/rapat/detail/admin/:id" element={
             <ProtectedRoute>
               <DetailRapat />
             </ProtectedRoute>
           } />
-          
+
           <Route path="/undangan" element={
             <ProtectedRoute>
               <Undangan />
