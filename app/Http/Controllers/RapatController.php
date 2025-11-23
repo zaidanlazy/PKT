@@ -39,7 +39,6 @@ class RapatController extends Controller
 
     public function store(Request $request)
     {
-        // Validasi dasar terlebih dahulu
         $rules = [
             'nama_rapat' => 'required|string|max:255',
             'jenis' => 'required|in:online,offline',
@@ -57,7 +56,7 @@ class RapatController extends Controller
                         $endMinutes = (int)$endHour * 60 + (int)$endMin;
 
                         if ($endMinutes <= $startMinutes) {
-                            $fail('Waktu selesai harus setelah waktu mulai.');
+                            $fail('Waktu selesai harus lebih setelah waktu mulai.');
                         }
                     }
                 },
@@ -176,21 +175,18 @@ class RapatController extends Controller
                             }
 
                             $message =
-                                "━━━━━━━━━━━━━━━━━━━━\n" .
                                 "*UNDANGAN RAPAT ONLINE*\n" .
-                                "━━━━━━━━━━━━━━━━━━━━\n\n" .
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Anda diundang untuk menghadiri:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
                                 "*Jenis*\nOnline\n\n" .
                                 "*Tanggal*\n{$tanggalFormat}\n\n" .
                                 "*Waktu*\n{$mulaiFormat} - {$selesaiFormat} WIB\n\n" .
-                                $linkMeeting .
+                                "*Link Meeting*\n{$rapat->link_rapat}\n\n" .
                                 $deskripsiRapat .
                                 $pesanUndangan .
-                                "\n━━━━━━━━━━━━━━━━━━━━\n" .
-                                "Silakan konfirmasi kehadiran Anda melalui aplikasi dan bergabung melalui link di atas.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh sistem._";
+                                "Silakan Bergabung link diatas.\n\n" .
+                                "_Pesan ini dikirim otomatis oleh Applikasi._";
                         } else {
                             // PESAN UNTUK RAPAT OFFLINE
                             $lokasiInfo = "";
@@ -202,9 +198,7 @@ class RapatController extends Controller
                             }
 
                             $message =
-                                "━━━━━━━━━━━━━━━━━━━━\n" .
                                 "*UNDANGAN RAPAT*\n" .
-                                "━━━━━━━━━━━━━━━━━━━━\n\n" .
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Anda diundang untuk menghadiri:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
@@ -214,9 +208,8 @@ class RapatController extends Controller
                                 $lokasiInfo .
                                 $deskripsiRapat .
                                 $pesanUndangan .
-                                "\n━━━━━━━━━━━━━━━━━━━━\n" .
                                 "Mohon untuk hadir tepat waktu pada rapat ini.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh sistem._";
+                                "_Pesan ini dikirim otomatis oleh Applikasi._";
                         }
 
                         // Log untuk debugging
@@ -438,19 +431,16 @@ class RapatController extends Controller
                             }
 
                             $message =
-                                "━━━━━━━━━━━━━━━━━━━━\n" .
                                 "*UPDATE UNDANGAN RAPAT ONLINE*\n" .
-                                "━━━━━━━━━━━━━━━━━━━━\n\n" .
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Terdapat perubahan pada rapat yang Anda ikuti:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
                                 "*Jenis*\nOnline\n\n" .
                                 "*Tanggal*\n{$tanggalFormat}\n\n" .
                                 "*Waktu*\n{$mulaiFormat} - {$selesaiFormat} WIB\n\n" .
-                                $linkMeeting .
+                                "*Link Meeting*\n{$rapat->link_rapat}\n\n" .
                                 $deskripsiRapat .
                                 $pesanUndangan .
-                                "\n━━━━━━━━━━━━━━━━━━━━\n" .
                                 "Silakan konfirmasi kehadiran Anda melalui aplikasi dan bergabung melalui link di atas.\n\n" .
                                 "_Pesan ini dikirim otomatis oleh sistem._";
                         } else {
@@ -464,9 +454,7 @@ class RapatController extends Controller
                             }
 
                             $message =
-                                "━━━━━━━━━━━━━━━━━━━━\n" .
-                                "*UPDATE UNDANGAN RAPAT*\n" .
-                                "━━━━━━━━━━━━━━━━━━━━\n\n" .
+                                "*UPDATE UNDANGAN RAPAT*\n".
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Terdapat perubahan pada rapat yang Anda ikuti:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
@@ -476,9 +464,8 @@ class RapatController extends Controller
                                 $lokasiInfo .
                                 $deskripsiRapat .
                                 $pesanUndangan .
-                                "\n━━━━━━━━━━━━━━━━━━━━\n" .
                                 "Mohon untuk hadir tepat waktu pada rapat ini.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh sistem._";
+                                "_Pesan ini dikirim otomatis oleh Applikasi._";
                         }
 
                         Log::info('Sending WhatsApp update notification', [
@@ -486,7 +473,7 @@ class RapatController extends Controller
                             'user_id' => $userId,
                             'no_telp' => $user->no_telp,
                             'jenis' => $rapat->jenis,
-                            'link_rapat' => $rapat->link_rapat,
+                              'link_rapat' => $rapat->link_rapat,
                             'link_empty' => empty($rapat->link_rapat),
                             'link_isset' => isset($rapat->link_rapat)
                         ]);

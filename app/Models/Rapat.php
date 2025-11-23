@@ -17,6 +17,7 @@ class Rapat extends Model
         'waktu_mulai',
         'waktu_selesai',
         'ruangan_id',
+        'link_rapat',
         'deskripsi',
         'status'
     ];

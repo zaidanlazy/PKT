@@ -11,7 +11,7 @@ export default function Dashboard() {
 
   const [data, setData] = useState({
     total_ruangan: 0,
-    total_rapat: 0,
+    total_rapat: 0, 
     total_online: 0,
     total_offline: 0,
     ruangan_tersedia: 0,
