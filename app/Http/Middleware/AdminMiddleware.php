@@ -14,14 +14,15 @@ class AdminMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
-    {
-        if ($request->user() && $request->user()->role === 'admin') {
-            return $next($request);
-        }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Akses ditolak. Hanya admin yang dapat mengakses fitur ini.'
-        ], 403);
+{
+    if ($request->user() && in_array($request->user()->role, ['admin', 'user'])) {
+        return $next($request);
     }
+
+    return response()->json([
+        'status' => 'error',
+        'message' => 'Akses ditolak. Hanya admin atau user yang dapat mengakses fitur ini.'
+    ], 403);
+}
+
 }

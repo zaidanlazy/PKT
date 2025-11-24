@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../api/axiosClient";
 import Toast from "../components/Toast";
 import ConfirmModal from "../components/ConfirmModal";
@@ -14,6 +15,7 @@ export default function Rapat({ onChanged }) {
   const [modalMode, setModalMode] = useState("add");
   const [selectedRapat, setSelectedRapat] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentPage, setCurrentPage] = useState(1);
@@ -325,7 +327,7 @@ export default function Rapat({ onChanged }) {
     setSelectedRapatDetail(null);
   };
 
-  const handleOpenModal = (mode, rapat = null) => {
+  const handleOpenModal = async (mode, rapat = null) => {
     setModalMode(mode);
     // Reset errors saat membuka modal
     setFormErrors({
@@ -338,22 +340,68 @@ export default function Rapat({ onChanged }) {
     });
 
     if (mode === "edit" && rapat) {
-      const formattedDate = new Date(rapat.tanggal)
-        .toISOString()
-        .split("T")[0];
-      setSelectedRapat(rapat);
-      setFormData({
-        nama_rapat: rapat.nama_rapat,
-        jenis: rapat.jenis,
-        tanggal: formattedDate,
-        waktu_mulai: rapat.waktu_mulai,
-        waktu_selesai: rapat.waktu_selesai,
-        ruangan_id: rapat.ruangan_id || "",
-        deskripsi: rapat.deskripsi || "",
-        link_rapat: rapat.link_rapat || "",
-        invited_users: rapat.undangan?.map(inv => inv.user_id) || [],
-        pesan_undangan: "",
-      });
+      try {
+        // Fetch detail rapat dari API untuk mendapatkan data undangan yang lengkap
+        const response = await axios.get(`/rapat/${rapat.id}`);
+        const detailRapat = response.data?.data || response.data;
+
+        console.log("=== DEBUG DATA RAPAT ===");
+        console.log("Data rapat dari list:", rapat);
+        console.log("Data rapat dari API:", detailRapat);
+        console.log("Data undangan:", detailRapat.undangan);
+
+        const formattedDate = new Date(detailRapat.tanggal)
+          .toISOString()
+          .split("T")[0];
+
+        // Parse invited users dengan berbagai kemungkinan struktur data
+        let invitedUserIds = [];
+        if (detailRapat.undangan && Array.isArray(detailRapat.undangan)) {
+          invitedUserIds = detailRapat.undangan.map(inv => {
+            console.log("Processing undangan item:", inv);
+            // Coba berbagai kemungkinan property name
+            return inv.user_id || inv.userId || inv.id_user || inv.id || inv;
+          }).filter(id => id != null && typeof id === 'number');
+        }
+
+        console.log("Parsed invited user IDs:", invitedUserIds);
+        console.log("Current userList:", userList);
+        console.log("========================");
+
+        setSelectedRapat(detailRapat);
+        setFormData({
+          nama_rapat: detailRapat.nama_rapat,
+          jenis: detailRapat.jenis,
+          tanggal: formattedDate,
+          waktu_mulai: detailRapat.waktu_mulai,
+          waktu_selesai: detailRapat.waktu_selesai,
+          ruangan_id: detailRapat.ruangan_id || "",
+          deskripsi: detailRapat.deskripsi || "",
+          link_rapat: detailRapat.link_rapat || "",
+          invited_users: invitedUserIds,
+          pesan_undangan: "",
+        });
+      } catch (err) {
+        console.error("Error fetching rapat detail:", err);
+        // Fallback ke data dari list jika API gagal
+        const formattedDate = new Date(rapat.tanggal)
+          .toISOString()
+          .split("T")[0];
+
+        setSelectedRapat(rapat);
+        setFormData({
+          nama_rapat: rapat.nama_rapat,
+          jenis: rapat.jenis,
+          tanggal: formattedDate,
+          waktu_mulai: rapat.waktu_mulai,
+          waktu_selesai: rapat.waktu_selesai,
+          ruangan_id: rapat.ruangan_id || "",
+          deskripsi: rapat.deskripsi || "",
+          link_rapat: rapat.link_rapat || "",
+          invited_users: [],
+          pesan_undangan: "",
+        });
+      }
     } else {
       setFormData({
         nama_rapat: "",
@@ -690,16 +738,18 @@ export default function Rapat({ onChanged }) {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex justify-center space-x-1">
-                              <button
-                                onClick={() => handleOpenDetailModal(rapat)}
-                                className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                title="Lihat Detail"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                              </button>
+                              {rapat.jenis === "offline" && (
+                                <button
+                                    onClick={() => navigate(`/rapat/detail/${rapat.id}`)}
+                                    className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                    title="Lihat Detail"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                )}
                               <button
                                 onClick={() => handleOpenModal("edit", rapat)}
                                 className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"

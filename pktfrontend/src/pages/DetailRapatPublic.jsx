@@ -301,7 +301,7 @@ export default function DetailRapatPublic() {
                 Menunggu Rapat Dimulai
               </h3>
               <p className="text-lg text-white/60">
-                Silakan lihat detail di sidebar kanan
+                Silakan lihat jadwal di sidebar kanan
               </p>
             </div>
           )}
