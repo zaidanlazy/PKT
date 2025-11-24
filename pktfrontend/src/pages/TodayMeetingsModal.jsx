@@ -34,7 +34,6 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
       setIsLoading(true);
       setError(null);
 
-      // Gunakan endpoint publik tanpa Authorization header
       fetch("http://localhost:8000/api/rapat/hari-ini/public")
         .then((res) => {
           if (!res.ok) {
@@ -68,17 +67,14 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
   };
 
   const handleMeetingClick = (meeting) => {
-    // Cek jika rapat online
     if (meeting.jenis === 'online') {
       setNotification("Rapat online - tidak dapat melihat detail ruangan");
       return;
     }
-
     setSelectedMeeting(meeting);
     setShowDetail(true);
   };
 
-  // Fungsi untuk navigasi ke halaman detail
   const handleNavigateToDetail = (rapatId) => {
     navigate(`/rapat/detail/${rapatId}`);
     onClose();
@@ -96,34 +92,54 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
     }
   };
 
+  // PERBAIKAN: Format waktu yang benar
   const formatTimeDisplay = (timeStr) => {
     if (!timeStr) return "";
+
+    // timeStr sudah dalam format "HH:mm" dari API (contoh: "08:00")
     const [h, m] = timeStr.split(":");
     const hour = parseInt(h, 10);
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
+
     return `${displayHour}:${m} ${ampm}`;
   };
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("id-ID", {
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
+  };
 
   const getMeetingStatus = (meeting) => {
-    const todayKey = now.toISOString().slice(0, 10);
-    const start = new Date(`${todayKey}T${meeting.waktu_mulai}:00`);
-    const end = new Date(`${todayKey}T${meeting.waktu_selesai}:00`);
-
-    if (now >= start && now <= end) {
-      return "berlangsung";
-    } else if (now < start) {
+    if (!meeting.tanggal || !meeting.waktu_mulai || !meeting.waktu_selesai) {
       return "akan-datang";
-    } else {
+    }
+
+    const meetingDate = getDateKey(meeting.tanggal);
+    const todayKey = now.toISOString().slice(0, 10);
+
+    // Jika bukan hari ini, kembalikan status berdasarkan tanggal
+    if (meetingDate !== todayKey) {
+      if (meetingDate > todayKey) return "akan-datang";
+      if (meetingDate < todayKey) return "selesai";
+    }
+
+    // Untuk rapat hari ini, cek berdasarkan waktu
+    const nowTime = now.toTimeString().slice(0, 5); // Format HH:mm
+
+    if (nowTime >= meeting.waktu_mulai && nowTime <= meeting.waktu_selesai) {
+      return "berlangsung";
+    } else if (nowTime < meeting.waktu_mulai) {
+      return "akan-datang";
+    } else if (nowTime > meeting.waktu_selesai) {
       return "selesai";
     }
+
+    return "akan-datang";
   };
 
   const getStatusColor = (status) => {
@@ -155,7 +171,6 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const todayKey = now.toISOString().slice(0, 10);
-  const nowHHmm = now.toTimeString().slice(0, 5);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
@@ -267,8 +282,9 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                       {todayMeetings
                         .filter(r => {
                           const meetingDate = getDateKey(r.tanggal);
+                          const nowTime = now.toTimeString().slice(0, 5);
                           return meetingDate === todayKey &&
-                                 r.waktu_mulai > nowHHmm &&
+                                 r.waktu_mulai > nowTime &&
                                  r.id !== selectedMeeting.id &&
                                  r.jenis === 'offline';
                         })
@@ -289,8 +305,9 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                         ))}
                       {todayMeetings.filter(r => {
                         const meetingDate = getDateKey(r.tanggal);
+                        const nowTime = now.toTimeString().slice(0, 5);
                         return meetingDate === todayKey &&
-                               r.waktu_mulai > nowHHmm &&
+                               r.waktu_mulai > nowTime &&
                                r.id !== selectedMeeting.id &&
                                r.jenis === 'offline';
                       }).length === 0 && (
@@ -372,18 +389,14 @@ export default function TodayMeetingsModal({ isOpen, onClose }) {
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           {meeting.jenis === "offline" ? (
-                            getDateKey(meeting.tanggal) === todayKey && nowHHmm > meeting.waktu_selesai ? (
-                              <span className="text-xs text-gray-400 italic">
-                                
-                              </span>
-                            ) : (
+                            status !== "selesai" ? (
                               <button
                                 onClick={() => handleNavigateToDetail(meeting.id)}
                                 className="text-blue-600 hover:text-blue-800 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors border border-blue-200"
                               >
                                 Lihat
                               </button>
-                            )
+                            ) : null
                           ) : (
                             <span className="text-xs text-gray-400 italic">
                               Online

@@ -561,80 +561,55 @@ class RapatController extends Controller
         return response()->json(['data' => $rapat]);
     }
 
-    public function todayMeetingsPublic()
-    {
-        $today = now()->toDateString();
+  public function todayMeetingsPublic()
+{
+    $today = now()->toDateString();
 
-        $rapat = Rapat::with('ruangan')
-            ->whereDate('tanggal', $today)
-            ->where('is_active', 1)
-            ->orderBy('waktu_mulai', 'desc')
-            ->get()
-            ->map(function($item) {
-                // Format waktu
-                $waktuMulai = $item->waktu_mulai ? substr($item->waktu_mulai, 0, 5) : '';
-                $waktuSelesai = $item->waktu_selesai ? substr($item->waktu_selesai, 0, 5) : '';
+    $rapat = Rapat::with('ruangan')
+        ->whereDate('tanggal', $today)
+        ->where('is_active', 1)
+        ->orderBy('waktu_mulai', 'asc')
+        ->get()
+        ->map(function($item) {
 
-                return [
-                    'id' => $item->id,
-                    'nama_rapat' => $item->nama_rapat,
-                    'jenis' => $item->jenis,
-                    'deskripsi' => $item->deskripsi,
-                    'ruangan' => $item->ruangan ? [
-                        'id' => $item->ruangan->id,
-                        'nama_ruangan' => $item->ruangan->nama_ruangan,
-                        'kapasitas' => $item->ruangan->kapasitas ?? null,
-                    ] : null,
-                    'waktu_mulai' => $waktuMulai,
-                    'waktu_selesai' => $waktuSelesai,
-                    'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-                ];
-            });
+            // Karena TIME, format dengan Carbon
+           $mulai = $item->waktu_mulai
+                ? Carbon::parse($item->waktu_mulai)->format('H:i')
+                : null;
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $rapat
-        ]);
-    }
+           $selesai = $item->waktu_selesai
+                ? Carbon::parse($item->waktu_selesai)->format('H:i')
+                : null;
 
-    public function showPublic($id)
-    {
-        $rapat = Rapat::with(['ruangan', 'undangan.user'])
-            ->where('is_active', 1)
-            ->find($id);
 
-        if (!$rapat) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Rapat tidak ditemukan atau sudah tidak aktif'
-            ], 404);
-        }
+            return [
+                'id' => $item->id,
+                'nama_rapat' => $item->nama_rapat,
+                'jenis' => $item->jenis,
 
-        // Format waktu
-        $waktuMulai = $rapat->waktu_mulai ? substr($rapat->waktu_mulai, 0, 5) : '';
-        $waktuSelesai = $rapat->waktu_selesai ? substr($rapat->waktu_selesai, 0, 5) : '';
+                // Format DATE → Y-m-d
+                'tanggal' => Carbon::parse($item->tanggal)->format('Y-m-d'),
 
-        $data = [
-            'id' => $rapat->id,
-            'nama_rapat' => $rapat->nama_rapat,
-            'jenis' => $rapat->jenis,
-            'deskripsi' => $rapat->deskripsi,
-            'tanggal' => $rapat->tanggal,
-            'waktu_mulai' => $waktuMulai,
-            'waktu_selesai' => $waktuSelesai,
-            'waktu_range' => $waktuMulai . ' - ' . $waktuSelesai,
-            'link_rapat' => $rapat->link_rapat,
-            'ruangan' => $rapat->ruangan ? [
-                'id' => $rapat->ruangan->id,
-                'nama_ruangan' => $rapat->ruangan->nama_ruangan,
-                'kapasitas' => $rapat->ruangan->kapasitas ?? null,
-                'lokasi' => $rapat->ruangan->lokasi ?? null,
-            ] : null,
-        ];
+                'deskripsi' => $item->deskripsi,
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $data
-        ]);
-    }
+                'ruangan' => $item->ruangan ? [
+                    'id' => $item->ruangan->id,
+                    'nama_ruangan' => $item->ruangan->nama_ruangan,
+                    'kapasitas' => $item->ruangan->kapasitas,
+                ] : null,
+
+                // Waktu sudah rapi
+                'waktu_mulai' => $mulai,
+                'waktu_selesai' => $selesai,
+                'waktu_range' => "$mulai - $selesai",
+            ];
+        });
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $rapat
+    ]);
+}
+
+
 }

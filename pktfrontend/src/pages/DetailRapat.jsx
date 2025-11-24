@@ -6,7 +6,6 @@ import { ArrowLeft } from "lucide-react";
 export default function DetailRapat() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [rapat, setRapat] = useState(null);
   const [rapatBerikutnya, setRapatBerikutnya] = useState(null);
   const [rapatHariIni, setRapatHariIni] = useState([]);
@@ -143,20 +142,6 @@ export default function DetailRapat() {
     return `${datePart} ${timePart}`;
   };
 
-  // Fungsi untuk mendapatkan rapat selanjutnya
-  const getRapatSelanjutnya = () => {
-    if (!rapatHariIni || rapatHariIni.length === 0) return [];
-
-    const nowHHmm = now.toTimeString().slice(0, 5);
-    return rapatHariIni
-      .filter(r => {
-        const todayKey = now.toISOString().slice(0, 10);
-        const meetingDate = String(r.tanggal).slice(0, 10);
-        return meetingDate === todayKey && r.waktu_mulai > nowHHmm;
-      })
-      .sort((a, b) => (a.waktu_mulai > b.waktu_mulai ? 1 : -1));
-  };
-
   if (loading || !rapat) {
     return (
       <div
@@ -171,12 +156,10 @@ export default function DetailRapat() {
         }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 animate-pulse">Loading</div>
+        <div className="relative z-10 animate-pulse">Loading...</div>
       </div>
     );
   }
-
-  const rapatSelanjutnya = getRapatSelanjutnya();
 
   return (
     <div className="h-screen w-full flex overflow-hidden font-sans relative">
@@ -235,7 +218,7 @@ export default function DetailRapat() {
                   </h3>
                   {rapatBerikutnya ? (
                     <p className="text-xl text-white">
-                      Silakan menunggu rapat selanjutnya.
+                      Silakan menunggu rapat selanjutnya di samping kanan.
                     </p>
                   ) : (
                     <p className="text-xl text-white">
@@ -275,31 +258,38 @@ export default function DetailRapat() {
               Rapat Berikutnya
             </h2>
 
-            {rapatSelanjutnya.length > 0 ? (
-              rapatSelanjutnya.map((r, i) => (
-                <div
-                  key={r.id || i}
-                  className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all mb-3"
-                >
-                  <p className="text-sm text-gray-100">
-                    {formatTimeDisplay(r.waktu_mulai)} - {formatTimeDisplay(r.waktu_selesai)}
-                  </p>
-                  <p className="text-lg font-semibold text-white">{r.nama_rapat}</p>
-                  {r.ruangan && (
-                    <p className="text-xs text-gray-300 mt-1">
-                      {r.ruangan.nama_ruangan}
-                    </p>
-                  )}
+                {rapatHariIni && rapatHariIni.length > 0 ? (
+                    rapatHariIni
+                    .filter(r => {
+                    const nowHHmm = now.toTimeString().slice(0, 5);
+                    return r.waktu_mulai > nowHHmm; // hanya rapat yang belum mulai
+                    })
+                    .map((r, i) => (
+                    <div
+                        key={r.id || i}
+                        className="p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
+                    >
+                        <p className="text-sm text-gray-100">
+                        {formatTimeDisplay(r.waktu_mulai)} - {formatTimeDisplay(r.waktu_selesai)}
+                        </p>
+                        <p className="text-lg font-semibold text-white">{r.nama_rapat}</p>
+                        {r.ruangan && (
+                        <p className="text-xs text-gray-300 mt-1">
+                            {r.ruangan.nama_ruangan}
+                        </p>
+                        )}
+                    </div>
+                    ))
+                ) : (
+                <div className="p-3 bg-white/10 rounded-lg">
+                    <p className="text-sm text-gray-300 italic">Tidak ada rapat</p>
                 </div>
-              ))
-            ) : (
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-sm text-gray-300 italic">Tidak ada rapat selanjutnya</p>
-              </div>
-            )}
+                )}
+
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
   );
 }

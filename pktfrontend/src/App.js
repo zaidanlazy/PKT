@@ -11,7 +11,7 @@ import Undangan from "./pages/Undangan";
 import Ruangan from "./pages/ruangan";
 import User from "./pages/User";
 import DetailRapat from "./pages/DetailRapat";
-import DetailRapatPublic from "./pages/DetailRapatPublic"; // Import komponen public
+//import DetailRapatPublic from "./pages/DetailRapatPublic"; // Import komponen public
 import NotFound from "./pages/NotFound";
 import TodayMeetingsModal from "./pages/TodayMeetingsModal";
 
@@ -39,7 +39,7 @@ function App() {
           } />
 
           {/* Route PUBLIC untuk detail rapat (TANPA LOGIN) */}
-          <Route path="/rapat/detail/:id" element={<DetailRapatPublic />} />
+         ? <Route path="/rapat/detail/:id" element={<DetailRapat />} />
 
           <Route path="*" element={<NotFound />} />
 
