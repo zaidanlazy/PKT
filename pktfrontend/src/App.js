@@ -11,7 +11,7 @@ import Undangan from "./pages/Undangan";
 import Ruangan from "./pages/ruangan";
 import User from "./pages/User";
 import DetailRapat from "./pages/DetailRapat";
-//import DetailRapatPublic from "./pages/DetailRapatPublic"; // Import komponen public
+import DetailRapatPublic from "./pages/DetailRapatPublic"; // ✅ Import public version
 import NotFound from "./pages/NotFound";
 import TodayMeetingsModal from "./pages/TodayMeetingsModal";
 
@@ -32,16 +32,8 @@ function App() {
             </GuestRoute>
           } />
 
-          <Route path="/TodayMetingsModal/:id" element={
-            <ProtectedRoute>
-              <TodayMeetingsModal />
-            </ProtectedRoute>
-          } />
-
-          {/* Route PUBLIC untuk detail rapat (TANPA LOGIN) */}
-         ? <Route path="/rapat/detail/:id" element={<DetailRapat />} />
-
-          <Route path="*" element={<NotFound />} />
+          {/* ✅ Route PUBLIC untuk detail rapat (TANPA LOGIN) */}
+          <Route path="/rapat/detail/:id" element={<DetailRapatPublic />} />
 
           <Route path="/dashboard" element={
             <ProtectedRoute>
@@ -54,7 +46,7 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* Route PROTECTED untuk detail rapat (DENGAN LOGIN) - Jika masih diperlukan */}
+          {/* Route PROTECTED untuk detail rapat admin (DENGAN LOGIN) */}
           <Route path="/rapat/detail/admin/:id" element={
             <ProtectedRoute>
               <DetailRapat />
@@ -76,6 +68,8 @@ function App() {
               <User />
             </ProtectedRoute>
           } />
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

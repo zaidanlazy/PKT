@@ -612,4 +612,78 @@ class RapatController extends Controller
 }
 
 
+/**
+ * Show rapat detail for public (no authentication)
+ */
+public function showPublic($id)
+{
+    try {
+        $rapat = Rapat::with(['ruangan'])->find($id);
+
+        if (!$rapat) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rapat tidak ditemukan'
+            ], 404);
+        }
+
+        // Cek apakah rapat masih aktif
+        if (!$rapat->is_active) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Rapat tidak tersedia'
+            ], 404);
+        }
+
+        // Format waktu dengan Carbon
+        $waktuMulai = $rapat->waktu_mulai
+            ? Carbon::parse($rapat->waktu_mulai)->format('H:i')
+            : null;
+
+        $waktuSelesai = $rapat->waktu_selesai
+            ? Carbon::parse($rapat->waktu_selesai)->format('H:i')
+            : null;
+
+        // Format response
+        $data = [
+            'id' => $rapat->id,
+            'nama_rapat' => $rapat->nama_rapat,
+            'jenis' => $rapat->jenis,
+            'tanggal' => Carbon::parse($rapat->tanggal)->format('Y-m-d'),
+            'waktu_mulai' => $waktuMulai,
+            'waktu_selesai' => $waktuSelesai,
+            'deskripsi' => $rapat->deskripsi,
+            'link_rapat' => $rapat->link_rapat,
+            'ruangan' => null
+        ];
+
+        // Tambahkan info ruangan jika ada (untuk rapat offline)
+        if ($rapat->ruangan) {
+            $data['ruangan'] = [
+                'id' => $rapat->ruangan->id,
+                'nama_ruangan' => $rapat->ruangan->nama_ruangan,
+                'kapasitas' => $rapat->ruangan->kapasitas,
+                'lokasi' => $rapat->ruangan->lokasi ?? null,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ], 200);
+
+    } catch (\Exception $e) {
+        Log::error('Error fetching public rapat detail', [
+            'rapat_id' => $id,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Terjadi kesalahan saat mengambil data rapat'
+        ], 500);
+    }
+}
+
 }
