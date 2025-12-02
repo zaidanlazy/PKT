@@ -186,7 +186,7 @@ class RapatController extends Controller
                                 $deskripsiRapat .
                                 $pesanUndangan .
                                 "Silakan Bergabung link diatas.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh Applikasi._";
+                                "Applikasi ini dikelola melalui sistem PKT.";
                         } else {
                             // PESAN UNTUK RAPAT OFFLINE
                             $lokasiInfo = "";
@@ -209,7 +209,8 @@ class RapatController extends Controller
                                 $deskripsiRapat .
                                 $pesanUndangan .
                                 "Mohon untuk hadir tepat waktu pada rapat ini.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh Applikasi._";
+                                "Applikasi ini dikelola melalui sistem PKT.";
+
                         }
 
                         // Log untuk debugging
@@ -442,7 +443,7 @@ class RapatController extends Controller
                                 $deskripsiRapat .
                                 $pesanUndangan .
                                 "Silakan konfirmasi kehadiran Anda melalui aplikasi dan bergabung melalui link di atas.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh sistem._";
+                                "Applikasi ini dikelola melalui sistem PKT.";
                         } else {
                             // PESAN UNTUK RAPAT OFFLINE
                             $lokasiInfo = "";
@@ -465,7 +466,7 @@ class RapatController extends Controller
                                 $deskripsiRapat .
                                 $pesanUndangan .
                                 "Mohon untuk hadir tepat waktu pada rapat ini.\n\n" .
-                                "_Pesan ini dikirim otomatis oleh Applikasi._";
+                                "Applikasi ini dikelola melalui sistem PKT.";
                         }
 
                         Log::info('Sending WhatsApp update notification', [
@@ -556,6 +557,7 @@ class RapatController extends Controller
         $rapat = Rapat::with('ruangan')
             ->whereDate('tanggal', $today)
             ->orderBy('waktu_mulai', 'desc')
+            ->where('is_active', 1)
             ->get();
 
         return response()->json(['data' => $rapat]);
