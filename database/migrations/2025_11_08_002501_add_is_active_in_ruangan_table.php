@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ruangan', function (Blueprint $table) {
-            //
-            $table->boolean('is_active')->default(true);
+            // Cek apakah kolom is_active belum ada
+            if (!Schema::hasColumn('ruangan', 'is_active')) {
+                $table->boolean('is_active')->default(true);
+            }
         });
     }
 
@@ -23,8 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ruangan', function (Blueprint $table) {
-            //
-            $table->dropColumn('is_active');
+            // Cek apakah kolom is_active ada sebelum drop
+            if (Schema::hasColumn('ruangan', 'is_active')) {
+                $table->dropColumn('is_active');
+            }
         });
     }
 };

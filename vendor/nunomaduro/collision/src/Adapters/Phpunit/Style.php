@@ -356,7 +356,6 @@ final class Style
             '/vendor\/phpspec\/prophecy/',
             '/vendor\/phpunit\/phpunit\/src/',
             '/vendor\/mockery\/mockery/',
-            '/vendor\/laravel\/dusk/',
             '/Illuminate\/Testing/',
             '/Illuminate\/Foundation\/Testing/',
             '/Illuminate\/Foundation\/Bootstrap\/HandleExceptions/',
