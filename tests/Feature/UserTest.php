@@ -31,9 +31,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test mendapatkan daftar user
+     * @test
+     * Dapat melihat daftar user
      */
-    public function test_can_get_list_of_users(): void
+    public function dapat_melihat_daftar_user(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -53,9 +54,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test membuat user baru dengan data valid
+     * @test
+     * Dapat membuat user baru dengan data valid
      */
-    public function test_can_create_new_user_with_valid_data(): void
+    public function dapat_membuat_user_baru_dengan_data_valid(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -105,9 +107,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test validasi saat membuat user dengan data tidak valid
+     * @test
+     * Tidak dapat membuat user dengan data tidak valid
      */
-    public function test_cannot_create_user_with_invalid_data(): void
+    public function tidak_dapat_membuat_user_dengan_data_tidak_valid(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -132,9 +135,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test tidak bisa membuat user dengan MPK atau email yang sudah ada
+     * @test
+     * Tidak dapat membuat user dengan MPK atau email yang sudah ada
      */
-    public function test_cannot_create_user_with_duplicate_mpk_or_email(): void
+    public function tidak_dapat_membuat_user_dengan_mpk_atau_email_duplikat(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -175,9 +179,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test update user dengan data valid
+     * @test
+     * Dapat mengupdate user dengan data valid
      */
-    public function test_can_update_user_with_valid_data(): void
+    public function dapat_mengupdate_user_dengan_data_valid(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -215,9 +220,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test update user yang tidak ada
+     * @test
+     * Tidak dapat mengupdate user yang tidak ada
      */
-    public function test_cannot_update_non_existent_user(): void
+    public function tidak_dapat_mengupdate_user_yang_tidak_ada(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -240,9 +246,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test update user dapat menggunakan MPK/email yang sama (miliknya sendiri)
+     * @test
+     * Dapat mengupdate user dengan MPK dan email yang sama
      */
-    public function test_can_update_user_with_same_mpk_and_email(): void
+    public function dapat_mengupdate_user_dengan_mpk_dan_email_yang_sama(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -270,9 +277,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test hapus user
+     * @test
+     * Dapat menghapus user
      */
-    public function test_can_delete_user(): void
+    public function dapat_menghapus_user(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -298,9 +306,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test hapus user yang tidak ada
+     * @test
+     * Tidak dapat menghapus user yang tidak ada
      */
-    public function test_cannot_delete_non_existent_user(): void
+    public function tidak_dapat_menghapus_user_yang_tidak_ada(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -317,9 +326,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test validasi role harus user atau admin
+     * @test
+     * Role harus berupa user atau admin
      */
-    public function test_role_must_be_user_or_admin(): void
+    public function role_harus_berupa_user_atau_admin(): void
     {
         // Arrange: Login sebagai admin
         Sanctum::actingAs($this->adminUser);
@@ -340,9 +350,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test akses tanpa authentication harus ditolak
+     * @test
+     * Tidak dapat mengakses tanpa autentikasi
      */
-    public function test_cannot_access_without_authentication(): void
+    public function tidak_dapat_mengakses_tanpa_autentikasi(): void
     {
         // Act: Coba akses tanpa authentication
         $response = $this->getJson('/api/users');
@@ -352,9 +363,10 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test akses create user tanpa authentication
+     * @test
+     * Tidak dapat membuat user tanpa autentikasi
      */
-    public function test_cannot_create_user_without_authentication(): void
+    public function tidak_dapat_membuat_user_tanpa_autentikasi(): void
     {
         // Act: Coba create user tanpa authentication
         $response = $this->postJson('/api/users', [
