@@ -14,10 +14,10 @@ class User extends Authenticatable
 
     /**
      * Kolom yang bisa diisi (fillable) decece
-     * 
+     *
      */
     protected $fillable = [
-        'mpk',
+        'npk',
         'nama',
         'unit_kerja',
         'email',
@@ -58,4 +58,4 @@ class User extends Authenticatable
 
 // test
 
-//test 
+//test

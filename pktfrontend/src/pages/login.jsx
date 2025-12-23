@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import TodayMeetingsModal from "./TodayMeetingsModal";
+import { Eye, EyeOff, Calendar, ArrowRight, User, Lock, CheckCircle, AlertTriangle, AlertCircle, X } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -59,94 +60,80 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen flex overflow-hidden">
+    <div className="relative h-screen flex items-center justify-center bg-slate-50 overflow-hidden">
 
-      {/* TOAST NOTIFICATION - MODERN RIGHT SIDE */}
+      {/* Ambient Background Effects */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-200/40 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200/40 rounded-full blur-[120px]"></div>
+        <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      </div>
+
+      {/* TOAST NOTIFICATION */}
       {toast.show && (
-        <div
-          className={`fixed top-6 right-6 z-50 min-w-[320px] max-w-md rounded-xl shadow-2xl backdrop-blur-sm border transition-all duration-300 ease-out
-            ${toast.type === "success" ? "bg-green-50 border-green-200" : ""}
-            ${toast.type === "warning" ? "bg-yellow-50 border-yellow-200" : ""}
-            ${toast.type === "error" ? "bg-red-50 border-red-200" : ""}
-          `}
-          style={{
-            animation: 'slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-          }}
-        >
-          <div className="p-4">
-            <div className="flex items-start gap-3">
-              {/* Icon Container */}
-              <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                ${toast.type === "success" ? "bg-green-100" : ""}
-                ${toast.type === "warning" ? "bg-yellow-100" : ""}
-                ${toast.type === "error" ? "bg-red-100" : ""}
-              `}>
-                {toast.type === "success" && (
-                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                )}
-                {toast.type === "warning" && (
-                  <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                )}
-                {toast.type === "error" && (
-                  <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                )}
+        <div className="fixed top-6 right-6 z-50 min-w-[320px] max-w-sm">
+          <div
+            className={`bg-white rounded-xl shadow-2xl border overflow-hidden transition-all duration-300 ease-out ${
+              toast.type === "success" ? "border-green-200" : ""
+            } ${toast.type === "warning" ? "border-yellow-200" : ""} ${
+              toast.type === "error" ? "border-red-200" : ""
+            }`}
+            style={{
+              animation: 'slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            }}
+          >
+            <div className="p-4 flex items-start gap-3">
+              <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                toast.type === "success" ? "bg-green-100 text-green-600" : ""
+              } ${toast.type === "warning" ? "bg-yellow-100 text-yellow-600" : ""} ${
+                toast.type === "error" ? "bg-red-100 text-red-600" : ""
+              }`}>
+                {toast.type === "success" && <CheckCircle className="w-5 h-5" />}
+                {toast.type === "warning" && <AlertTriangle className="w-5 h-5" />}
+                {toast.type === "error" && <AlertCircle className="w-5 h-5" />}
               </div>
 
-              {/* Content */}
               <div className="flex-1 pt-0.5">
-                <p className={`text-sm font-semibold mb-0.5
-                  ${toast.type === "success" ? "text-green-900" : ""}
-                  ${toast.type === "warning" ? "text-yellow-900" : ""}
-                  ${toast.type === "error" ? "text-red-900" : ""}
-                `}>
+                <p className={`text-sm font-semibold mb-0.5 ${
+                  toast.type === "success" ? "text-green-900" : ""
+                } ${toast.type === "warning" ? "text-yellow-900" : ""} ${
+                  toast.type === "error" ? "text-red-900" : ""
+                }`}>
                   {toast.type === "success" && "Berhasil!"}
                   {toast.type === "warning" && "Perhatian!"}
                   {toast.type === "error" && "Salah!"}
                 </p>
-                <p className={`text-sm
-                  ${toast.type === "success" ? "text-green-700" : ""}
-                  ${toast.type === "warning" ? "text-yellow-700" : ""}
-                  ${toast.type === "error" ? "text-red-700" : ""}
-                `}>
+                <p className={`text-sm ${
+                  toast.type === "success" ? "text-green-700" : ""
+                } ${toast.type === "warning" ? "text-yellow-700" : ""} ${
+                  toast.type === "error" ? "text-red-700" : ""
+                }`}>
                   {toast.message}
                 </p>
               </div>
 
-              {/* Close Button */}
               <button
                 onClick={() => setToast({ show: false, message: "", type: "" })}
-                className={`flex-shrink-0 rounded-lg p-1 hover:bg-opacity-20 transition-colors
-                  ${toast.type === "success" ? "text-green-600 hover:bg-green-600" : ""}
-                  ${toast.type === "warning" ? "text-yellow-600 hover:bg-yellow-600" : ""}
-                  ${toast.type === "error" ? "text-red-600 hover:bg-red-600" : ""}
-                `}
+                className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Progress Bar */}
-            <div className={`mt-3 h-1 rounded-full overflow-hidden
-              ${toast.type === "success" ? "bg-green-200" : ""}
-              ${toast.type === "warning" ? "bg-yellow-200" : ""}
-              ${toast.type === "error" ? "bg-red-200" : ""}
-            `}>
+            <div className={`h-1 ${
+              toast.type === "success" ? "bg-green-200" : ""
+            } ${toast.type === "warning" ? "bg-yellow-200" : ""} ${
+              toast.type === "error" ? "bg-red-200" : ""
+            }`}>
               <div
-                className={`h-full rounded-full
-                  ${toast.type === "success" ? "bg-green-500" : ""}
-                  ${toast.type === "warning" ? "bg-yellow-500" : ""}
-                  ${toast.type === "error" ? "bg-red-500" : ""}
-                `}
+                className={`h-full ${
+                  toast.type === "success" ? "bg-green-500" : ""
+                } ${toast.type === "warning" ? "bg-yellow-500" : ""} ${
+                  toast.type === "error" ? "bg-red-500" : ""
+                }`}
                 style={{
                   animation: 'progressBar 3s linear',
+                  width: '100%',
                 }}
               />
             </div>
@@ -174,6 +161,17 @@ export default function Login() {
             width: 0%;
           }
         }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
       `}</style>
 
       {/* Modal */}
@@ -182,105 +180,143 @@ export default function Login() {
         onClose={() => setShowTodayMeetings(false)}
       />
 
-      {/* LEFT SECTION */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-10 bg-white animate-fadeIn">
-        <div className="w-full max-w-md animate-slideUp">
+      {/* Main Card - Full Screen */}
+      <div className="relative w-full h-full z-10">
+        <div className="bg-white/90 backdrop-blur-xl overflow-hidden flex flex-col lg:flex-row-reverse h-full shadow-2xl" style={{ animation: 'fadeIn 0.8s ease-out' }}>
 
-          {/* Logo */}
-          <div className="flex justify-center mb-8">
+          {/* RIGHT SECTION - FORM */}
+          <div className="lg:w-1/2 px-8 py-6 sm:px-12 sm:py-8 lg:px-16 lg:py-12 flex flex-col justify-center z-20 w-full relative max-w-2xl mx-auto h-full overflow-y-auto">
+
+            {/* Logo */}
+            <div className="mb-6 lg:mb-8 text-center">
+              <div className="flex justify-center mb-2">
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1837px-Logo_pupuk_kaltim.svg.png"
               alt="Logo PKT"
-              className="w-24 drop-shadow-md transition-transform duration-500 hover:scale-105"
+              className="w-40 drop-shadow-md transition-transform duration-500 hover:scale-105"
             />
           </div>
-
-          <h2 className="text-3xl font-bold text-center mb-8 tracking-wide">
-            SELAMAT DATANG
-          </h2>
-
-          {/* FORM */}
-          <form onSubmit={handleLogin} className="space-y-6">
-
-            {/* NPK */}
-            <div>
-              <label className="block text-gray-700 mb-1 font-semibold">NPK</label>
-              <input
-                type="text"
-                value={npk}
-                onChange={(e) => setNpk(e.target.value)}
-                placeholder="Masukan NPK"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition-all"
-              />
+              <h1 className="text-xl lg:text-2xl font-semibold text-slate-900 tracking-tight">
+                SELAMAT DATANG
+              </h1>
+              <p class="text-slate-500 text-sm" > Silahkan reservasi rapat anda </p>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-gray-700 mb-1 font-semibold">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukan password"
-                  className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition-all"
-                />
+            {/* FORM */}
+            <form onSubmit={handleLogin} className="space-y-4">
+
+              {/* NPK */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700 ml-1">Username</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <User className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    value={npk}
+                    onChange={(e) => setNpk(e.target.value)}
+                    placeholder="Masukan Username Anda"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/15 transition-all shadow-sm"
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-700 ml-1">Password</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukan password"
+                    className="w-full pl-11 pr-12 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500/15 transition-all shadow-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-3 space-y-3">
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors p-1"
+                  type="submit"
+                  disabled={isLoading}
+                  className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {showPassword ? (
-                    // Eye Slash (Hide)
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   ) : (
-                    // Eye (Show)
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <>
+                      <span>Masuk</span>
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </>
                   )}
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowTodayMeetings(true)}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-sm font-medium text-slate-600 hover:text-slate-900 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-300 shadow-sm"
+                >
+                  <Calendar className="w-4 h-4 text-slate-500" />
+                  Lihat Jadwal Rapat
+                </button>
               </div>
+            </form>
+
+            {/* Footer */}
+            <p className="text-xs text-slate-400 text-center mt-4 lg:mt-6">
+              © 2025 PT Pupuk Kalimantan Timur Versi 1.0
+            </p>
+          </div>
+
+          {/* LEFT SIDE - IMAGE */}
+          <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-slate-900 flex-col justify-end p-12">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
+              <img
+                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1920,fit=crop/YBg7wZNXDPUV4j8n/home-esg-AE0Pn1jLkWty1XaL.jpg"
+                alt="Background"
+                className="w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-blue-900/40 to-transparent mix-blend-multiply"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/50 to-transparent"></div>
             </div>
 
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition transform hover:scale-[1.02] disabled:opacity-50"
-            >
-              {isLoading ? "Loading" : "Masuk"}
-            </button>
-          </form>
+            {/* Content */}
+            <div className="relative z-10 space-y-6" style={{ animation: 'fadeIn 0.8s ease-out 0.2s backwards' }}>
+              <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mb-4 shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
 
-          {/* Jadwal */}
-          <button
-            onClick={() => setShowTodayMeetings(true)}
-            className="w-full mt-5 border border-gray-300 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-100 transition"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 8h18M8 3v5m8-5v5M5 12h14v8H5z" />
-            </svg>
-            Lihat Jadwal Rapat
-          </button>
+              <h2 className="text-3xl font-light text-white tracking-tight leading-tight">
+                Reservasi Ruang Meeting
+              </h2>
+
+              <p className="text-sm text-blue-100 max-w-sm leading-relaxed">
+                Sistem manajemen reservasi Ruang Meeting yang efisien dan terintegrasi.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* RIGHT SIDE IMAGE (rapi + overlay + fade) */}
-      <div className="hidden lg:block w-1/2 relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center animate-fadeIn"
-          style={{
-            backgroundImage:
-              "url('https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1920,fit=crop/YBg7wZNXDPUV4j8n/home-esg-AE0Pn1jLkWty1XaL.jpg')",
-          }}
-        ></div>
-
-        {/* Overlay gelap halus */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        {/* Glow effect behind card - Removed for full screen */}
       </div>
     </div>
   );

@@ -202,7 +202,7 @@ class RapatController extends Controller
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Anda diundang untuk menghadiri:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
-                                "*Jenis*\nOffline (Tatap Muka)\n\n" .
+                                "*Jenis*\nOffline\n\n" .
                                 "*Tanggal*\n{$tanggalFormat}\n\n" .
                                 "*Waktu*\n{$mulaiFormat} - {$selesaiFormat} WIB\n\n" .
                                 $lokasiInfo .
@@ -459,7 +459,7 @@ class RapatController extends Controller
                                 "Kepada Yth.\n*{$user->nama}*\n\n" .
                                 "Terdapat perubahan pada rapat yang Anda ikuti:\n\n" .
                                 "*Nama Rapat*\n{$rapat->nama_rapat}\n\n" .
-                                "*Jenis*\nOffline (Tatap Muka)\n\n" .
+                                "*Jenis*\nOffline \n\n" .
                                 "*Tanggal*\n{$tanggalFormat}\n\n" .
                                 "*Waktu*\n{$mulaiFormat} - {$selesaiFormat} WIB\n\n" .
                                 $lokasiInfo .

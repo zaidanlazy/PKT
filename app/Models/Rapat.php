@@ -31,6 +31,8 @@ class Rapat extends Model
         'waktu_selesai' => 'datetime:H:i',
     ];
 
+    protected $dates = ['deleted_at']; 
+
     /**
      * Get the ruangan that owns the rapat.
      */

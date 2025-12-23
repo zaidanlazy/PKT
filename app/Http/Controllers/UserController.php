@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::select('id', 'mpk', 'nama', 'email', 'unit_kerja', 'no_telp', 'role', 'created_at')
+        $users = User::select('id', 'npk', 'nama', 'email', 'unit_kerja', 'no_telp', 'role', 'created_at')
                      ->orderBy('created_at', 'desc')
                      ->where('is_active', '=', 1)
                      ->get();
@@ -22,7 +22,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = Validator::make($request->all(), [
-            'mpk' => 'required|string|max:50|unique:users,mpk',
+            'npk' => 'required|string|max:50|unique:users,npk',
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'unit_kerja' => 'required|string|max:100',
@@ -41,7 +41,7 @@ class UserController extends Controller
 
         try {
             $user = User::create([
-                'mpk' => $request->mpk,
+                'npk' => $request->npk,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'unit_kerja' => $request->unit_kerja,
@@ -77,7 +77,7 @@ class UserController extends Controller
         }
 
         $validated = Validator::make($request->all(), [
-            'mpk' => 'required|string|max:50|unique:users,mpk,' . $id,
+            'npk' => 'required|string|max:50|unique:users,npk,' . $id,
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'unit_kerja' => 'required|string|max:100',
@@ -95,7 +95,7 @@ class UserController extends Controller
 
         try {
             $user->update([
-                'mpk' => $request->mpk,
+                'npk' => $request->npk,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'unit_kerja' => $request->unit_kerja,

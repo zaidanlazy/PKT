@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
     {
         // Create admin user
         User::create([
-            'mpk' => 'ADMIN001',
+            'npk' => 'ADMIN001',
             'nama' => 'Administrator',
             'email' => 'admin@pupukkaltim.com',
             'unit_kerja' => 'IT',
@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
 
         // Create a regular user for testing
         User::create([
-            'mpk' => 'USER001',
+            'npk' => 'USER001',
             'nama' => 'John Doe',
             'email' => 'john@pupukkaltim.com',
             'unit_kerja' => 'HRD',

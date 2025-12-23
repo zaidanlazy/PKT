@@ -35,22 +35,22 @@ class DashboardController extends Controller
             ->where('is_active', 1)
             ->count();
 
+        // Total rapat hari ini (online + offline)
+        $total_rapat_hari_ini = Rapat::where('tanggal', today())
+            ->where('is_active', 1)
+            ->count();
+
         // Hitung ruangan yang masih dipakai (offline aktif)
         $ruangan_terpakai = Ruangan::where('status', 'tidak_tersedia')
             ->where('is_active', 1)
             ->count();
-
-        $ruangan_tersedia = Ruangan::where('status', 'tersedia')
-            ->where('is_active', 1)
-            ->count();
-
 
         return response()->json([
             'total_ruangan' => $total_ruangan,
             'total_rapat' => $total_rapat,
             'total_online' => $total_online,
             'total_offline' => $total_offline,
-            'ruangan_tersedia' => $ruangan_tersedia,
+            'total_rapat_hari_ini' => $total_rapat_hari_ini,
             'ruangan_tidak_tersedia' => $ruangan_terpakai,
         ]);
     }

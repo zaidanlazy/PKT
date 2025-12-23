@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('ruangan', function (Blueprint $table) {
             $table->id();
             $table->string('nama_ruangan');
-            $table->string('lokasi');
+            $table->string('lokasi')->nullable();
             $table->text('fasilitas')->nullable();
             $table->enum('status', ['tersedia', 'tidak_tersedia'])->default('tersedia');
-            $table->boolean('is_active')->default(1)->after('status');
+            $table->boolean('is_active')->default(1);
             $table->timestamps();
         });
     }
@@ -30,5 +30,5 @@ return new class extends Migration
     Schema::table('ruangan', function (Blueprint $table) {
         $table->dropColumn(['status', 'is_active']);
    });
-}   
+}
 };

@@ -294,12 +294,12 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
                     <div className="flex items-center space-x-3">
                       <div className="h-9 w-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-sm font-medium">
-                          {user?.nama?.[0] || user?.mpk?.[0] || "U"}
+                          {user?.nama?.[0] || user?.npk?.[0] || "U"}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-gray-800 font-medium text-sm truncate">
-                          {user?.nama || user?.mpk || user?.email || "User"}
+                          {user?.nama || user?.npk || user?.email || "User"}
                         </p>
                         <p className="text-gray-500 text-xs truncate capitalize">
                           {user?.role || "User"}
@@ -321,7 +321,7 @@ export default function SidebarLayout({ title, subtitle = "", children }) {
                     <div className="flex flex-col items-center space-y-2">
                       <div className="h-9 w-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {user?.nama?.[0] || user?.mpk?.[0] || "U"}
+                          {user?.nama?.[0] || user?.npk?.[0] || "U"}
                         </span>
                       </div>
                       <button

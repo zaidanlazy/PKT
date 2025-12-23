@@ -173,31 +173,65 @@ export default function DetailRapatPublic() {
   // Error state
   if (error || !rapat) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
-        <div className="text-center max-w-md mx-auto p-8">
-          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-pink-50 overflow-hidden relative">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-red-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-orange-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-1/2 left-1/2 w-full h-full bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        </div>
+
+        {/* Content */}
+        <div className="relative text-center max-w-md mx-auto p-8 animate-fade-in-up">
+          {/* Icon with pulse animation */}
+          <div className="relative w-28 h-28 mx-auto mb-8">
+            <div className="absolute inset-0 bg-red-200 rounded-full animate-ping opacity-75"></div>
+            <div className="relative w-28 h-28 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-2xl transform hover:scale-110 transition-transform duration-300">
+              <svg className="w-14 h-14 text-white animate-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-3">Data Tidak Ditemukan</h2>
-          <p className="text-gray-600 mb-8 text-lg">
+
+
+          {/* Description */}
+          <p className="text-gray-700 mb-10 text-lg leading-relaxed animate-slide-down animation-delay-200">
             {error || "Rapat yang Anda cari tidak tersedia atau sudah tidak aktif."}
           </p>
-          <div className="flex gap-3 justify-center">
+
+          {/* Buttons with hover effects */}
+          <div className="flex gap-4 justify-center animate-slide-up animation-delay-400">
             <button
               onClick={() => navigate(-1)}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md"
+              className="group relative bg-white hover:bg-gray-50 text-gray-700 px-8 py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-gray-200 hover:border-gray-300 transform hover:-translate-y-1 overflow-hidden"
             >
-              Kembali
+              <span className="relative z-10 flex items-center gap-2">
+                <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Kembali
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
+
             <button
               onClick={() => navigate('/')}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md"
+              className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 overflow-hidden"
             >
-              Ke Beranda
+              <span className="relative z-10 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Ke Beranda
+              </span>
+              <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </button>
           </div>
+
+          {/* Optional: Help text */}
+          <p className="mt-8 text-sm text-gray-500 animate-fade-in animation-delay-600">
+            Butuh bantuan? <a href="/help" className="text-blue-600 hover:text-blue-700 font-medium underline">Hubungi support</a>
+          </p>
         </div>
       </div>
     );

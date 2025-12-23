@@ -13,7 +13,6 @@ class RuanganFactory extends Factory
     {
         return [
             'nama_ruangan' => fake()->name(),
-            'lokasi' => fake()->address(),
             'status' => 'tersedia',
             'is_active' => true,
         ];

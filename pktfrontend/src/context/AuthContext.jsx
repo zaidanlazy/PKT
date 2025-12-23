@@ -26,10 +26,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const login = async (mpk, password) => {
+  const login = async (npk, password) => {
     try {
-      const { data } = await axiosClient.post("/login", { mpk, password });
-      
+      const { data } = await axiosClient.post("/login", { npk, password });
+
       // Check if login was successful based on API response
       if (data.status === 'success' && data.token) {
         setToken(data.token);
@@ -68,13 +68,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      token, 
-      isLoading, 
-      login, 
-      register, 
-      logout 
+    <AuthContext.Provider value={{
+      user,
+      token,
+      isLoading,
+      login,
+      register,
+      logout
     }}>
       {children}
     </AuthContext.Provider>

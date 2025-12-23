@@ -24,14 +24,16 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'mpk' => fake()->unique()->numerify('######'),
+            'npk' => 'npk' . strtoupper(Str::random(8)),
             'nama' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'unit_kerja' => fake()->company(),
+            'unit_kerja' => fake()->randomElement(['IT', 'HR', 'Finance', 'Marketing', 'Operations']),
             'no_telp' => fake()->phoneNumber(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => 'user',
+            'role' => fake()->randomElement(['user', 'admin']),
+            'is_active' => 1,
         ];
+
     }
 
     /**

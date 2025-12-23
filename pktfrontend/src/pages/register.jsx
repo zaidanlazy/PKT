@@ -6,7 +6,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
-    mpk: "",
+    npk: "",
     nama: "",
     unit_kerja: "",
     no_telp: "",
@@ -27,13 +27,13 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       alert("Password dan Konfirmasi Password tidak cocok!");
       return;
     }
 
-    if (!formData.mpk || !formData.nama || !formData.unit_kerja || !formData.email || !formData.password) {
+    if (!formData.npk || !formData.nama || !formData.unit_kerja || !formData.email || !formData.password) {
       alert("Harap lengkapi data wajib: NPK, Nama, Unit Kerja, Email, Password!");
       return;
     }
@@ -41,7 +41,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       const payload = {
-        mpk: formData.mpk,
+        npk: formData.npk,
         nama: formData.nama,
         unit_kerja: formData.unit_kerja,
         no_telp: formData.no_telp,
@@ -91,9 +91,9 @@ export default function Register() {
           <div className="space-y-6">
             <div className="inline-flex items-center justify-center lg:justify-start space-x-4 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <div className="bg-white rounded-full p-3 shadow-2xl">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png" 
-                  alt="Pupuk Kaltim Logo" 
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1076px-Logo_pupuk_kaltim.svg.png"
+                  alt="Pupuk Kaltim Logo"
                   className="h-16 w-16 object-contain"
                 />
               </div>
@@ -152,16 +152,16 @@ export default function Register() {
               <form onSubmit={handleRegister} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="mpk" className="block text-sm font-semibold text-white mb-3">
+                    <label htmlFor="npk" className="block text-sm font-semibold text-white mb-3">
                       NPK *
                     </label>
                     <div className="relative">
                       <input
-                        id="mpk"
-                        name="mpk"
+                        id="npk"
+                        name="npk"
                         type="text"
                         placeholder="Masukkan NPK"
-                        value={formData.mpk}
+                        value={formData.npk}
                         onChange={handleChange}
                         className="w-full px-5 py-4 bg-white/5 border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
                         required
@@ -345,11 +345,11 @@ export default function Register() {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="terms" 
-                    className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 rounded focus:ring-blue-400" 
-                    required 
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    className="w-4 h-4 text-blue-500 bg-white/5 border-white/20 rounded focus:ring-blue-400"
+                    required
                   />
                   <label htmlFor="terms" className="text-white/80 text-sm">
                     Saya menyetujui{" "}
@@ -390,7 +390,7 @@ export default function Register() {
               <div className="mt-8 pt-6 border-t border-white/20">
                 <p className="text-center text-white/60 text-sm">
                   Sudah punya akun?{" "}
-                  <button 
+                  <button
                     onClick={handleLoginRedirect}
                     className="text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200"
                   >

@@ -11,10 +11,10 @@ export default function Dashboard() {
 
   const [data, setData] = useState({
     total_ruangan: 0,
-    total_rapat: 0, 
+    total_rapat: 0,
     total_online: 0,
     total_offline: 0,
-    ruangan_tersedia: 0,
+    total_rapat_hari_ini: 0,
     ruangan_tidak_tersedia: 0,
   });
 
@@ -36,7 +36,6 @@ export default function Dashboard() {
     fetchRapatList();
   }, []);
 
-  // Refresh data when navigating to dashboard
   useEffect(() => {
     if (location.pathname === "/dashboard") {
       fetchDashboardData();
@@ -44,7 +43,6 @@ export default function Dashboard() {
     }
   }, [location.pathname]);
 
-  // Refresh data when window gains focus (user comes back to tab)
   useEffect(() => {
     const handleFocus = () => {
       fetchDashboardData();
@@ -85,7 +83,7 @@ export default function Dashboard() {
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString("id-ID", {
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric",
     });
 
@@ -125,253 +123,225 @@ export default function Dashboard() {
       ? rapatList.filter((r) => getDateKey(r.tanggal) === todayKey)
       : [];
 
-
     return (
       <>
-        {/* === Header utama: Dashboard kiri, waktu kanan === */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
-          {/* Kiri: Judul dan subjudul */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-gray-600">
-              Sistem Manajemen Rapat Pupuk Kaltim
+        {/* Header & Clock Widget */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+            <p className="text-gray-500 text-sm md:text-base max-w-xl">
+              Pantau ketersediaan ruangan dan jadwal rapat harian di lingkungan Pupuk Kaltim.
             </p>
           </div>
-{/* Kanan: Jam, tanggal, lokasi */}
-<div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
-  {/* JAM */}
-  <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl mb-1 leading-none">
-    <svg
-      className="w-4 h-4 text-blue-600"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    {formatRealTime(currentTime)}
-  </div>
 
-  {/* TANGGAL */}
-  <div className="text-sm text-gray-600 font-medium leading-tight">
-    {formatRealDate(currentTime)}
-  </div>
-
-  {/* LOKASI */}
-  <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
-    <svg
-      className="w-3 h-3 text-gray-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-    </svg>
-        Bontang, Kalimantan imur
-  </div>
-</div>
-
-
-        </div>
-
-        {/* === Statistik === */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            title="Total Ruangan"
-            value={data.total_ruangan}
-            icon="building"
-            gradient="from-blue-500 to-cyan-500"
-          />
-          <StatCard
-            title="Ruangan Tersedia"
-            value={data.ruangan_tersedia}
-            icon={data.ruangan_tersedia === 0 ? "x" : "check"}
-            gradient={data.ruangan_tersedia === 0 ? "from-red-500 to-orange-500" : "from-green-500 to-emerald-500"}
-          />
-          <StatCard
-            title="Rapat Online"
-            value={data.total_online}
-            icon="video"
-            gradient="from-purple-500 to-pink-500"
-          />
-          <StatCard
-            title="Rapat Offline"
-            value={data.total_offline}
-            icon="users"
-            gradient="from-orange-500 to-red-500"
-          />
-        </div>
-
-        {/* === Daftar Rapat === */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">
-                  Daftar Rapat Hari Ini
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  {rapatHariIni.length > 0
-                    ? `${rapatHariIni.length} rapat terjadwal hari ini`
-                    : "Tidak ada rapat terjadwal hari ini"}
-                </p>
+          {/* Time Widget */}
+          <div className="w-full lg:w-auto bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between lg:justify-end gap-6">
+            <div className="text-right">
+              <div className="text-2xl font-semibold tracking-tight text-blue-600 font-mono leading-none">
+                {formatRealTime(currentTime)}
+              </div>
+              <div className="text-xs font-medium text-gray-500 mt-1">
+                {formatRealDate(currentTime)}
               </div>
             </div>
-
-            {rapatHariIni.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-gray-500 flex flex-col items-center gap-3">
-                  <svg
-                    className="w-12 h-12 text-gray-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                  <div>
-                    <p className="font-medium text-gray-900 mb-1">
-                      Tidak ada rapat untuk hari ini
-                    </p>
-                    <button
-                      onClick={() => navigate("/rapat")}
-                      className="text-blue-500 hover:text-blue-600 text-sm"
-                    >
-                      Klik untuk tambah rapat pertama
-                    </button>
-                  </div>
-                </div>
+            <div className="h-10 w-px bg-gray-100"></div>
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-900">
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                Bontang
               </div>
-            ) : (
+              <div className="text-xs text-gray-400 mt-0.5">Kalimantan Timur</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Total Ruangan */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21h18M5 21V7l8-4 8 4v14" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-50 text-green-600">Total</span>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900 tracking-tight">{data.total_ruangan}</div>
+              <p className="text-xs text-gray-500 mt-1">Total Ruangan Meeting</p>
+            </div>
+          </div>
+
+            {/* Total Rapat Hari Ini */}
+        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                </div>
+                <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-600 ring-1 ring-inset ring-blue-600/10">Total</span>
+            </div>
+            <div>
+                <div className="text-2xl font-bold text-gray-900 tracking-tight">{data.total_rapat_hari_ini}</div>
+                <p className="text-xs text-gray-500 mt-1">Total Rapat Hari Ini</p>
+            </div>
+            </div>
+
+          {/* Rapat Online */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <polygon points="23 7 16 12 23 17 23 7" />
+                  <rect width="15" height="14" x="1" y="5" rx="2" ry="2" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-50 text-purple-600 ring-1 ring-inset ring-purple-600/10">online</span>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900 tracking-tight">{data.total_online}</div>
+              <p className="text-xs text-gray-500 mt-1">Rapat Online Hari Ini</p>
+            </div>
+          </div>
+
+          {/* Rapat Offline */}
+          <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow group">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-50 text-orange-600 ring-1 ring-inset ring-orange-600/10">Offline</span>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-gray-900 tracking-tight">{data.total_offline}</div>
+              <p className="text-xs text-gray-500 mt-1">Rapat Offline Hari Ini</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Table Section */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">Agenda Rapat Hari Ini</h3>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {rapatHariIni.length > 0 ? `${rapatHariIni.length} Rapat terjadwal untuk hari ini` : "Belum ada rapat terjadwal"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+            </div>
+          </div>
+
+          {rapatHariIni.length === 0 ? (
+            <div className="py-12 flex flex-col items-center justify-center text-center">
+              <div className="bg-gray-50 p-4 rounded-full mb-3">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-gray-900">Tidak ada rapat</h3>
+              <p className="text-xs text-gray-500 mt-1">Belum ada agenda rapat untuk hari ini.</p>
+            </div>
+          ) : (
+            <>
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Name meetings
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Type
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Date
-                      </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                        Time
-                      </th>
-                      <th className="text-center py-3 px-4 text-sm font-semibold text-gray-900">
-                        Action
-                      </th>
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                    <tr>
+                      <th className="px-6 py-3">Nama Rapat</th>
+                      <th className="px-6 py-3 w-32">Jenis</th>
+                      <th className="px-6 py-3 w-40">Tanggal</th>
+                      <th className="px-6 py-3 w-48">Waktu</th>
+                      <th className="px-6 py-3 w-32 text-center">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {rapatHariIni.map((rapat) => (
-                      <tr
-                        key={rapat.id}
-                        className="border-b border-gray-100 hover:bg-gray-50"
-                      >
-                        <td className="py-3 px-4 text-sm text-gray-900">
-                          {rapat.nama_rapat}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              rapat.jenis === "online"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {rapat.jenis === "online" ? "Online" : "Offline"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {formatDate(rapat.tanggal)}
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <svg
-                              className="w-3 h-3 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            {rapat.waktu_mulai} - {rapat.waktu_selesai}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {rapat.jenis === "offline" ? (
-                            getDateKey(rapat.tanggal) === todayKey && nowHHmm > rapat.waktu_selesai ? (
-                              <span className="text-xs font-medium text-gray-500">
+                  <tbody className="divide-y divide-gray-100">
+                    {rapatHariIni.map((rapat) => {
+                      const isActive = getDateKey(rapat.tanggal) === todayKey && nowHHmm >= rapat.waktu_mulai && nowHHmm <= rapat.waktu_selesai;
 
+                      return (
+                        <tr key={rapat.id} className="hover:bg-gray-50/80 transition-colors group">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 ring-4 ring-emerald-500/20 animate-pulse' : 'bg-gray-300'}`}></div>
+                              <div>
+                                <div className="font-medium text-gray-900">{rapat.nama_rapat}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">
+                                  {rapat.ruangan?.nama_ruangan || rapat.link_meeting || "-"}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {rapat.jenis === "online" ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <polygon points="23 7 16 12 23 17 23 7" />
+                                  <rect width="15" height="14" x="1" y="5" rx="2" ry="2" />
+                                </svg>
+                                Online
                               </span>
                             ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                  <circle cx="9" cy="7" r="4" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                Offline
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 font-medium text-xs">
+                            {formatDate(rapat.tanggal)}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600 font-mono text-xs">
+                            {rapat.waktu_mulai} - {rapat.waktu_selesai}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            {rapat.jenis === "offline" && !(getDateKey(rapat.tanggal) === todayKey && nowHHmm > rapat.waktu_selesai) && (
                               <button
                                 onClick={() => handleShowDetail(rapat)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-medium inline-flex items-center gap-1 transition-colors"
+                                className="text-blue-600 hover:text-blue-700 text-xs font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors"
                               >
-                                <svg
-                                  className="w-3 h-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  />
-                                </svg>
-                                detail
+                                Detail
                               </button>
-                            )
-                          ) : (
-                            <span className="text-xs text-gray-400 italic">
-
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
+
+              {/* Pagination */}
+              <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+                <p className="text-xs text-gray-500">
+                  Menampilkan <span className="font-medium text-gray-900">1</span> sampai{" "}
+                  <span className="font-medium text-gray-900">{rapatHariIni.length}</span> dari{" "}
+                  <span className="font-medium text-gray-900">{rapatHariIni.length}</span> data
+                </p>
+                <div className="flex gap-2">
+                  <button className="px-2 py-1 border border-gray-200 rounded text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50" disabled>
+                    Previous
+                  </button>
+                  <button className="px-2 py-1 border border-gray-200 rounded text-xs font-medium text-gray-700 hover:bg-gray-50" disabled>
+                    Next
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </>
     );

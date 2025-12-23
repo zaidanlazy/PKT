@@ -16,7 +16,7 @@ return new class extends Migration
         $table->string('mpk')->unique();
         $table->string('nama');
         $table->string('unit_kerja')->nullable();
-        $table->string('email')->unique();
+        $table->string('email')->unique();  
         $table->string('no_telp')->nullable();
         $table->string('password');
         $table->timestamps();

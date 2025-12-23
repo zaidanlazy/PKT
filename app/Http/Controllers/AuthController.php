@@ -13,7 +13,7 @@ class AuthController extends Controller
     {
         // Validasi sesuai dengan field yang dikirim dari frontend
         $validated = Validator::make($request->all(), [
-            'mpk' => 'required|string|max:50|unique:users,mpk',
+            'npk' => 'required|string|max:50|unique:users,npk',
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'unit_kerja' => 'required|string|max:100',
@@ -32,7 +32,7 @@ class AuthController extends Controller
         try {
             // Buat user baru
             $user = User::create([
-                'mpk' => $request->mpk,
+                'npk' => $request->npk,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'unit_kerja' => $request->unit_kerja,
@@ -66,7 +66,7 @@ class AuthController extends Controller
     {
         // Validasi input
         $validator = Validator::make($request->all(), [
-            'mpk' => 'required',
+            'npk' => 'required',
             'password' => 'required',
         ]);
 
@@ -78,22 +78,15 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Cari user berdasarkan MPK
-        $user = User::where('mpk', $request->mpk)->first();
+        // Cari user berdasarkan npk
+        $user = User::where('npk', $request->npk)->first();
 
-        // Jika user tidak ditemukan -> NPK salah
-        if (!$user) {
+        // Jika user tidak ditemukan atau password tidak cocok
+        // Gunakan pesan yang sama untuk keduanya (security best practice)
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'NPK anda salah'
-            ], 401);
-        }
-
-        // Jika password tidak cocok -> password salah
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Password anda salah'
+                'message' => 'NPK dan password anda salah'
             ], 401);
         }
 

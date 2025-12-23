@@ -17,11 +17,11 @@ export default function Rapat({ onChanged }) {
   const [toasts, setToasts] = useState([]);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [userSearchQuery, setUserSearchQuery] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // State untuk validasi form
   const [formErrors, setFormErrors] = useState({
     nama_rapat: "",
     jenis: "",
@@ -31,7 +31,6 @@ export default function Rapat({ onChanged }) {
     ruangan_id: ""
   });
 
-  // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: "",
@@ -55,13 +54,11 @@ export default function Rapat({ onChanged }) {
     pesan_undangan: "",
   });
 
-  // Effect untuk update waktu real-time
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Fungsi untuk format waktu real-time
   const formatRealTime = (date) =>
     date.toLocaleTimeString("id-ID", {
       hour: "2-digit",
@@ -78,9 +75,8 @@ export default function Rapat({ onChanged }) {
       day: "numeric",
     });
 
-  // Filter user berdasarkan pencarian
   const filteredUsers = userList.filter(user => {
-    const query = searchQuery.toLowerCase();
+    const query = userSearchQuery.toLowerCase();
     return (
       user.nama?.toLowerCase().includes(query) ||
       user.unit_kerja?.toLowerCase().includes(query) ||
@@ -89,18 +85,14 @@ export default function Rapat({ onChanged }) {
     );
   });
 
-  // Fungsi untuk select all users yang terfilter
   const handleSelectAll = () => {
     const allFilteredUserIds = filteredUsers.map(user => user.id);
     const currentlySelected = formData.invited_users;
-
-    // Cek apakah semua user yang terfilter sudah terpilih
     const allSelected = allFilteredUserIds.every(id =>
       currentlySelected.includes(id)
     );
 
     if (allSelected) {
-      // Jika semua sudah terpilih, hapus semua user yang terfilter
       const newSelectedUsers = currentlySelected.filter(id =>
         !allFilteredUserIds.includes(id)
       );
@@ -109,7 +101,6 @@ export default function Rapat({ onChanged }) {
         invited_users: newSelectedUsers
       }));
     } else {
-      // Jika belum semua terpilih, tambahkan semua user yang terfilter
       const newSelectedUsers = [...new Set([...currentlySelected, ...allFilteredUserIds])];
       setFormData(prev => ({
         ...prev,
@@ -118,18 +109,51 @@ export default function Rapat({ onChanged }) {
     }
   };
 
-  // Fungsi untuk menghitung berapa banyak user yang terfilter sudah terpilih
   const getSelectedFilteredCount = () => {
     return filteredUsers.filter(user =>
       formData.invited_users.includes(user.id)
     ).length;
   };
 
-  // Pagination logic
-  const totalPages = Math.ceil(rapatList.length / itemsPerPage);
+  // Fungsi helper untuk mendapatkan nama ruangan
+  const getNamaRuangan = (ruanganId) => {
+    const ruangan = ruanganList.find(r => r.id === ruanganId);
+    return ruangan ? ruangan.nama_ruangan : "Tidak tersedia";
+  };
+
+  const getRuanganName = (rapat) => {
+    if (rapat.ruangan) {
+      return rapat.ruangan.nama_ruangan;
+    }
+    return getNamaRuangan(rapat.ruangan_id);
+  };
+
+  // Filter rapat berdasarkan searchQuery
+  const filteredRapatList = rapatList.filter(rapat => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const namaRapat = rapat.nama_rapat?.toLowerCase() || '';
+    const deskripsi = rapat.deskripsi?.toLowerCase() || '';
+    const jenis = rapat.jenis?.toLowerCase() || '';
+    const tanggal = new Date(rapat.tanggal).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).toLowerCase();
+    const ruanganNama = getRuanganName(rapat).toLowerCase();
+
+    return namaRapat.includes(query) ||
+           deskripsi.includes(query) ||
+           jenis.includes(query) ||
+           tanggal.includes(query) ||
+           ruanganNama.includes(query);
+  });
+
+  const totalPages = Math.ceil(filteredRapatList.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRapatList = rapatList.slice(indexOfFirstItem, indexOfLastItem);
+  const currentRapatList = filteredRapatList.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -147,23 +171,18 @@ export default function Rapat({ onChanged }) {
     }
   };
 
-  // Fungsi untuk menambah toast - DIMODIFIKASI: otomatis hilang setelah 2 detik
   const addToast = (message, type = "info") => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
-
-    // Otomatis hapus setelah 2 detik
     setTimeout(() => {
       removeToast(id);
     }, 2000);
   };
 
-  // Fungsi untuk menghapus toast
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  // Fungsi untuk menampilkan confirm modal
   const showConfirmModal = (options) => {
     setConfirmModal({
       isOpen: true,
@@ -176,7 +195,6 @@ export default function Rapat({ onChanged }) {
     });
   };
 
-  // Fungsi untuk menutup confirm modal
   const closeConfirmModal = () => {
     setConfirmModal({
       isOpen: false,
@@ -189,7 +207,6 @@ export default function Rapat({ onChanged }) {
     });
   };
 
-  // Fungsi validasi form
   const validateForm = () => {
     const errors = {
       nama_rapat: "",
@@ -202,42 +219,36 @@ export default function Rapat({ onChanged }) {
 
     let isValid = true;
 
-    // Validasi Nama Rapat
     if (!formData.nama_rapat.trim()) {
       errors.nama_rapat = "Nama rapat harus diisi";
       isValid = false;
       addToast("Nama rapat harus diisi", "error");
     }
 
-    // Validasi Jenis Rapat
     if (!formData.jenis) {
       errors.jenis = "Jenis rapat harus dipilih";
       isValid = false;
       addToast("Jenis rapat harus dipilih", "error");
     }
 
-    // Validasi Tanggal
     if (!formData.tanggal) {
       errors.tanggal = "Tanggal rapat harus diisi";
       isValid = false;
       addToast("Tanggal rapat harus diisi", "error");
     }
 
-    // Validasi Waktu Mulai
     if (!formData.waktu_mulai) {
       errors.waktu_mulai = "Waktu mulai harus diisi";
       isValid = false;
       addToast("Waktu mulai harus diisi", "error");
     }
 
-    // Validasi Waktu Selesai
     if (!formData.waktu_selesai) {
       errors.waktu_selesai = "Waktu selesai harus diisi";
       isValid = false;
       addToast("Waktu selesai harus diisi", "error");
     }
 
-    // Validasi waktu (waktu selesai harus setelah waktu mulai)
     if (formData.waktu_mulai && formData.waktu_selesai) {
       if (formData.waktu_selesai <= formData.waktu_mulai) {
         errors.waktu_selesai = "Waktu selesai harus setelah waktu mulai";
@@ -246,7 +257,6 @@ export default function Rapat({ onChanged }) {
       }
     }
 
-    // Validasi Ruangan untuk rapat offline
     if (formData.jenis === "offline" && !formData.ruangan_id) {
       errors.ruangan_id = "Ruangan harus dipilih untuk rapat offline";
       isValid = false;
@@ -257,7 +267,6 @@ export default function Rapat({ onChanged }) {
     return isValid;
   };
 
-  // Reset form errors saat input berubah
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -265,7 +274,6 @@ export default function Rapat({ onChanged }) {
       [name]: value,
     });
 
-    // Reset error untuk field yang sedang diisi
     if (formErrors[name]) {
       setFormErrors({
         ...formErrors,
@@ -281,11 +289,13 @@ export default function Rapat({ onChanged }) {
   }, []);
 
   const fetchRapatList = async () => {
+    console.log('fetch rapat');
+
     try {
       const res = await axios.get("/rapat-ruang");
       const data = res.data?.data || res.data || [];
       setRapatList(Array.isArray(data) ? data : []);
-      setCurrentPage(1); // Reset ke halaman pertama saat fetch data
+      setCurrentPage(1);
     } catch (err) {
       console.error("Gagal memuat data rapat:", err);
       setRapatList([]);
@@ -294,28 +304,33 @@ export default function Rapat({ onChanged }) {
   };
 
   const fetchRuanganList = async () => {
-    try {
-      const res = await axios.get("/ruangan");
-      const data = res.data?.data || res.data || [];
-      setRuanganList(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Gagal memuat data ruangan:", err);
-      setRuanganList([]);
-      addToast("Gagal memuat data ruangan", "error");
-    }
-  };
+  console.log("FETCH RUANGAN DIPANGGIL");
 
-  const fetchUserList = async () => {
-    try {
-      const res = await axios.get("/users");
-      const data = res.data?.data || res.data || [];
-      setUserList(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Gagal memuat data user:", err);
-      setUserList([]);
-      addToast("Gagal memuat data user", "error");
-    }
-  };
+  try {
+    const res = await axios.get("/ruangan");
+    const data = res.data?.data ?? res.data ?? [];
+    setRuanganList(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Gagal memuat data ruangan:", err);
+    setRuanganList([]);
+    addToast("Gagal memuat data ruangan", "error");
+  }
+};
+
+const fetchUserList = async () => {
+  console.log("FETCH USER DIPANGGIL");
+
+  try {
+    const res = await axios.get("/users");
+    const data = res.data?.data ?? res.data ?? [];
+    setUserList(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Gagal memuat data user:", err);
+    setUserList([]);
+    addToast("Gagal memuat data user", "error");
+  }
+};
+
 
   const handleOpenDetailModal = (rapat) => {
     setSelectedRapatDetail(rapat);
@@ -329,7 +344,6 @@ export default function Rapat({ onChanged }) {
 
   const handleOpenModal = async (mode, rapat = null) => {
     setModalMode(mode);
-    // Reset errors saat membuka modal
     setFormErrors({
       nama_rapat: "",
       jenis: "",
@@ -341,32 +355,19 @@ export default function Rapat({ onChanged }) {
 
     if (mode === "edit" && rapat) {
       try {
-        // Fetch detail rapat dari API untuk mendapatkan data undangan yang lengkap
         const response = await axios.get(`/rapat/${rapat.id}`);
         const detailRapat = response.data?.data || response.data;
-
-        console.log("=== DEBUG DATA RAPAT ===");
-        console.log("Data rapat dari list:", rapat);
-        console.log("Data rapat dari API:", detailRapat);
-        console.log("Data undangan:", detailRapat.undangan);
 
         const formattedDate = new Date(detailRapat.tanggal)
           .toISOString()
           .split("T")[0];
 
-        // Parse invited users dengan berbagai kemungkinan struktur data
         let invitedUserIds = [];
         if (detailRapat.undangan && Array.isArray(detailRapat.undangan)) {
           invitedUserIds = detailRapat.undangan.map(inv => {
-            console.log("Processing undangan item:", inv);
-            // Coba berbagai kemungkinan property name
             return inv.user_id || inv.userId || inv.id_user || inv.id || inv;
           }).filter(id => id != null && typeof id === 'number');
         }
-
-        console.log("Parsed invited user IDs:", invitedUserIds);
-        console.log("Current userList:", userList);
-        console.log("========================");
 
         setSelectedRapat(detailRapat);
         setFormData({
@@ -383,7 +384,6 @@ export default function Rapat({ onChanged }) {
         });
       } catch (err) {
         console.error("Error fetching rapat detail:", err);
-        // Fallback ke data dari list jika API gagal
         const formattedDate = new Date(rapat.tanggal)
           .toISOString()
           .split("T")[0];
@@ -442,11 +442,16 @@ export default function Rapat({ onChanged }) {
       waktu_selesai: "",
       ruangan_id: ""
     });
-    setSearchQuery("");
+    setUserSearchQuery("");
   };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset ke halaman pertama saat search berubah
+  };
+
+  const handleUserSearchChange = (e) => {
+    setUserSearchQuery(e.target.value);
   };
 
   const handleUserInvite = (userId) => {
@@ -461,9 +466,8 @@ export default function Rapat({ onChanged }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi form sebelum submit
     if (!validateForm()) {
-      return; // Stop jika validasi gagal
+      return;
     }
 
     try {
@@ -478,7 +482,6 @@ export default function Rapat({ onChanged }) {
       fetchRapatList();
       if (onChanged) onChanged();
     } catch (err) {
-      // Tangani error spesifik dari backend
       if (err.response && err.response.status === 409) {
         addToast(err.response.data.message || "Ruangan sudah digunakan pada waktu tersebut", "error");
       } else if (err.response && err.response.data && err.response.data.message) {
@@ -513,22 +516,9 @@ export default function Rapat({ onChanged }) {
     });
   };
 
-  const getNamaRuangan = (ruanganId) => {
-    const ruangan = ruanganList.find(r => r.id === ruanganId);
-    return ruangan ? ruangan.nama_ruangan : "Tidak tersedia";
-  };
-
-  const getRuanganName = (rapat) => {
-    if (rapat.ruangan) {
-      return rapat.ruangan.nama_ruangan;
-    }
-    return getNamaRuangan(rapat.ruangan_id);
-  };
-
   return (
     <SidebarLayout title="">
-      <div className="relative z-10">
-        {/* Toast notifications - DIMODIFIKASI: tanpa prop duration */}
+      <div className="relative z-10 max-w-7xl mx-auto">
         {toasts.map(toast => (
           <Toast
             key={toast.id}
@@ -538,7 +528,6 @@ export default function Rapat({ onChanged }) {
           />
         ))}
 
-        {/* Confirm Modal */}
         <ConfirmModal
           isOpen={confirmModal.isOpen}
           onClose={closeConfirmModal}
@@ -550,490 +539,401 @@ export default function Rapat({ onChanged }) {
           cancelText={confirmModal.cancelText}
         />
 
-        {/* HEADER DATA RAPAT DAN WAKTU REAL-TIME */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Data Rapat</h1>
-              <p className="text-gray-600 text-sm mt-1">Kelola jadwal dan informasi rapat meeting</p>
-            </div>
-
-            {/* Komponen waktu real-time yang lebih minimalis */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
-            {/* JAM */}
-            <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl mb-1 leading-none">
-              <svg
-                className="w-4 h-4 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {formatRealTime(currentTime)}
-            </div>
-
-            {/* TANGGAL */}
-            <div className="text-sm text-gray-600 font-medium leading-tight">
-              {formatRealDate(currentTime)}
-            </div>
-
-            {/* LOKASI */}
-            <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
-              <svg
-                className="w-3 h-3 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              Bontang, Kalimantan Timur
-            </div>
+        {/* HEADER */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Agenda Rapat</h1>
+            <p className="text-gray-500 text-sm max-w-xl">
+              Kelola jadwal, reservasi ruangan, dan undangan peserta.
+            </p>
           </div>
-        </div>
-        </div>
 
-        {/* Container Utama */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-6">
-            {/* Header dengan tombol tambah */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-50 p-2 rounded-xl">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Daftar Rapat</h2>
-                  <p className="text-gray-500 text-sm">Total {rapatList.length} rapat</p>
-                </div>
+          {/* Clock Widget */}
+         <div className="w-full lg:w-auto bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between lg:justify-end gap-6">
+            <div className="text-right">
+              <div className="text-2xl font-semibold tracking-tight text-blue-600 font-mono leading-none">
+                {formatRealTime(currentTime)}
               </div>
-
-              <button
-                onClick={() => handleOpenModal("add")}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <div className="text-xs font-medium text-gray-500 mt-1">
+                {formatRealDate(currentTime)}
+              </div>
+            </div>
+            <div className="h-10 w-px bg-gray-100"></div>
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-900">
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span className="font-medium">Tambah Rapat</span>
-              </button>
-            </div>
-
-            {/* Tabel data rapat */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-6 py-4 text-left text-gray-700 font-medium text-sm">Rapat</th>
-                      <th className="px-6 py-4 text-left text-gray-700 font-medium text-sm">Jenis</th>
-                      <th className="px-6 py-4 text-left text-gray-700 font-medium text-sm">Tanggal</th>
-                      <th className="px-6 py-4 text-left text-gray-700 font-medium text-sm">Waktu</th>
-                      <th className="px-6 py-4 text-left text-gray-700 font-medium text-sm">Lokasi</th>
-                      <th className="px-6 py-4 text-center text-gray-700 font-medium text-sm">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {!rapatList || rapatList.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="text-center py-12">
-                          <div className="flex flex-col items-center space-y-4">
-                            <div className="p-4 bg-gray-50 rounded-2xl">
-                              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-gray-600 font-medium mb-2">Belum ada data rapat</p>
-                              <p className="text-gray-500 text-sm mb-4">Mulai dengan membuat rapat pertama Anda</p>
-                              <button
-                                onClick={() => handleOpenModal("add")}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl transition-all duration-200 font-medium"
-                              >
-                                Buat Rapat Pertama
-                              </button>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      currentRapatList.map((rapat, index) => (
-                        <tr
-                          key={rapat.id}
-                          className={`transition-colors duration-150 hover:bg-gray-50 ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                          }`}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex items-start space-x-3">
-                              <div className={`p-2 rounded-lg ${
-                                rapat.jenis === "online" ? "bg-blue-50" : "bg-green-50"
-                              }`}>
-                                <svg className={`w-4 h-4 ${
-                                  rapat.jenis === "online" ? "text-blue-600" : "text-green-600"
-                                }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  {rapat.jenis === "online" ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                  ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  )}
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-gray-900 font-medium text-sm">{rapat.nama_rapat}</p>
-                                {rapat.deskripsi && (
-                                  <p className="text-gray-500 text-xs mt-1 line-clamp-1">{rapat.deskripsi}</p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              rapat.jenis === "online"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}>
-                              {rapat.jenis === "online" ? "Online" : "Offline"}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-gray-700 text-sm">
-                              {new Date(rapat.tanggal).toLocaleDateString('id-ID', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-gray-700 text-sm font-medium">
-                              {rapat.waktu_mulai} - {rapat.waktu_selesai}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            {rapat.jenis === "offline" && rapat.ruangan_id ? (
-                              <span className="text-gray-700 text-sm">{getRuanganName(rapat)}</span>
-                            ) : (
-                              <span className="text-gray-400 text-sm font-medium italic">Online Meeting</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex justify-center space-x-1">
-                              {rapat.jenis === "offline" && (
-                                <button
-                                    onClick={() => navigate(`/rapat/detail/${rapat.id}`)}
-                                    className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                    title="Lihat Detail"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
-                                )}
-                              <button
-                                onClick={() => handleOpenModal("edit", rapat)}
-                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                                title="Edit"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(rapat.id)}
-                                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                                title="Hapus"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                Bontang
               </div>
+              <div className="text-xs text-gray-400 mt-0.5">Kalimantan Timur</div>
             </div>
-
-            {/* Pagination */}
-            {rapatList && rapatList.length > 0 && (
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <p className="text-gray-600 text-sm">
-                    Menampilkan <span className="font-medium">{indexOfFirstItem + 1}</span> - <span className="font-medium">{Math.min(indexOfLastItem, rapatList.length)}</span> dari <span className="font-medium">{rapatList.length}</span> rapat
-                  </p>
-
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                      className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
-                        currentPage === 1
-                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Sebelumnya
-                    </button>
-
-                    <span className="text-gray-700 text-sm font-medium">
-                      Halaman {currentPage} dari {totalPages}
-                    </span>
-
-                    <button
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className={`px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
-                        currentPage === totalPages
-                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      Selanjutnya
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Modal Tambah/Edit Rapat yang Lebih Minimalis */}
+        {/* MAIN CARD */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Search & Add Button */}
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="relative w-full sm:w-72">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all"
+                placeholder="Cari rapat, tanggal, ruangan..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <button
+              onClick={() => handleOpenModal("add")}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-xs font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all shadow-sm"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M5 12h14"></path>
+                <path d="M12 5v14"></path>
+              </svg>
+              Rapat Baru
+            </button>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider ">Kegiatan Rapat</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider ">Jenis</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider ">Tanggal</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider  ">Waktu</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider text-center w-20">Lokasi</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider  text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {!filteredRapatList || filteredRapatList.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <svg className="w-10 h-10 mb-3 opacity-20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                          <line x1="16" x2="16" y1="2" y2="6" />
+                          <line x1="8" x2="8" y1="2" y2="6" />
+                          <line x1="3" x2="21" y1="10" y2="10" />
+                        </svg>
+                        <span className="text-sm font-medium text-gray-900">
+                          {searchQuery ? "Tidak ada hasil pencarian" : "Tidak ada data"}
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          {searchQuery ? `Tidak ditemukan rapat dengan kata kunci "${searchQuery}"` : "Coba ubah filter pencarian atau buat jadwal baru."}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  currentRapatList.map((rapat) => (
+                    <tr key={rapat.id} className="hover:bg-gray-50/80 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900">{rapat.nama_rapat}</span>
+                          {rapat.deskripsi && (
+                            <span className="text-xs text-gray-500 truncate max-w-[180px] mt-0.5 opacity-80">{rapat.deskripsi}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className= "flex justify-center items-center"></div>
+                        {rapat.jenis === "online" ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <polygon points="23 7 16 12 23 17 23 7" />
+                              <rect width="15" height="14" x="1" y="5" rx="2" ry="2" />
+                            </svg>
+                            ONLINE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            OFFLINE
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 text-xs font-medium">
+                        {new Date(rapat.tanggal).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 font-mono text-xs">
+                        {rapat.waktu_mulai} - {rapat.waktu_selesai}
+                      </td>
+                      <td className="px-6 py-4">
+                        {rapat.jenis === "offline" ? (
+                          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                              <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            {getRuanganName(rapat)}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs italic flex items-center justify-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                            </svg>
+                            Via Link
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-center gap-1">
+                          {rapat.jenis === "offline" && (
+                            <button
+                              onClick={() => navigate(`/rapat/detail/${rapat.id}`)}
+                              className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-all"
+                              title="Lihat Detail"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleOpenModal("edit", rapat)}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all"
+                            title="Edit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(rapat.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                            title="Hapus"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M3 6h18"/>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {filteredRapatList && filteredRapatList.length > 0 && (
+            <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium text-gray-900">{indexOfFirstItem + 1}</span> - <span className="font-medium text-gray-900">{Math.min(indexOfLastItem, filteredRapatList.length)}</span> dari <span className="font-medium text-gray-900">{filteredRapatList.length}</span>
+                {searchQuery && <span className="ml-1">(difilter dari {rapatList.length} total)</span>}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* MODAL FORM */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-              {/* Header Modal */}
-              <div className="p-6 border-b border-gray-200 bg-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      {modalMode === "add" ? "Buat Rapat Baru" : "Edit Rapat"}
-                    </h3>
-                    <p className="text-gray-600 text-sm mt-1">
-                      {modalMode === "add" ? "Isi informasi rapat meeting baru" : "Perbarui informasi rapat meeting"}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleCloseModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-gray-200">
+              <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-2xl">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {modalMode === "add" ? "Jadwalkan Rapat" : "Edit Agenda"}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Isi detail pertemuan di bawah ini.</p>
                 </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-400 hover:text-gray-900 p-2 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </button>
               </div>
 
-              {/* Form Content */}
-              <div className="p-6 overflow-y-auto flex-1">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Nama Rapat */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <form id="rapatForm" onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-gray-800 font-medium mb-2 text-sm">Nama Rapat</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Nama Agenda</label>
                     <input
                       type="text"
                       name="nama_rapat"
                       value={formData.nama_rapat}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 bg-gray-50 border ${
-                        formErrors.nama_rapat ? "border-red-300" : "border-gray-200"
-                      } rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm`}
-                      placeholder="Masukkan nama rapat"
+                      className={`block w-full rounded-lg border ${formErrors.nama_rapat ? 'border-red-300 ring-red-100' : 'border-gray-200'} px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all placeholder-gray-400`}
+                      placeholder="Misal: Review Q3"
                     />
-                    {formErrors.nama_rapat && (
-                      <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        {formErrors.nama_rapat}
-                      </p>
-                    )}
+                    {formErrors.nama_rapat && <p className="mt-1 text-xs text-red-500">{formErrors.nama_rapat}</p>}
                   </div>
 
-                  {/* Jenis Rapat */}
                   <div>
-                    <label className="block text-gray-800 font-medium mb-3 text-sm">Jenis Rapat</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Tipe</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <label className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.jenis === "online"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
+                      <label className={`relative flex items-center p-3 border rounded-xl cursor-pointer transition-all ${formData.jenis === 'online' ? 'border-gray-900 ring-1 ring-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                         <input
                           type="radio"
                           name="jenis"
                           value="online"
-                          checked={formData.jenis === "online"}
+                          checked={formData.jenis === 'online'}
                           onChange={handleInputChange}
                           className="sr-only"
                         />
                         <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
-                            formData.jenis === "online" ? "border-blue-500" : "border-gray-300"
-                          }`}>
-                            {formData.jenis === "online" && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${formData.jenis === 'online' ? 'bg-white shadow-sm text-gray-900' : 'bg-gray-100 text-gray-400'}`}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <polygon points="23 7 16 12 23 17 23 7" />
+                              <rect width="15" height="14" x="1" y="5" rx="2" ry="2" />
+                            </svg>
                           </div>
-                          <div>
-                            <span className="text-gray-800 font-medium text-sm">Online</span>
-                            <p className="text-gray-500 text-xs">Meeting online</p>
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">Online</div>
                         </div>
                       </label>
 
-                      <label className={`relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-200 ${
-                        formData.jenis === "offline"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
+                      <label className={`relative flex items-center p-3 border rounded-xl cursor-pointer transition-all ${formData.jenis === 'offline' ? 'border-gray-900 ring-1 ring-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
                         <input
                           type="radio"
                           name="jenis"
                           value="offline"
-                          checked={formData.jenis === "offline"}
+                          checked={formData.jenis === 'offline'}
                           onChange={handleInputChange}
                           className="sr-only"
                         />
                         <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
-                            formData.jenis === "offline" ? "border-blue-500" : "border-gray-300"
-                          }`}>
-                            {formData.jenis === "offline" && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            )}
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${formData.jenis === 'offline' ? 'bg-white shadow-sm text-gray-900' : 'bg-gray-100 text-gray-400'}`}>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
                           </div>
-                          <div>
-                            <span className="text-gray-800 font-medium text-sm">Offline</span>
-                            <p className="text-gray-500 text-xs">Meeting tatap muka</p>
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">Offline</div>
                         </div>
                       </label>
                     </div>
                   </div>
 
-                  {/* Tanggal dan Waktu */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-gray-800 font-medium mb-2 text-sm">Tanggal</label>
+                    <div className="md:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Tanggal</label>
                       <input
                         type="date"
                         name="tanggal"
                         value={formData.tanggal}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 bg-gray-50 border ${
-                          formErrors.tanggal ? "border-red-300" : "border-gray-200"
-                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm`}
+                        className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-gray-800 font-medium mb-2 text-sm">Mulai</label>
+                    <div className="md:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Mulai</label>
                       <input
                         type="time"
                         name="waktu_mulai"
                         value={formData.waktu_mulai}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 bg-gray-50 border ${
-                          formErrors.waktu_mulai ? "border-red-300" : "border-gray-200"
-                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm`}
+                        className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="block text-gray-800 font-medium mb-2 text-sm">Selesai</label>
+                    <div className="md:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1.5">Selesai</label>
                       <input
                         type="time"
                         name="waktu_selesai"
                         value={formData.waktu_selesai}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 bg-gray-50 border ${
-                          formErrors.waktu_selesai ? "border-red-300" : "border-gray-200"
-                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm`}
+                        className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none"
                       />
                     </div>
                   </div>
 
-                  {/* Lokasi Meeting */}
-                  {formData.jenis === "offline" ? (
-                    <div>
-                      <label className="block text-gray-800 font-medium mb-2 text-sm">Ruangan</label>
-                      <select
-                        name="ruangan_id"
-                        value={formData.ruangan_id}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 bg-gray-50 border ${
-                          formErrors.ruangan_id ? "border-red-300" : "border-gray-200"
-                        } rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm`}
-                      >
-                        <option value="">Pilih Ruangan</option>
-                        {ruanganList
-                          .filter(r => r.status === "tersedia" || r.id === formData.ruangan_id)
-                          .map(ruangan => (
-                            <option key={ruangan.id} value={ruangan.id}>
-                              {ruangan.nama_ruangan} {ruangan.lokasi ? `- ${ruangan.lokasi}` : ""}
+                  <div>
+                    {formData.jenis === 'offline' ? (
+                      <>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Pilih Ruangan</label>
+                        <select
+                          name="ruangan_id"
+                          value={formData.ruangan_id}
+                          onChange={handleInputChange}
+                          className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none bg-white"
+                        >
+                          <option value="">Pilih</option>
+                          {ruanganList.map(r => (
+                            <option key={r.id} value={r.id}>
+                              {r.nama_ruangan} {r.lokasi ? `(${r.lokasi})` : ''}
                             </option>
                           ))}
-                      </select>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-gray-800 font-medium mb-2 text-sm">Link Meeting</label>
-                      <input
-                        type="url"
-                        name="link_rapat"
-                        value={formData.link_rapat}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
-                        placeholder="https://meet.google.com"
-                      />
-                    </div>
-                  )}
+                        </select>
+                      </>
+                    ) : (
+                      <>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Link Meeting</label>
+                        <input
+                          type="url"
+                          name="link_rapat"
+                          value={formData.link_rapat}
+                          onChange={handleInputChange}
+                          placeholder="https://..."
+                          className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none"
+                        />
+                      </>
+                    )}
+                  </div>
 
-                  {/* Deskripsi */}
                   <div>
-                    <label className="block text-gray-800 font-medium mb-2 text-sm">Deskripsi</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Catatan / Deskripsi</label>
                     <textarea
                       name="deskripsi"
+                      rows="3"
                       value={formData.deskripsi}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm resize-none"
-                      placeholder="Tambahkan deskripsi rapat (opsional)"
-                      rows="3"
-                    />
+                      className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none resize-none"
+                      placeholder="Tambahkan detail agenda..."
+                    ></textarea>
                   </div>
 
                   {/* Peserta */}
                   <div>
-                    <label className="block text-gray-800 font-medium mb-3 text-sm">Undang Peserta</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Undang Peserta</label>
                     <div className="space-y-3">
                       <div className="relative">
                         <input
                           type="text"
-                          value={searchQuery}
-                          onChange={handleSearchChange}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm pl-10"
+                          value={userSearchQuery}
+                          onChange={handleUserSearchChange}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all text-sm pl-10"
                           placeholder="Cari peserta..."
                         />
                         <svg
@@ -1056,22 +956,22 @@ export default function Rapat({ onChanged }) {
                           <button
                             type="button"
                             onClick={handleSelectAll}
-                            className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                            className="text-gray-900 hover:text-gray-700 text-xs font-medium transition-colors"
                           >
                             {getSelectedFilteredCount() === filteredUsers.length
                               ? "Batal pilih semua"
                               : "Pilih semua"}
                           </button>
-                          <span className="text-gray-500 text-sm">
+                          <span className="text-gray-500 text-xs">
                             {getSelectedFilteredCount()} dari {filteredUsers.length} terpilih
                           </span>
                         </div>
                       )}
 
-                      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50 space-y-2">
+                      <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2">
                         {filteredUsers.length === 0 ? (
                           <div className="text-center py-4 text-gray-500 text-sm">
-                            {searchQuery ? "Tidak ada peserta yang cocok" : "Tidak ada peserta tersedia"}
+                            {userSearchQuery ? "Tidak ada peserta yang cocok" : "Tidak ada peserta tersedia"}
                           </div>
                         ) : (
                           filteredUsers.map(user => (
@@ -1080,11 +980,11 @@ export default function Rapat({ onChanged }) {
                                 type="checkbox"
                                 checked={formData.invited_users.includes(user.id)}
                                 onChange={() => handleUserInvite(user.id)}
-                                className="w-4 h-4 text-blue-500 bg-gray-50 border-gray-300 rounded focus:ring-blue-500"
+                                className="w-4 h-4 text-gray-900 bg-gray-50 border-gray-300 rounded focus:ring-gray-900"
                               />
                               <div className="flex items-center gap-3 flex-1">
-                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                  <span className="text-blue-600 font-medium text-sm">
+                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-600 font-medium text-sm">
                                     {user.nama?.charAt(0) || user.mpk?.charAt(0) || 'U'}
                                   </span>
                                 </div>
@@ -1102,12 +1002,12 @@ export default function Rapat({ onChanged }) {
 
                       {formData.invited_users.length > 0 && (
                         <div>
-                          <label className="block text-gray-800 font-medium mb-2 text-sm">Pesan Undangan</label>
+                          <label className="block text-xs font-medium text-gray-700 mb-1.5">Pesan Undangan</label>
                           <textarea
                             name="pesan_undangan"
                             value={formData.pesan_undangan}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm resize-none"
+                            className="block w-full rounded-lg border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none resize-none"
                             placeholder="Tulis pesan undangan untuk peserta..."
                             rows="2"
                           />
@@ -1118,140 +1018,113 @@ export default function Rapat({ onChanged }) {
                 </form>
               </div>
 
-              {/* Footer Modal */}
-              <div className="p-6 border-t border-gray-200 bg-white">
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                  >
-                    {modalMode === "add" ? "Buat Rapat" : "Simpan Perubahan"}
-                  </button>
-                </div>
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  form="rapatForm"
+                  className="px-4 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                >
+                  {modalMode === 'add' ? 'Simpan Jadwal' : 'Simpan Perubahan'}
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal Detail Rapat yang Lebih Minimalis */}
+        {/* DETAIL MODAL */}
         {showDetailModal && selectedRapatDetail && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-              <div className="p-6 overflow-y-auto flex-1">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900">Detail Rapat</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-gray-200">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{selectedRapatDetail.nama_rapat}</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium tracking-wide uppercase ${selectedRapatDetail.jenis === 'online' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {selectedRapatDetail.jenis}
+                      </span>
+                    </div>
+                  </div>
                   <button
                     onClick={handleCloseDetailModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-lg"
+                    className="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path d="M18 6 6 18"/>
+                      <path d="m6 6 12 12"/>
                     </svg>
                   </button>
                 </div>
-
                 <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Nama Rapat</p>
-                        <p className="font-semibold text-gray-900">{selectedRapatDetail.nama_rapat}</p>
-                      </div>
+                  <div className="flex items-start gap-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+                    <div className="mt-0.5 text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                        <line x1="16" x2="16" y1="2" y2="6" />
+                        <line x1="8" x2="8" y1="2" y2="6" />
+                        <line x1="3" x2="21" y1="10" y2="10" />
+                      </svg>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Jenis</p>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        selectedRapatDetail.jenis === "online"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-green-100 text-green-800"
-                      }`}>
-                        {selectedRapatDetail.jenis === "online" ? "Online" : "Offline"}
-                      </span>
-                    </div>
-
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Tanggal</p>
-                      <p className="font-medium text-gray-900 text-sm">
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Waktu</p>
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">
                         {new Date(selectedRapatDetail.tanggal).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
-                        })}
+                        })} • {selectedRapatDetail.waktu_mulai} - {selectedRapatDetail.waktu_selesai}
                       </p>
                     </div>
                   </div>
-
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <p className="text-sm text-gray-600 mb-1">Waktu</p>
-                    <p className="font-medium text-gray-900">
-                      {selectedRapatDetail.waktu_mulai} - {selectedRapatDetail.waktu_selesai}
-                    </p>
+                  <div className="flex items-start gap-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+                    <div className="mt-0.5 text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Lokasi</p>
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">
+                        {selectedRapatDetail.jenis === 'offline' ? getRuanganName(selectedRapatDetail) : (
+                          <a href={selectedRapatDetail.link_rapat} className="text-blue-600 hover:underline break-all">
+                            {selectedRapatDetail.link_rapat || "-"}
+                          </a>
+                        )}
+                      </p>
+                    </div>
                   </div>
-
-                  {selectedRapatDetail.jenis === "offline" && selectedRapatDetail.ruangan_id && (
-                    <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                      <p className="text-sm text-gray-600 mb-1">Ruangan</p>
-                      <p className="font-medium text-gray-900">{getRuanganName(selectedRapatDetail)}</p>
-                    </div>
-                  )}
-
-                  {selectedRapatDetail.jenis === "online" && selectedRapatDetail.link_rapat && (
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                      <p className="text-sm text-gray-600 mb-1">Link Meeting</p>
-                      <a
-                        href={selectedRapatDetail.link_rapat}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-blue-600 hover:text-blue-700 break-all text-sm"
-                      >
-                        {selectedRapatDetail.link_rapat}
-                      </a>
-                    </div>
-                  )}
-
                   {selectedRapatDetail.deskripsi && (
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Deskripsi</p>
-                      <p className="text-gray-900 text-sm">{selectedRapatDetail.deskripsi}</p>
+                    <div className="p-1">
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Deskripsi</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">{selectedRapatDetail.deskripsi}</p>
                     </div>
                   )}
                 </div>
               </div>
-
-              <div className="p-6 border-t border-gray-200 bg-white">
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCloseDetailModal}
-                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                  >
-                    Tutup
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleCloseDetailModal();
-                      handleOpenModal("edit", selectedRapatDetail);
-                    }}
-                    className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200"
-                  >
-                    Edit Rapat
-                  </button>
-                </div>
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex gap-3">
+                <button
+                  onClick={handleCloseDetailModal}
+                  className="flex-1 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseDetailModal();
+                    handleOpenModal('edit', selectedRapatDetail);
+                  }}
+                  className="flex-1 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 shadow-sm transition-colors"
+                >
+                  Edit Agenda
+                </button>
               </div>
             </div>
           </div>

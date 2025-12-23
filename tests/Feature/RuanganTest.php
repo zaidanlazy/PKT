@@ -5,15 +5,15 @@ namespace Tests\Feature;
 use App\Models\Ruangan;
 use App\Models\Rapat;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+// use Illuminate\Foundation\Testing\RefreshDatabase;
+// use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class RuanganTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    // use RefreshDatabase, WithFaker;
 
     protected $adminUser;
 
@@ -28,10 +28,15 @@ class RuanganTest extends TestCase
         ]);
     }
 
-    public function test_dapat_mengambil_daftar_ruangan(): void
+     public function test_dapat_mengambil_daftar_ruangan(): void
     {
         Sanctum::actingAs($this->adminUser);
-        Ruangan::factory()->count(1)->create(['is_active' => 1]);
+
+        // Bersihkan data dulu (PENTING!)
+        Ruangan::query()->delete();
+
+        // Buat HANYA 1 ruangan
+        Ruangan::factory()->create(['is_active' => 1]);
 
         $response = $this->getJson('/api/ruangan');
 
@@ -286,10 +291,15 @@ class RuanganTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_daftar_ruangan_diurutkan_berdasarkan_created_at_desc(): void
+
+   public function test_daftar_ruangan_diurutkan_berdasarkan_created_at_desc(): void
     {
         Sanctum::actingAs($this->adminUser);
 
+        // Bersihkan data dulu (PENTING!)
+        Ruangan::query()->delete();
+
+        // Buat 3 ruangan dengan nama spesifik
         $ruangan1 = Ruangan::factory()->create([
             'nama_ruangan' => 'Ruangan 1',
             'created_at' => now()->subMinutes(3)
@@ -305,12 +315,13 @@ class RuanganTest extends TestCase
             'created_at' => now()->subMinutes(1)
         ]);
 
-        $response = $this->getJson  ('/api/ruangan');
+        $response = $this->getJson('/api/ruangan');
 
         $response->assertStatus(200);
 
         $data = $response->json('data');
 
+        // Yang terbaru (Ruangan 3) harus di urutan pertama
         $this->assertEquals('Ruangan 3', $data[0]['nama_ruangan']);
         $this->assertEquals('Ruangan 2', $data[1]['nama_ruangan']);
         $this->assertEquals('Ruangan 1', $data[2]['nama_ruangan']);

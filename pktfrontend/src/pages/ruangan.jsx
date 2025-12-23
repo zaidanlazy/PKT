@@ -14,9 +14,9 @@ export default function Ruangan({ onChanged }) {
   const [toasts, setToasts] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [searchQuery, setSearchQuery] = useState("");
+  const itemsPerPage = 6;
 
-  // State untuk confirm modal
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: "",
@@ -31,13 +31,11 @@ export default function Ruangan({ onChanged }) {
     nama_ruangan: ""
   });
 
-  // Effect untuk update waktu real-time
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Fungsi untuk format waktu real-time
   const formatRealTime = (date) =>
     date.toLocaleTimeString("id-ID", {
       hour: "2-digit",
@@ -54,11 +52,14 @@ export default function Ruangan({ onChanged }) {
       day: "numeric",
     });
 
-  // Pagination logic
-  const totalPages = Math.ceil(ruanganList.length / itemsPerPage);
+  // Filter & Pagination
+  const filteredList = ruanganList.filter(r =>
+    r.nama_ruangan.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredList.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRuanganList = ruanganList.slice(indexOfFirstItem, indexOfLastItem);
+  const currentRuanganList = filteredList.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -76,18 +77,18 @@ export default function Ruangan({ onChanged }) {
     }
   };
 
-  // Fungsi untuk menambah toast
   const addToast = (message, type = "info") => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      removeToast(id);
+    }, 3000);
   };
 
-  // Fungsi untuk menghapus toast
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  // Fungsi untuk menampilkan confirm modal
   const showConfirmModal = (options) => {
     setConfirmModal({
       isOpen: true,
@@ -100,7 +101,6 @@ export default function Ruangan({ onChanged }) {
     });
   };
 
-  // Fungsi untuk menutup confirm modal
   const closeConfirmModal = () => {
     setConfirmModal({
       isOpen: false,
@@ -122,7 +122,7 @@ export default function Ruangan({ onChanged }) {
       const res = await axios.get("/ruangan");
       const data = res.data?.data || res.data || [];
       setRuanganList(Array.isArray(data) ? data : []);
-      setCurrentPage(1); // Reset ke halaman pertama saat fetch data
+      setCurrentPage(1);
     } catch (err) {
       console.error("Gagal memuat data ruangan:", err);
       setRuanganList([]);
@@ -172,6 +172,12 @@ export default function Ruangan({ onChanged }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!ruanganForm.nama_ruangan.trim()) {
+      addToast("Nama ruangan wajib diisi", "error");
+      return;
+    }
+
     try {
       if (modalMode === "add") {
         await axios.post("/ruangan", ruanganForm);
@@ -192,11 +198,11 @@ export default function Ruangan({ onChanged }) {
   const handleDelete = async (id) => {
     showConfirmModal({
       title: "Hapus Ruangan",
-      message: "Yakin ingin menghapus ruangan ini? Tindakan ini tidak dapat dibatalkan.",
+      message: "Akses ke ruangan ini akan hilang permanen. Lanjutkan?",
       onConfirm: async () => {
         try {
           await axios.delete(`/ruangan/${id}`);
-          addToast("Ruangan berhasil dihapus", "error");
+          addToast("Ruangan berhasil dihapus", "success");
           fetchRuanganList();
           if (onChanged) onChanged();
           closeConfirmModal();
@@ -214,16 +220,18 @@ export default function Ruangan({ onChanged }) {
 
   return (
     <SidebarLayout title="">
-      <div className="relative z-10">
-        {/* Toast notifications */}
-        {toasts.map(toast => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Toasts */}
+        <div className="fixed top-6 right-6 z-[70] flex flex-col gap-2">
+          {toasts.map(toast => (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              type={toast.type}
+              onClose={() => removeToast(toast.id)}
+            />
+          ))}
+        </div>
 
         {/* Confirm Modal */}
         <ConfirmModal
@@ -237,346 +245,278 @@ export default function Ruangan({ onChanged }) {
           cancelText={confirmModal.cancelText}
         />
 
-       {/* HEADER DATA RUANGAN DAN WAKTU REAL-TIME DI LUAR TABEL */}
-<div className="mb-6">
-  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800">Data Ruangan</h1>
-      <p className="text-gray-600">Kelola data ruangan meeting</p>
-    </div>
+        {/* HEADER */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Data Ruangan</h1>
+            <p className="text-gray-500 text-sm max-w-xl">
+              Kelola daftar ruangan meeting dan fasilitas kantor.
+            </p>
+          </div>
 
-    {/* Komponen waktu real-time */}
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-8 py-6 mt-5 lg:mt-0 text-right flex flex-col justify-center">
-      {/* JAM */}
-      <div className="flex items-center justify-end gap-2 text-blue-600 font-mono font-semibold text-2xl leading-none mb-1">
-        <svg
-          className="w-4 h-4 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        {formatRealTime(currentTime)}
-      </div>
-
-      {/* TANGGAL */}
-      <div className="text-sm text-gray-600 font-medium leading-tight">
-        {formatRealDate(currentTime)}
-      </div>
-
-      {/* LOKASI */}
-      <div className="text-xs text-gray-500 flex justify-end items-center gap-1 mt-1 leading-tight">
-        <svg
-          className="w-3 h-3 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        Bontang, Kalimantan Timur
-      </div>
-    </div>
-  </div>
-</div>
-
-        {/* Container Tabel */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-xl overflow-hidden">
-          <div className="p-6">
-            {/* Tombol tambah ruangan */}
-            <div className="flex justify-between items-center mb-6">
-              <div></div>
-              <button
-                onClick={() => handleOpenModal("add")}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl border border-blue-500 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          {/* Clock Widget */}
+          <div className="w-full lg:w-auto bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between lg:justify-end gap-6">
+            <div className="text-right">
+              <div className="text-2xl font-semibold tracking-tight text-blue-600 font-mono leading-none">
+                {formatRealTime(currentTime)}
+              </div>
+              <div className="text-xs font-medium text-gray-500 mt-1">
+                {formatRealDate(currentTime)}
+              </div>
+            </div>
+            <div className="h-10 w-px bg-gray-100"></div>
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-gray-900">
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>Tambah Ruangan</span>
-              </button>
-            </div>
-
-            {/* Tabel data ruangan */}
-            <div className="overflow-hidden rounded-2xl border border-gray-200">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                      <th className="px-6 py-4 text-left text-gray-700 font-semibold text-sm">Nama Ruangan</th>
-                      <th className="px-6 py-4 text-center text-gray-700 font-semibold text-sm">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {!ruanganList || ruanganList.length === 0 ? (
-                      <tr>
-                        <td colSpan="2" className="text-center py-12">
-                          <div className="flex flex-col items-center space-y-4">
-                            <div className="p-4 bg-blue-50 rounded-2xl">
-                              <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                              </svg>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-gray-600 font-medium text-lg mb-2">Belum ada data ruangan</p>
-                              <p className="text-gray-500 text-sm mb-4">Mulai dengan membuat ruangan pertama Anda</p>
-                              <button
-                                onClick={() => handleOpenModal("add")}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 font-medium"
-                              >
-                                Buat Ruangan Pertama
-                              </button>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      currentRuanganList.map((ruangan, index) => (
-                        <tr
-                          key={ruangan.id}
-                          className={`transition-all duration-200 hover:bg-blue-50/50 ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                          }`}
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-gray-800 font-semibold text-sm">{ruangan.nama_ruangan}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex justify-center space-x-1">
-                              <button
-                                onClick={() => handleOpenModal("edit", ruangan)}
-                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all duration-200 transform hover:scale-105"
-                                title="Edit"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(ruangan.id)}
-                                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 transform hover:scale-105"
-                                title="Hapus"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                Bontang
               </div>
+              <div className="text-xs text-gray-400 mt-0.5">Kalimantan Timur</div>
             </div>
-
-            {ruanganList && ruanganList.length > 0 && (
-              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <p className="text-gray-600 text-sm">
-                    Menampilkan <span className="font-semibold">{indexOfFirstItem + 1}</span> - <span className="font-semibold">{Math.min(indexOfLastItem, ruanganList.length)}</span> dari <span className="font-semibold">{ruanganList.length}</span> ruangan
-                  </p>
-
-                  {/* Pagination Controls */}
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
-                        currentPage === 1
-                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                      }`}
-                    >
-                      Sebelumnya
-                    </button>
-
-                    {/* Page Numbers */}
-                    <div className="flex items-center space-x-1">
-                      {[...Array(totalPages)].map((_, index) => {
-                        const pageNumber = index + 1;
-                        // Show first page, last page, current page, and pages around current
-                        if (
-                          pageNumber === 1 ||
-                          pageNumber === totalPages ||
-                          (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageChange(pageNumber)}
-                              className={`px-3 py-1.5 text-sm rounded-lg transition-all duration-200 ${
-                                currentPage === pageNumber
-                                  ? 'bg-blue-500 text-white font-semibold shadow-md'
-                                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                              }`}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          pageNumber === currentPage - 2 ||
-                          pageNumber === currentPage + 2
-                        ) {
-                          return (
-                            <span key={pageNumber} className="px-2 text-gray-400">
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-
-                    <button
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className={`px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 ${
-                        currentPage === totalPages
-                          ? 'text-gray-400 bg-gray-100 cursor-not-allowed'
-                          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
-                      }`}
-                    >
-                      Selanjutnya
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Modal Detail Ruangan */}
-        {showDetailModal && selectedRuanganDetail && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-800">Detail Ruangan</h3>
-                  <button
-                    onClick={handleCloseDetailModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+        {/* MAIN CARD */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Toolbar */}
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="relative w-full sm:w-72">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.3-4.3"></path>
+                </svg>
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all"
+                placeholder="Cari ruangan"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => handleOpenModal("add")}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-transparent text-xs font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all shadow-sm"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M5 12h14"></path>
+                <path d="M12 5v14"></path>
+              </svg>
+              Tambah Ruangan
+            </button>
+          </div>
 
-                <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider">Nama Ruangan</th>
+                  <th className="px-6 py-3 text-xs uppercase tracking-wider text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {!ruanganList || currentRuanganList.length === 0 ? (
+                  <tr>
+                    <td colSpan="2" className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <div className="bg-gray-50 p-3 rounded-full mb-3">
+                          <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/>
+                            <path d="M3 9h18"/>
+                            <path d="M9 21V9"/>
+                          </svg>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">Belum ada data</span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          {searchQuery ? "Tidak ada ruangan yang cocok dengan pencarian" : "Mulai dengan menambahkan ruangan baru."}
+                        </span>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Nama Ruangan</p>
-                        <p className="font-semibold text-gray-800">{selectedRuanganDetail.nama_ruangan}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                    </td>
+                  </tr>
+                ) : (
+                  currentRuanganList.map((ruangan) => (
+                    <tr key={ruangan.id} className="hover:bg-gray-50/80 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gray-100 rounded-lg text-gray-500">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M3 3h18v18H3zM12 8v8"/>
+                              <path d="M8 12h8"/>
+                            </svg>
+                          </div>
+                          <span className="font-medium text-gray-900">{ruangan.nama_ruangan}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleOpenModal("edit", ruangan)}
+                            className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-all"
+                            title="Edit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(ruangan.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                            title="Hapus"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                              <path d="M3 6h18"/>
+                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-                <div className="flex gap-2 pt-6">
-                  <button
-                    onClick={handleCloseDetailModal}
-                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
-                  >
-                    Tutup
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleCloseDetailModal();
-                      handleOpenModal("edit", selectedRuanganDetail);
-                    }}
-                    className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
-                  >
-                    Edit Ruangan
-                  </button>
+          {/* Pagination */}
+          {filteredList.length > 0 && (
+            <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium text-gray-900">{indexOfFirstItem + 1}</span> - <span className="font-medium text-gray-900">{Math.min(indexOfLastItem, filteredList.length)}</span> dari <span className="font-medium text-gray-900">{filteredList.length}</span>
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* FORM MODAL */}
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col border border-gray-200">
+              <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {modalMode === "add" ? "Tambah Ruangan" : "Edit Ruangan"}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Lengkapi informasi ruangan baru.</p>
                 </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-400 hover:text-gray-900 p-1.5 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Nama Ruangan</label>
+                  <input
+                    type="text"
+                    name="nama_ruangan"
+                    value={ruanganForm.nama_ruangan}
+                    onChange={handleInputChange}
+                    className="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-gray-900 text-sm focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all placeholder-gray-400 bg-gray-50 focus:bg-white"
+                    placeholder="Contoh: Meeting Room Alpha"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="px-4 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                >
+                  {modalMode === 'add' ? 'Simpan' : 'Update'}
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal Ruangan */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-xl w-full max-w-md">
+        {/* DETAIL MODAL */}
+        {showDetailModal && selectedRuanganDetail && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md border border-gray-200">
               <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-800">
-                    {modalMode === "add" ? "Tambah Ruangan" : "Edit Ruangan"}
-                  </h3>
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight">Detail Ruangan</h3>
+                  </div>
                   <button
-                    onClick={handleCloseModal}
-                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-xl"
+                    onClick={handleCloseDetailModal}
+                    className="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 p-2 rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path d="M18 6 6 18"/>
+                      <path d="m6 6 12 12"/>
                     </svg>
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-gray-800 font-semibold mb-2 text-sm">Nama Ruangan</label>
-                    <input
-                      type="text"
-                      name="nama_ruangan"
-                      value={ruanganForm.nama_ruangan}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 text-sm"
-                      placeholder="Masukkan nama ruangan"
-                      required
-                    />
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+                    <div className="mt-0.5 text-gray-400">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path d="M3 3h18v18H3zM12 8v8"/>
+                        <path d="M8 12h8"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Nama Ruangan</p>
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">{selectedRuanganDetail.nama_ruangan}</p>
+                    </div>
                   </div>
+                </div>
+              </div>
 
-                  <div className="flex gap-2 pt-3">
-                    <button
-                      type="button"
-                      onClick={handleCloseModal}
-                   className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-800 rounded-xl hover:bg-gray-50 transition-all duration-300 text-sm"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 text-sm"
-                    >
-                      {modalMode === "add" ? "Tambah" : "Simpan"}
-                    </button>
-                  </div>
-                </form>
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex gap-3">
+                <button
+                  onClick={handleCloseDetailModal}
+                  className="flex-1 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Tutup
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseDetailModal();
+                    handleOpenModal("edit", selectedRuanganDetail);
+                  }}
+                  className="flex-1 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 shadow-sm transition-colors"
+                >
+                  Edit Ruangan
+                </button>
               </div>
             </div>
           </div>

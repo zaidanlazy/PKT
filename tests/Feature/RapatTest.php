@@ -5,16 +5,16 @@ namespace Tests\Feature;
 use App\Models\Rapat;
 use App\Models\Ruangan;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use Carbon\Carbon;
+//use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class RapatTest extends TestCase
 {
-    use RefreshDatabase;
 
+    // use RefreshDatabase;
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,12 +27,21 @@ class RapatTest extends TestCase
         Sanctum::actingAs($user);
     }
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow(); // Reset Carbon mock
+        parent::tearDown();
+    }
+
     /** ============================================
      * 1. Tambah rapat OFFLINE
      * ============================================ */
     public function test_tambah_rapat_offline()
     {
-        Http::fake(); // block API WA
+        // Fake HTTP untuk mencegah actual API calls
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
 
         $ruangan = Ruangan::factory()->create();
 
@@ -51,6 +60,9 @@ class RapatTest extends TestCase
         $response->assertStatus(201)
                  ->assertJson(['status' => 'success']);
 
+        // Dump database untuk debugging
+        // $this->assertDatabaseCount('rapat', 1);
+
         $this->assertDatabaseHas('rapat', [
             'nama_rapat' => 'Rapat offline',
             'jenis' => 'offline',
@@ -63,7 +75,9 @@ class RapatTest extends TestCase
      * ============================================ */
     public function test_tambah_rapat_online()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
 
         $payload = [
             'nama_rapat' => 'Rapat Online',
@@ -91,7 +105,9 @@ class RapatTest extends TestCase
      * ============================================ */
     public function test_edit_rapat_offline()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
 
         $ruangan1 = Ruangan::factory()->create();
         $ruangan2 = Ruangan::factory()->create();
@@ -128,7 +144,9 @@ class RapatTest extends TestCase
      * ============================================ */
     public function test_edit_rapat_online()
     {
-        Http::fake();
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
 
         $rapat = Rapat::factory()->create([
             'jenis' => 'online',
@@ -158,44 +176,139 @@ class RapatTest extends TestCase
     }
 
     /** ============================================
-     * 5. Hapus rapat OFFLINE
+ * 5. Hapus rapat OFFLINE
+ * ============================================ */
+public function test_hapus_rapat_offline()
+{
+    $ruangan = Ruangan::factory()->create();
+
+    $rapat = Rapat::factory()->create([
+        'jenis' => 'offline',
+        'ruangan_id' => $ruangan->id,
+        'is_active' => true
+    ]);
+
+    $response = $this->deleteJson("/api/rapat/{$rapat->id}");
+
+    $response->assertStatus(200);
+
+
+    $this->assertDatabaseHas('rapat', [
+        'id' => $rapat->id,
+        'is_active' => 0,
+    ]);
+}
+
+/** ============================================
+ * 6. Hapus rapat ONLINE
+ * ============================================ */
+public function test_hapus_rapat_online()
+{
+    $rapat = Rapat::factory()->create([
+        'jenis' => 'online',
+        'link_rapat' => 'https://meet.google.com/abc',
+        'is_active' => true // ← Set true dulu
+    ]);
+
+    $response = $this->deleteJson("/api/rapat/{$rapat->id}");
+
+    $response->assertStatus(200);
+
+    // Cek is_active jadi false (BUKAN soft delete)
+    $this->assertDatabaseHas('rapat', [
+        'id' => $rapat->id,
+        'is_active' => 0,
+    ]);
+}
+
+/** ============================================
+     * 7. Tambah rapat offline dengan waktu bentrok
      * ============================================ */
-    public function test_hapus_rapat_offline()
+    public function test_tambah_rapat_offline_waktu_bentrok()
     {
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
+
         $ruangan = Ruangan::factory()->create();
 
-        $rapat = Rapat::factory()->create([
+        //Buat rapat pertama yang valid
+        $rapatPertama = [
+            'nama_rapat' => 'Rapat Pertama',
             'jenis' => 'offline',
-            'ruangan_id' => $ruangan->id
-        ]);
+            'tanggal' => Carbon::now()->format('Y-m-d'),
+            'waktu_mulai' => '09:00',
+            'waktu_selesai' => '11:00',
+            'ruangan_id' => $ruangan->id,
+            'deskripsi' => 'Rapat pertama yang valid'
+        ];
 
-        $response = $this->deleteJson("/api/rapat/{$rapat->id}");
+        $responseFirst = $this->postJson('/api/rapat', $rapatPertama);
+        $responseFirst->assertStatus(201);
 
-        $response->assertStatus(200);
+        // buat rapat kedua yang bentrok
+        $payload = [
+            'nama_rapat' => 'Rapat Bentrok',
+            'jenis' => 'offline',
+            'tanggal' => now()->format('Y-m-d'),
+            'waktu_mulai' => '09:00',
+            'waktu_selesai' => '10:00',
+            'ruangan_id' => $ruangan->id,
+            'deskripsi' => 'Rapat yang seharusnya gagal'
+        ];
 
-        // If using soft deletes, use assertSoftDeleted instead
-        $this->assertSoftDeleted('rapat', [
-            'id' => $rapat->id
-        ]);
-    }
+        $response = $this->postJson('/api/rapat', $payload);
+
+        $response->assertStatus(409)
+                 ->Json([
+                     'status' => 'error',
+                     'message' => 'Ruangan sudah digunakan pada waktu tersebut.'
+                 ]);
+     }
+
 
     /** ============================================
-     * 6. Hapus rapat ONLINE
+     * 8. Melihat detail rapat offline
      * ============================================ */
-    public function test_hapus_rapat_online()
+    public function test_lihat_detail_rapat_offline()
     {
+        Http::fake([
+            '*' => Http::response(['success' => true], 200)
+        ]);
+
+        $ruangan = Ruangan::factory()->create([
+            'nama_ruangan' => 'Ruang Meeting A',
+        ]);
+
         $rapat = Rapat::factory()->create([
-            'jenis' => 'online',
-            'link_rapat' => 'https://meet.google.com/abc'
+            'nama_rapat' => 'Rapat Koordinasi',
+            'jenis' => 'offline',
+            'tanggal' => Carbon::now()->format('Y-m-d'),
+            'waktu_mulai' => '09:00',
+            'waktu_selesai' => '11:00',
+            'ruangan_id' => $ruangan->id,
+            'deskripsi' => 'Rapat koordinasi bulanan',
+            'is_active' => true
         ]);
 
-        $response = $this->deleteJson("/api/rapat/{$rapat->id}");
+        $response = $this->getJson("/api/rapat/{$rapat->id}");
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'status' => 'success',
+                     'data' => [
+                         'id' => $rapat->id,
+                         'nama_rapat' => 'Rapat Koordinasi',
+                         'jenis' => 'offline',
+                         'deskripsi' => 'Rapat koordinasi bulanan',
+                         'ruangan' => [
+                             'id' => $ruangan->id,
+                             'nama_ruangan' => 'Ruang Meeting A',
+                         ]
+                     ]
+                 ]);
 
-        // If using soft deletes, use assertSoftDeleted instead
-        $this->assertSoftDeleted('rapat', [
-            'id' => $rapat->id
-        ]);
+        // Pastikan link_rapat null untuk rapat offline
+        $this->assertNull($response->json('data.link_rapat'));
     }
 }

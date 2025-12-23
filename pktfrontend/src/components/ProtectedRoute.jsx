@@ -5,116 +5,123 @@ const ProtectedRoute = ({ children }) => {
   const { token, isLoading } = useAuth();
 
   if (isLoading) {
-    // --- Minimalist Line Art Loading Screen ---
+    // --- Geometric Loading Screen (Theme dari HTML) ---
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg w-full max-w-sm">
+      <div className="min-h-screen bg-[#F7F7F8] flex items-center justify-center p-6 relative">
+        {/* Subtle Background Grid */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-50"
+          style={{
+            backgroundImage: 'radial-gradient(#E5E7EB 1px, transparent 1px)',
+            backgroundSize: '24px 24px'
+          }}
+        />
 
-          {/* SVG Container for Line Art Progress Bar */}
-          <div className="relative w-full max-w-xs mx-auto mb-6">
-            <svg viewBox="0 0 200 40" className="w-full h-auto">
-              {/* Outer box (drawn line art style) */}
-              <rect
-                x="5" y="5" width="190" height="30" rx="10" ry="10"
-                fill="none"
-                stroke="#d1d5db" // Gray-300
-                strokeWidth="2"
-                className="stroke-drawing"
-                strokeDasharray="200" // Panjang total path
-                strokeDashoffset="0"
-              />
+        {/* Main Card */}
+        <div className="relative bg-white w-full max-w-[340px] rounded-2xl shadow-[0_4px_20px_-12px_rgba(0,0,0,0.08)] border border-gray-200/80 p-10 flex flex-col items-center justify-center space-y-8 z-10">
 
-              {/* Progress fill (drawn line art style with animation) */}
-              <rect
-                x="8" y="8"
-                width="184" // Sedikit lebih kecil dari outer box untuk padding
-                height="24"
-                rx="8" ry="8"
-                fill="#3b82f6" // Blue-500
-                className="animate-progress-fill-line-art"
-                style={{
-                  // Nilai awal width akan diatur oleh animasi CSS
-                  width: '0%',
-                  transformOrigin: 'left center' // Pastikan scale dari kiri
-                }}
-              />
+          {/* Geometric Loader Container */}
+          <div className="relative w-24 h-24 flex items-center justify-center">
+            {/* Decorative Backdrop Glow */}
+            <div className="bg-blue-500/5 rounded-full absolute inset-0 blur-3xl scale-150" />
 
-              {/* Static "loading..." text inside SVG to mimic hand-drawn */}
-              <text
-                x="100" y="25"
-                fontFamily="system-ui, sans-serif" // Menggunakan font default sistem yang bersih
-                fontSize="12"
-                fill="#4b5563" // Gray-600
-                textAnchor="middle"
-                className="font-light"
-              >
-                loading...
-              </text>
+            <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+              {/* Outer Shape: Square (Rotated) */}
+              <g className="geo-shape-outer">
+                <rect x="15" y="15" width="70" height="70" rx="12" fill="none" stroke="#E5E7EB" strokeWidth="1.5" />
+                <rect x="15" y="15" width="70" height="70" rx="12" fill="none" stroke="#18181B" strokeWidth="1.5" className="geo-stroke-anim" />
+              </g>
+
+              {/* Middle Shape: Circle */}
+              <g className="geo-shape-middle">
+                <circle cx="50" cy="50" r="24" fill="none" stroke="#E5E7EB" strokeWidth="1.5" />
+                <circle cx="50" cy="50" r="24" fill="none" stroke="#52525B" strokeWidth="1.5" strokeDasharray="40 100" className="opacity-80" />
+              </g>
+
+              {/* Inner Shape: Logo (Static with breathe effect) */}
+              <g className="geo-logo-inner">
+                <image
+                  href="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Logo_pupuk_kaltim.svg/1837px-Logo_pupuk_kaltim.svg.png"
+                  x="36"
+                  y="36"
+                  height="28"
+                  width="28"
+                />
+              </g>
             </svg>
+          </div>
 
-            {/* Percentage text outside SVG for easier styling/dynamic update */}
-            <p className="absolute bottom-1/2 left-1/2 -translate-x-1/2 translate-y-1/2
-                          text-xs font-semibold text-white animate-fade-in-out">
-                {/* Kita akan mensimulasikan persentase jika perlu, tapi untuk ilustrasi, biarkan statis */}
-                <span className="animate-wiggle-text">50%</span>
+          {/* Text Content */}
+          <div className="text-center space-y-1.5 max-w-[200px]">
+            <h2 className="text-sm font-semibold text-gray-900 tracking-tight" />
+            <p className="leading-relaxed text-xs font-normal text-gray-500">
+              LOADING PUPUK KALTIM
             </p>
           </div>
 
-          {/* Additional Loading Message */}
-          <p className="text-sm text-gray-500 mt-2">
-            Mohon tunggu sebentar.
-          </p>
-
+          {/* Progress Indicator (Minimal) */}
+          <div className="w-full max-w-[120px] h-0.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-gray-900 w-1/3 rounded-full animate-shimmer" />
+          </div>
         </div>
 
-        {/* --- Minimalist Line Art CSS Animations --- */}
+        {/* Footer / Action (Visual only) */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+        </div>
+
+        {/* --- CSS Animations --- */}
         <style>{`
-          /* Animasi untuk Progress Bar Fill (menggunakan width/scaleX) */
-          @keyframes progress-fill-line-art-anim {
-              0% { width: 0%; }
-              100% { width: 100%; }
-          }
-          .animate-progress-fill-line-art {
-              animation: progress-fill-line-art-anim 2s ease-in-out infinite alternate;
-              /* ease-in-out untuk gerakan yang lebih alami, infinite alternate untuk loop */
+          /* Geometric Animations */
+          @keyframes rotate-cw {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
 
-          /* Animasi untuk teks persentase (opsional) */
-          @keyframes fade-in-out {
-              0%, 100% { opacity: 1; }
-              50% { opacity: 0.5; }
-          }
-          .animate-fade-in-out {
-              animation: fade-in-out 2s ease-in-out infinite;
+          @keyframes rotate-ccw {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
           }
 
-          /* Animasi wiggle kecil untuk teks persentase (opsional, untuk menambah kesan "tulis tangan") */
-          @keyframes wiggle-text {
-              0%, 100% { transform: translateX(0) rotate(0deg); }
-              25% { transform: translateX(1px) rotate(0.5deg); }
-              75% { transform: translateX(-1px) rotate(-0.5deg); }
-          }
-          .animate-wiggle-text {
-              animation: wiggle-text 1.5s ease-in-out infinite;
-              display: inline-block; /* Penting untuk transform */
+          @keyframes dash-draw {
+            0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+            50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+            100% { stroke-dasharray: 90, 150; stroke-dashoffset: -125; }
           }
 
-          /* Menambahkan gaya untuk elemen SVG agar terlihat lebih "drawn" jika diperlukan */
-          /* Misalnya, dengan filter CSS atau text-shadow yang tipis jika font tidak cukup "sketchy" */
-          .stroke-drawing {
-            /* Anda bisa menambahkan filter SVG di sini untuk efek sketsa */
-            /* filter: url(#rough); */ // Membutuhkan definisi filter SVG
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); width: 20%; }
+            50% { width: 60%; }
+            100% { transform: translateX(200%); width: 20%; }
           }
 
-          /* Contoh filter SVG jika ingin menambahkan kesan kasar */
-          /* <defs>
-            <filter id="rough">
-              <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="1" result="f1" />
-              <feDisplacementMap in="SourceGraphic" in2="f1" scale="1.5" />
-            </filter>
-          </defs> */
-          /* Ini bisa ditambahkan di dalam <svg> jika ingin diterapkan */
+          @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.95); opacity: 0.9; }
+          }
 
+          .geo-shape-outer {
+            transform-origin: center;
+            animation: rotate-cw 12s linear infinite;
+          }
+
+          .geo-shape-middle {
+            transform-origin: center;
+            animation: rotate-ccw 8s linear infinite;
+          }
+
+          .geo-logo-inner {
+            transform-origin: center;
+            animation: breathe 3s ease-in-out infinite;
+          }
+
+          .geo-stroke-anim {
+            stroke-linecap: round;
+            animation: dash-draw 3s ease-in-out infinite;
+          }
+
+          .animate-shimmer {
+            animation: shimmer 1.5s ease-in-out infinite;
+          }
         `}</style>
       </div>
     );
